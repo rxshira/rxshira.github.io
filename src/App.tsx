@@ -4,6 +4,9 @@ import Hero from './components/Hero';
 import CurrentFocus from './components/CurrentFocus';
 import Research from './components/Research';
 import Projects from './components/Projects';
+import TeachingExperience from './components/TeachingExperience';
+import Awards from './components/Awards';
+import Volunteering from './components/Volunteering';
 import Footer from './components/Footer';
 import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
@@ -26,6 +29,12 @@ function App() {
       <Research />
       
       <Projects />
+      
+      <TeachingExperience />
+      
+      <Awards />
+      
+      <Volunteering />
       
       <Footer />
       
