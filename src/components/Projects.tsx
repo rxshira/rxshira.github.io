@@ -181,147 +181,187 @@ const Projects = () => {
   };
 
   return (
-    <>
-      {/* SpecML and RoboGrader side by side */}
-      <section className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12">
-            {specml && (
-              <div style={{ backgroundColor: getColorHex(specml.bgColor) }} className="p-8 rounded-2xl">
-                {renderProjectCard(specml)}
-              </div>
-            )}
-            {robograder && (
-              <div style={{ backgroundColor: getColorHex(robograder.bgColor) }} className="p-8 rounded-2xl">
-                {renderProjectCard(robograder)}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+    <section className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
+      <div className="max-w-7xl mx-auto">
+        <motion.h2 
+          className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
+          style={{ color: '#FF8C42' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          Projects
+          <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+            <path d="M0,10 Q100,0 200,10 T400,10" stroke="#FF8C42" strokeWidth="6" fill="none" strokeLinecap="round"/>
+          </svg>
+        </motion.h2>
 
-      {/* Asteria 1 - Full width with rocket collage */}
-      {asteria && (
-        <section className="relative py-20 px-6" style={{ backgroundColor: getColorHex(asteria.bgColor) }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <motion.div 
-                className="relative"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <img 
-                  src="/images/rocketcollage.png"
-                  alt="Asteria 1 Rocket Collage"
-                  className="w-full rounded-2xl shadow-xl object-cover"
-                />
-              </motion.div>
-              
-              <div className="space-y-6">
-                <motion.h2 
-                  className="text-6xl md:text-7xl font-black relative inline-block"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {asteria.title}
-                  <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-                    <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(asteria.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
-                  </svg>
-                </motion.h2>
-                
-                <motion.p 
-                  className="text-2xl font-bold"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  {asteria.subtitle}
-                </motion.p>
-                
-                <motion.p 
-                  className="text-xl italic opacity-80"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  {asteria.timeline}
-                </motion.p>
-                
-                {asteria.stats && (
+        <div className="space-y-12">
+          {/* SpecML - Separate block */}
+          {specml && (
+            <motion.div 
+              style={{ backgroundColor: getColorHex(specml.bgColor) }} 
+              className="p-8 rounded-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              {renderProjectCard(specml)}
+            </motion.div>
+          )}
+
+          {/* RoboGrader - Separate block */}
+          {robograder && (
+            <motion.div 
+              style={{ backgroundColor: getColorHex(robograder.bgColor) }} 
+              className="p-8 rounded-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {renderProjectCard(robograder)}
+            </motion.div>
+          )}
+
+          {/* Asteria 1 - Full width with rocket collage */}
+          {asteria && (
+            <motion.section 
+              className="relative py-12 px-8 rounded-2xl"
+              style={{ backgroundColor: getColorHex(asteria.bgColor) }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="max-w-7xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
                   <motion.div 
-                    className="bg-white rounded-2xl p-6 shadow-lg space-y-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    className="relative"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
+                    transition={{ duration: 0.6 }}
                   >
-                    <h3 className="text-3xl font-black" style={{ color: '#E84A3F' }}>
-                      Some Stats...
-                    </h3>
+                    <img 
+                      src="/images/rocketcollage.png"
+                      alt="Asteria 1 Rocket Collage"
+                      className="w-full rounded-2xl shadow-xl object-cover"
+                    />
+                  </motion.div>
+                  
+                  <div className="space-y-6">
+                    <motion.h2 
+                      className="text-6xl md:text-7xl font-black relative inline-block"
+                      style={{ color: getTextColor(asteria.bgColor) }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      {asteria.title}
+                      <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+                        <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(asteria.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
+                      </svg>
+                    </motion.h2>
                     
-                    <div className="space-y-2 text-lg">
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Altitude:</span> {asteria.stats.maxAltitude.ft}ft [or] {asteria.stats.maxAltitude.m}m</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Velocity:</span> {asteria.stats.maxVelocity.mph} mph [or] {asteria.stats.maxVelocity.mps} m/s</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max G forces:</span> {asteria.stats.maxG} Gs</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Motor Used:</span> {asteria.stats.motor}</p>
-                    </div>
-                  </motion.div>
-                )}
-                
-                {asteria.certification && (
-                  <motion.div 
-                    className="bg-green-100 border-2 border-green-600 rounded-xl p-4 inline-block"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    <p className="font-bold text-green-800">🚀 {asteria.certification}</p>
-                  </motion.div>
-                )}
-                
-                {asteria.links?.video && (
-                  <motion.a 
-                    href={asteria.links.video}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white hover:scale-105 transition-transform"
-                    style={{ backgroundColor: '#E84A3F' }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                  >
-                    <Play className="w-5 h-5" />
-                    Watch Video
-                  </motion.a>
-                )}
+                    <motion.p 
+                      className="text-2xl font-bold"
+                      style={{ color: getTextColor(asteria.bgColor) }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.1 }}
+                    >
+                      {asteria.subtitle}
+                    </motion.p>
+                    
+                    <motion.p 
+                      className="text-xl italic opacity-80"
+                      style={{ color: getTextColor(asteria.bgColor) }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      {asteria.timeline}
+                    </motion.p>
+                    
+                    {asteria.stats && (
+                      <motion.div 
+                        className="bg-white rounded-2xl p-6 shadow-lg space-y-3"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                      >
+                        <h3 className="text-3xl font-black" style={{ color: '#E84A3F' }}>
+                          Some Stats...
+                        </h3>
+                        
+                        <div className="space-y-2 text-lg">
+                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Altitude:</span> {asteria.stats.maxAltitude.ft}ft [or] {asteria.stats.maxAltitude.m}m</p>
+                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Velocity:</span> {asteria.stats.maxVelocity.mph} mph [or] {asteria.stats.maxVelocity.mps} m/s</p>
+                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max G forces:</span> {asteria.stats.maxG} Gs</p>
+                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Motor Used:</span> {asteria.stats.motor}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                    
+                    {asteria.certification && (
+                      <motion.div 
+                        className="bg-green-100 border-2 border-green-600 rounded-xl p-4 inline-block"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                      >
+                        <p className="font-bold text-green-800">🚀 {asteria.certification}</p>
+                      </motion.div>
+                    )}
+                    
+                    {asteria.links?.video && (
+                      <motion.a 
+                        href={asteria.links.video}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white hover:scale-105 transition-transform"
+                        style={{ backgroundColor: '#E84A3F' }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.5 }}
+                      >
+                        <Play className="w-5 h-5" />
+                        Watch Video
+                      </motion.a>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
-      )}
+            </motion.section>
+          )}
 
-      {/* LIGO - Full width */}
-      {ligo && (
-        <section className="relative py-20 px-6" style={{ backgroundColor: getColorHex(ligo.bgColor) }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="max-w-4xl mx-auto">
-              {renderProjectCard(ligo)}
-            </div>
-          </div>
-        </section>
-      )}
-    </>
+          {/* LIGO - Full width */}
+          {ligo && (
+            <motion.div 
+              style={{ backgroundColor: getColorHex(ligo.bgColor) }} 
+              className="p-8 rounded-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="max-w-4xl mx-auto">
+                {renderProjectCard(ligo)}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
 
