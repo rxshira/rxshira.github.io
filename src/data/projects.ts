@@ -68,13 +68,12 @@ export const projects: Project[] = [
     description: 'A high-power rocket reaching 1400ft altitude with custom avionics and recovery systems.',
     techStack: ['Rocketry', 'Electronics', 'Engineering'],
     links: {
-      video: 'https://www.youtube.com/watch?v=U4lhcouNYFA'
+      video: 'https://youtube.com/watch?v=example'
     },
     bgColor: 'yellow',
     textColor: 'magenta',
     featured: true,
     hasImage: true,
-    imagePath: 'rocket', // Will use rocket1.jpg, rocket2.jpg, rocket3.jpg, rocket4.jpg
     stats: {
       maxAltitude: { ft: 1400, m: 426.72 },
       maxVelocity: { mph: 237, mps: 105.95 },
