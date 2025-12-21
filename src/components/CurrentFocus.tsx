@@ -4,12 +4,6 @@ import { fadeInUp, staggerChildren } from '../utils/animations';
 
 const activities = [
   {
-    icon: Code2,
-    title: 'Agda',
-    description: 'Exploring dependent types and proof assistants',
-    color: 'magenta'
-  },
-  {
     icon: GraduationCap,
     title: '15150 TAing',
     description: 'Teaching Functional Programming (SML) at CMU',
@@ -41,7 +35,7 @@ const CurrentFocus = () => {
         </motion.h2>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={staggerChildren}
           initial="initial"
           whileInView="animate"

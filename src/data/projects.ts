@@ -30,6 +30,17 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    id: 'avl-trees',
+    title: 'Mechanizing AVL Trees',
+    subtitle: 'Formal verification of AVL tree operations',
+    timeline: '2025 - Present',
+    description: 'Working on mechanizing AVL tree data structures with formal proofs of correctness for insertion, deletion, and balancing operations.',
+    techStack: ['Coq', 'Agda', 'Formal Verification', 'Type Theory'],
+    bgColor: 'orange',
+    textColor: 'white',
+    hasImage: false
+  },
+  {
     id: 'specml',
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',

@@ -81,12 +81,14 @@ const Projects = () => {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <div className={`${bgClass} grain-overlay rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow`}>
-                  {/* Wavy top edge */}
-                  <div className="relative w-full h-16 overflow-hidden">
+                <div className="relative">
+                  {/* Wavy top edge - spans full width, outside rounded container */}
+                  <div className="relative w-full h-16 overflow-hidden rounded-t-2xl">
                     <motion.svg
                       viewBox="0 0 1440 256"
-                      className="absolute top-0 left-0 w-full h-full"
+                      preserveAspectRatio="none"
+                      className="w-full h-full"
+                      style={{ display: 'block' }}
                       initial={{ x: 0 }}
                       animate={{ x: [0, 10, 0] }}
                       transition={{
@@ -103,7 +105,8 @@ const Projects = () => {
                   </div>
 
                   {/* Card content */}
-                  <div className="p-4 md:p-5">
+                  <div className={`${bgClass} grain-overlay rounded-b-2xl shadow-lg hover:shadow-xl transition-shadow`}>
+                    <div className="p-4 md:p-5">
                     {/* Optional image */}
                     {project.hasImage && (
                       <motion.div
@@ -122,10 +125,26 @@ const Projects = () => {
                     )}
 
                     {/* Title and subtitle */}
-                    <h3 className={`text-2xl md:text-3xl font-display font-black ${textClass} mb-1`}>
-                      {project.title}
-                    </h3>
-                    <p className={`text-sm md:text-base ${textClass}/90 mb-1`}>
+                    <div className="relative mb-2">
+                      <h3 className={`text-3xl md:text-4xl font-display font-black ${textClass} italic leading-tight`}>
+                        {project.title}
+                      </h3>
+                      <svg
+                        className="absolute -bottom-2 left-0 w-full h-3 opacity-60"
+                        viewBox="0 0 400 20"
+                        preserveAspectRatio="none"
+                        style={{ color: colorHex }}
+                      >
+                        <path
+                          d="M0,15 Q100,5 200,15 T400,15"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+                    <p className={`text-sm md:text-base ${textClass}/90 mb-1 font-semibold`}>
                       {project.subtitle}
                     </p>
                     <p className={`text-xs ${textClass}/70 italic mb-3`}>
@@ -234,6 +253,7 @@ const Projects = () => {
                           Watch Video
                         </a>
                       )}
+                    </div>
                     </div>
                   </div>
                 </div>
