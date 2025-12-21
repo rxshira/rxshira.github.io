@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Code2, GraduationCap, BookOpen, Rocket } from 'lucide-react';
-import { fadeInUp, staggerChildren, scaleOnHover } from '../utils/animations';
+import { fadeInUp, staggerChildren } from '../utils/animations';
 
 const activities = [
   {
