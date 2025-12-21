@@ -14,6 +14,7 @@ export interface Project {
   textColor: string;
   featured?: boolean;
   hasImage?: boolean;
+  imagePath?: string; // Path to image in public/images/ folder (e.g., "specml.jpg")
   stats?: {
     maxAltitude: { ft: number; m: number };
     maxVelocity: { mph: number; mps: number };
@@ -41,7 +42,7 @@ export const projects: Project[] = [
     },
     bgColor: 'cream',
     textColor: 'orange',
-    hasImage: true,
+    hasImage: false,
     collaborator: 'with Prof. Robert Harper'
   },
   {
@@ -56,7 +57,7 @@ export const projects: Project[] = [
     },
     bgColor: 'magenta',
     textColor: 'white',
-    hasImage: true,
+    hasImage: false,
     impact: 'Replaces manual grading with fast, reproducible feedback.'
   },
   {
@@ -67,12 +68,13 @@ export const projects: Project[] = [
     description: 'A high-power rocket reaching 1400ft altitude with custom avionics and recovery systems.',
     techStack: ['Rocketry', 'Electronics', 'Engineering'],
     links: {
-      video: 'https://youtube.com/watch?v=example'
+      video: 'https://www.youtube.com/watch?v=U4lhcouNYFA'
     },
     bgColor: 'yellow',
     textColor: 'magenta',
     featured: true,
     hasImage: true,
+    imagePath: 'rocket', // Will use rocket1.jpg, rocket2.jpg, rocket3.jpg, rocket4.jpg
     stats: {
       maxAltitude: { ft: 1400, m: 426.72 },
       maxVelocity: { mph: 237, mps: 105.95 },

@@ -8,9 +8,13 @@ const Research = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <BlobFrame className="w-full max-w-md mx-auto">
             <img 
-              src="https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=600&h=600&fit=crop"
+              src="/images/avl-trees.jpg"
               alt="Abstract tree structure"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to placeholder if image doesn't exist
+                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=600&h=600&fit=crop';
+              }}
             />
           </BlobFrame>
           

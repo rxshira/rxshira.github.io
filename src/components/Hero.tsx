@@ -8,9 +8,13 @@ const Hero = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <BlobFrame className="w-full max-w-md mx-auto">
             <img 
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop" 
+              src="/images/hero.jpg" 
               alt="Shira Rubin"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to placeholder if image doesn't exist
+                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop';
+              }}
             />
           </BlobFrame>
           
