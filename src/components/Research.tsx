@@ -1,85 +1,104 @@
 import { motion } from 'framer-motion';
-import { fadeInUp } from '../utils/animations';
+import BlobFrame from './BlobFrame';
 
 const Research = () => {
   return (
-    <section className="bg-magenta grain-overlay py-20 relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.h2
-          className="text-5xl md:text-7xl font-display font-black text-white mb-6"
-          {...fadeInUp}
-        >
-          Current Research
-        </motion.h2>
-
-        <motion.div
-          className="mb-8"
-          {...fadeInUp}
-        >
-          <h3 className="text-4xl font-display font-bold text-white mb-2">
-            Mechanizing AVL Trees in Decalf
-          </h3>
-          <p className="text-white/90 text-xl mb-4">
-            with Prof. Robert Harper + Runming Li
-          </p>
-        </motion.div>
-
-        <motion.p
-          className="text-white text-lg mb-8 max-w-3xl"
-          {...fadeInUp}
-        >
-          Working on formal verification of AVL tree balance invariants and complexity analysis using the Decalf framework.
-        </motion.p>
-
-        <motion.div
-          className="grid md:grid-cols-2 gap-6 mb-8"
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-        >
-          <motion.div
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20"
-            variants={fadeInUp}
-          >
-            <h4 className="text-2xl font-display font-bold text-white mb-3">
-              Functional Correctness
-            </h4>
-            <p className="text-white/90">
-              Proof of AVL balance invariant
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border-2 border-white/20"
-            variants={fadeInUp}
-          >
-            <h4 className="text-2xl font-display font-bold text-white mb-3">
-              Complexity Analysis
-            </h4>
-            <p className="text-white/90">
-              O(|h_L - h_R|) cost bounds
-            </p>
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className="bg-black/20 rounded-xl p-4 font-mono text-sm text-white/80 overflow-x-auto"
-          {...fadeInUp}
-        >
-          <pre>{`// Decalf AVL Tree Implementation
-type AVLTree<T> = 
-  | Leaf
-  | Node(left: AVLTree<T>, 
-         value: T, 
-         right: AVLTree<T>,
-         height: Nat)
-
-invariant balance: |h_L - h_R| ≤ 1`}</pre>
-        </motion.div>
+    <section className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
+      <div className="max-w-7xl mx-auto text-white">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <BlobFrame className="w-full max-w-md mx-auto">
+            <img 
+              src="https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=600&h=600&fit=crop"
+              alt="Abstract tree structure"
+              className="w-full h-full object-cover"
+            />
+          </BlobFrame>
+          
+          <div className="space-y-6">
+            <motion.h2 
+              className="text-5xl md:text-6xl font-black relative inline-block"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              AVL Trees
+              <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+                <path d="M0,10 Q100,0 200,10 T400,10" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              </svg>
+            </motion.h2>
+            
+            <motion.p 
+              className="text-xl font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Mechanizing AVL Trees in Decalf
+            </motion.p>
+            
+            <motion.p 
+              className="text-lg opacity-90"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              with Prof. Robert Harper + Runming Li • Current
+            </motion.p>
+            
+            <motion.p 
+              className="text-lg leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I'm formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.
+            </motion.p>
+            
+            <motion.div 
+              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <div>
+                <h4 className="text-xl font-bold mb-2">Key Contributions</h4>
+                <p className="text-sm leading-relaxed">
+                  <strong>Functional Correctness:</strong> Formal proof that the join operation maintains strict AVL height-balance invariant (balance factors within {'{-1, 0, 1}'}) after rebalancing.
+                </p>
+              </div>
+              <div>
+                <p className="text-sm leading-relaxed">
+                  <strong>Complexity Analysis:</strong> Proof that operations have O(|h_L - h_R|) cost bounds, where h represents tree rank (height). By encoding these bounds directly into decalf's type system, I provide certified guarantees that the rebalancing logic is both correct and efficiently bounded.
+                </p>
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              className="flex flex-wrap gap-2"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              {['Decalf', 'Type Theory', 'Formal Verification', 'AVL Trees'].map((tech) => (
+                <span 
+                  key={tech}
+                  className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full font-bold text-sm"
+                >
+                  {tech}
+                </span>
+              ))}
+            </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );
 };
 
 export default Research;
-

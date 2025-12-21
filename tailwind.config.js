@@ -21,8 +21,9 @@ export default {
         'dark-gray': '#212121',
       },
       fontFamily: {
-        'display': ['"Archivo Black"', '"Black Ops One"', '"Righteous"', '"Fredoka One"', 'sans-serif'],
-        'body': ['Inter', '"Work Sans"', '"DM Sans"', 'sans-serif'],
+        'display': ['"Space Grotesk"', 'sans-serif'],
+        'body': ['"Space Grotesk"', 'sans-serif'],
+        'sans': ['"Space Grotesk"', 'sans-serif'],
       },
     },
   },

@@ -1,108 +1,95 @@
 import { motion } from 'framer-motion';
-import { Github, Mail, Linkedin, FileText } from 'lucide-react';
-import { fadeInUp } from '../utils/animations';
+import { Github, Mail } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-magenta grain-overlay py-20 relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-3 gap-12 items-center mb-12">
-          {/* Left: Contact */}
-          <motion.div {...fadeInUp}>
-            <h2 className="text-4xl font-display font-black text-white mb-6">
+    <footer id="contact" className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
+      <div className="max-w-7xl mx-auto text-white">
+        <div className="grid md:grid-cols-3 gap-12 items-start">
+          <div>
+            <motion.h3 
+              className="text-3xl font-black mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               Contact
-            </h2>
-            <div className="space-y-3 text-white/90">
-              <div>
-                <p className="font-semibold">Personal</p>
-                <a
-                  href="mailto:shiraxrubin@gmail.com"
-                  className="hover:underline"
+            </motion.h3>
+            <motion.div 
+              className="space-y-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <p><strong>Personal:</strong> shiraxrubin (at) gmail.com</p>
+              <p><strong>School:</strong> shirar (at) andrew.cmu.edu</p>
+              
+              <div className="flex gap-4 mt-6">
+                <a 
+                  href="https://github.com/rxshira" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                 >
-                  shiraxrubin@gmail.com
+                  <Github className="w-6 h-6" />
                 </a>
-              </div>
-              <div>
-                <p className="font-semibold">School</p>
-                <a
+                <a 
                   href="mailto:shirar@andrew.cmu.edu"
-                  className="hover:underline"
+                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                 >
-                  shirar@andrew.cmu.edu
+                  <Mail className="w-6 h-6" />
                 </a>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Center: Logo */}
-          <motion.div
-            className="text-center"
-            {...fadeInUp}
-          >
-            <h1 className="text-5xl md:text-7xl font-display font-black text-white mb-4">
+            </motion.div>
+          </div>
+          
+          <div className="text-center">
+            <motion.h2 
+              className="text-5xl md:text-6xl font-black relative inline-block"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               Shira Rubin
-            </h1>
-            <svg
-              className="mx-auto w-64 h-6 text-white"
-              viewBox="0 0 400 20"
-              preserveAspectRatio="none"
+              <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+                <path d="M0,10 Q100,0 200,10 T400,10" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              </svg>
+            </motion.h2>
+          </div>
+          
+          <div className="text-right">
+            <motion.p 
+              className="text-2xl font-bold mb-2"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <path
-                d="M0,15 Q100,5 200,15 T400,15"
-                stroke="currentColor"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-              />
-            </svg>
-            <p className="text-white/80 mt-4 italic">
-              that's all for now! see you soon :)
-            </p>
-          </motion.div>
-
-          {/* Right: Social Links */}
-          <motion.div
-            className="flex flex-col items-end md:items-start gap-4"
-            {...fadeInUp}
-          >
-            <a
-              href="https://github.com/rxshira"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-yellow transition-colors"
+              that's all for now!
+            </motion.p>
+            <motion.p 
+              className="text-xl"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Github className="w-6 h-6" />
-              <span>github.com/rxshira</span>
-            </a>
-            <a
-              href="https://linkedin.com/in/shira-rubin"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-yellow transition-colors"
-            >
-              <Linkedin className="w-6 h-6" />
-              <span>LinkedIn</span>
-            </a>
-            <a
-              href="/Shira_Rubin_Resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-yellow transition-colors"
-            >
-              <FileText className="w-6 h-6" />
-              <span>Resume</span>
-            </a>
-          </motion.div>
+              see you soon :)
+            </motion.p>
+          </div>
         </div>
-
-        {/* Copyright */}
-        <motion.div
-          className="text-center pt-8 border-t border-white/20"
-          {...fadeInUp}
+        
+        <motion.div 
+          className="mt-12 pt-8 border-t border-white/20 text-center text-sm opacity-75"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 0.75 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <p className="text-white/70 text-sm">
-            © 2025 Shira Rubin. Built with React, TypeScript, and lots of type safety.
-          </p>
+          © 2025 Shira Rubin. Built with React, TypeScript, and lots of type safety.
         </motion.div>
       </div>
     </footer>
@@ -110,4 +97,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

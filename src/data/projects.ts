@@ -30,34 +30,18 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 'avl-trees',
-    title: 'Mechanizing AVL Trees',
-    subtitle: 'Formal verification of AVL tree operations',
-    timeline: '2025 - Present',
-    description: 'Working on mechanizing AVL tree data structures with formal proofs of correctness for insertion, deletion, and balancing operations.',
-    techStack: ['Coq', 'Agda', 'Formal Verification', 'Type Theory'],
-    bgColor: 'orange',
-    textColor: 'white',
-    hasImage: false
-  },
-  {
     id: 'specml',
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',
     timeline: 'May 2025 - Present',
-    description: 'A provably-correct OCaml pipeline for mapping planetary surface chemical compositions from NASA Cassini\'s VIMS hyperspectral imagery. Processes raw .lbl and .qub data using custom spectral parsers built with OCaml\'s Seq module and type-theoretic abstractions to guarantee structural correctness.',
+    description: 'A provably-correct OCaml pipeline for mapping planetary surface chemical compositions from NASA Cassini\'s VIMS hyperspectral imagery. Uses type-theoretic abstractions and the Rocq (Coq) proof assistant for formal verification.',
     techStack: ['OCaml', 'Seq', 'Rocq/Coq', 'Git'],
     links: {
       github: 'https://github.com/rxshira/SpecML'
     },
     bgColor: 'cream',
     textColor: 'orange',
-    hasImage: false,
-    features: [
-      'Classification algorithms for water ice, methane, CO₂ detection',
-      'Rocq (Coq) proof assistant integration for formal verification',
-      'Quantitative error bounds on classification outputs'
-    ],
+    hasImage: true,
     collaborator: 'with Prof. Robert Harper'
   },
   {
@@ -65,14 +49,14 @@ export const projects: Project[] = [
     title: 'Robo-Grader',
     subtitle: 'Automated robot path grading system',
     timeline: 'October 2024 - December 2024',
-    description: 'A robot auto-grader that takes a video of a robot moving and compares it to an inputted "correct" path. Built with CMU Graphics—tracks robot and block positions, extracts paths, and computes accuracy scores. The GUI lets users draw expected paths and upload videos, producing visual overlays with percentage accuracy.',
-    techStack: ['Python', 'CMU Graphics', 'MoviePy', 'Pillow', 'EasyGUI'],
+    description: 'I made a robot auto-grader that takes a video of a robot moving and compares it to an inputted "correct" path. Built with CMU Graphics—automates evaluation with fast, reproducible feedback.',
+    techStack: ['Python', 'CMU Graphics', 'MoviePy', 'Pillow'],
     links: {
       github: 'https://github.com/rxshira/Robo-Grader'
     },
     bgColor: 'magenta',
     textColor: 'white',
-    hasImage: false,
+    hasImage: true,
     impact: 'Replaces manual grading with fast, reproducible feedback.'
   },
   {

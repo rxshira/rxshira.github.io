@@ -1,69 +1,46 @@
-import { useState } from 'react';
-import { Play, Pause, Volume2, Music } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [volume, setVolume] = useState(0.7);
+interface MusicPlayerProps {
+  isPlaying: boolean;
+  onToggle: () => void;
+}
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
+const MusicPlayer = ({ isPlaying, onToggle }: MusicPlayerProps) => {
+  if (!isPlaying) return null;
 
   return (
-    <motion.div
-      className="fixed bottom-6 right-6 z-50"
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ delay: 1, type: 'spring' }}
-    >
-      <motion.div
-        className={`bg-hot-pink rounded-full shadow-2xl overflow-hidden ${isExpanded ? 'rounded-3xl' : ''}`}
-        whileHover={{ scale: 1.05 }}
-        onHoverStart={() => setIsExpanded(true)}
-        onHoverEnd={() => setIsExpanded(false)}
-      >
-        <div className="flex items-center gap-3 p-3">
-          <button
-            onClick={togglePlay}
-            className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-            aria-label={isPlaying ? 'Pause music' : 'Play music'}
+    <AnimatePresence>
+      {isPlaying && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
+          className="fixed bottom-6 right-6 bg-pink-600 text-white rounded-full px-6 py-3 shadow-2xl flex items-center gap-3 z-50"
+        >
+          <div className="flex gap-1">
+            {[1, 2, 3].map((i) => (
+              <div 
+                key={i}
+                className="w-1 bg-white rounded-full animate-pulse"
+                style={{
+                  height: '20px',
+                  animationDelay: `${i * 0.15}s`
+                }}
+              />
+            ))}
+          </div>
+          <span className="font-bold">Now Playing...</span>
+          <button 
+            onClick={onToggle} 
+            className="p-1 hover:bg-white/20 rounded-full transition-colors"
           >
-            {isPlaying ? (
-              <Pause className="w-5 h-5 text-white" />
-            ) : (
-              <Play className="w-5 h-5 text-white" />
-            )}
+            <Pause className="w-4 h-4" />
           </button>
-          
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 'auto', opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                className="flex items-center gap-2 text-white text-sm overflow-hidden"
-              >
-                <Music className="w-4 h-4" />
-                <span className="whitespace-nowrap">Now Playing</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={volume}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
-                  className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
 export default MusicPlayer;
-

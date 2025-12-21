@@ -8,7 +8,7 @@
   }
   body {
     @apply bg-cream text-black font-body antialiased;
-    font-family: 'Inter', 'Work Sans', 'DM Sans', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {

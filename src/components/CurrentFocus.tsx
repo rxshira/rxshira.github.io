@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { Code2, GraduationCap, BookOpen, Rocket } from 'lucide-react';
-import { fadeInUp, staggerChildren } from '../utils/animations';
+import { GraduationCap, BookOpen, Rocket } from 'lucide-react';
 
 const activities = [
   {
@@ -25,53 +24,42 @@ const activities = [
 
 const CurrentFocus = () => {
   return (
-    <section className="bg-yellow grain-overlay py-20 relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <motion.h2
-          className="text-5xl md:text-7xl font-display font-black text-magenta mb-12"
-          {...fadeInUp}
+    <section className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
+      <div className="max-w-7xl mx-auto">
+        <motion.h2 
+          className="text-5xl md:text-6xl font-black mb-12 text-center"
+          style={{ color: '#C2185B' }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
           What I'm up to...
         </motion.h2>
-
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={staggerChildren}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          {activities.map((activity, index) => {
-            const Icon = activity.icon;
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activities.map((item, i) => {
+            const Icon = item.icon;
             return (
-              <motion.div
-                key={index}
-                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-shadow"
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
+              <motion.div 
+                key={i}
+                className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <div className={`w-12 h-12 rounded-full ${
-                  activity.color === 'magenta' ? 'bg-magenta' :
-                  activity.color === 'orange' ? 'bg-orange' :
-                  activity.color === 'red-orange' ? 'bg-red-orange' :
-                  'bg-hot-pink'
-                } flex items-center justify-center mb-4`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-display font-bold text-black mb-2">
-                  {activity.title}
+                <h3 className="text-2xl font-black mb-3" style={{ color: '#E84A3F' }}>
+                  {item.title}
                 </h3>
-                <p className="text-black/70">
-                  {activity.description}
-                </p>
+                <p className="text-gray-700">{item.description}</p>
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 };
 
 export default CurrentFocus;
-

@@ -1,100 +1,118 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Moon, Sun, Play, Pause, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+interface HeaderProps {
+  isPlaying: boolean;
+  onToggleMusic: () => void;
+}
+
+const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
-      setIsMenuOpen(false);
+      setMobileMenuOpen(false);
     }
   };
 
   return (
-    <>
-      <motion.header
-        className="fixed top-0 left-0 right-0 z-40 bg-off-white/80 backdrop-blur-md border-b border-black/10"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <motion.button
-            onClick={() => scrollToSection('hero')}
-            className="text-2xl font-display font-bold text-magenta hover:underline"
-            whileHover={{ scale: 1.05 }}
+    <header className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 transition-colors">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 
+          className="text-2xl md:text-3xl font-black cursor-pointer hover:opacity-80 transition-opacity"
+          style={{ color: '#C2185B' }}
+          onClick={() => scrollToSection('hero')}
+        >
+          Shira Rubin
+        </h1>
+        
+        <nav className="hidden md:flex items-center gap-6">
+          <a 
+            href="#about" 
+            className="font-bold hover:text-pink-600 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('about');
+            }}
           >
-            Shira Rubin
-          </motion.button>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection('about')}
-              className="text-black hover:text-magenta transition-colors font-medium"
-            >
-              About
-            </button>
-            <button
-              onClick={() => scrollToSection('contact')}
-              className="text-black hover:text-magenta transition-colors font-medium"
-            >
-              Contact
-            </button>
-            <ThemeToggle />
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
+            About
+          </a>
+          <a 
+            href="#contact" 
+            className="font-bold hover:text-pink-600 transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection('contact');
+            }}
           >
-            {isMenuOpen ? (
-              <X className="w-6 h-6 text-black" />
-            ) : (
-              <Menu className="w-6 h-6 text-black" />
-            )}
+            Contact
+          </a>
+          <ThemeToggle />
+          <button 
+            onClick={onToggleMusic}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
         </nav>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-off-white border-t border-black/10"
-            >
-              <div className="px-6 py-4 flex flex-col gap-4">
-                <button
-                  onClick={() => scrollToSection('about')}
-                  className="text-left text-black hover:text-magenta transition-colors font-medium"
+        <button 
+          className="md:hidden p-2"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white dark:bg-gray-900 pt-4 px-6 pb-6"
+          >
+            <nav className="flex flex-col gap-6">
+              <a 
+                href="#about" 
+                className="text-2xl font-bold"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection('about');
+                }}
+              >
+                About
+              </a>
+              <a 
+                href="#contact" 
+                className="text-2xl font-bold"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection('contact');
+                }}
+              >
+                Contact
+              </a>
+              <div className="flex items-center gap-4 pt-4 border-t">
+                <ThemeToggle />
+                <button 
+                  onClick={onToggleMusic}
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
-                  About
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                 </button>
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="text-left text-black hover:text-magenta transition-colors font-medium"
-                >
-                  Contact
-                </button>
-                <div className="pt-2 border-t border-black/10">
-                  <ThemeToggle />
-                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-    </>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 };
 
 export default Header;
-
