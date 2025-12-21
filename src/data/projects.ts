@@ -13,6 +13,7 @@ export interface Project {
   bgColor: string;
   textColor: string;
   featured?: boolean;
+  hasImage?: boolean;
   stats?: {
     maxAltitude: { ft: number; m: number };
     maxVelocity: { mph: number; mps: number };
@@ -29,27 +30,6 @@ export interface Project {
 
 export const projects: Project[] = [
   {
-    id: 'asteria1',
-    title: 'Asteria 1',
-    subtitle: 'I built a Level 1 - High Power Rocket.',
-    timeline: 'October 2023 to May 2024',
-    description: 'A high-power rocket reaching 1400ft altitude with custom avionics and recovery systems.',
-    techStack: ['Rocketry', 'Electronics', 'Engineering'],
-    links: {
-      video: 'https://youtube.com/watch?v=example'
-    },
-    bgColor: 'yellow',
-    textColor: 'magenta',
-    featured: true,
-    stats: {
-      maxAltitude: { ft: 1400, m: 426.72 },
-      maxVelocity: { mph: 237, mps: 105.95 },
-      maxG: 11.3,
-      motor: 'Cesaroni H90 (38mm)'
-    },
-    certification: 'NAR Level 1 Certified - May 2024'
-  },
-  {
     id: 'specml',
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',
@@ -61,6 +41,7 @@ export const projects: Project[] = [
     },
     bgColor: 'cream',
     textColor: 'orange',
+    hasImage: false,
     features: [
       'Classification algorithms for water ice, methane, CO₂ detection',
       'Rocq (Coq) proof assistant integration for formal verification',
@@ -80,7 +61,30 @@ export const projects: Project[] = [
     },
     bgColor: 'magenta',
     textColor: 'white',
+    hasImage: false,
     impact: 'Replaces manual grading with fast, reproducible feedback.'
+  },
+  {
+    id: 'asteria1',
+    title: 'Asteria 1',
+    subtitle: 'I built a Level 1 - High Power Rocket.',
+    timeline: 'October 2023 to May 2024',
+    description: 'A high-power rocket reaching 1400ft altitude with custom avionics and recovery systems.',
+    techStack: ['Rocketry', 'Electronics', 'Engineering'],
+    links: {
+      video: 'https://youtube.com/watch?v=example'
+    },
+    bgColor: 'yellow',
+    textColor: 'magenta',
+    featured: true,
+    hasImage: true,
+    stats: {
+      maxAltitude: { ft: 1400, m: 426.72 },
+      maxVelocity: { mph: 237, mps: 105.95 },
+      maxG: 11.3,
+      motor: 'Cesaroni H90 (38mm)'
+    },
+    certification: 'NAR Level 1 Certified - May 2024'
   },
   {
     id: 'ligo',
@@ -91,6 +95,7 @@ export const projects: Project[] = [
     techStack: ['Python', 'NumPy', 'Matplotlib'],
     bgColor: 'cream',
     textColor: 'black',
+    hasImage: false,
     role: 'Research Intern',
     achievement: 'Improved optical efficiency from ~30% to ~90% in 40m prototype'
   }

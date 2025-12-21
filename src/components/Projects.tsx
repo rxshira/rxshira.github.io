@@ -24,6 +24,16 @@ const Projects = () => {
     }
   };
 
+  const getColorHex = (color: string) => {
+    switch (color) {
+      case 'yellow': return '#FFD93D';
+      case 'magenta': return '#D81B60';
+      case 'cream': return '#F5F5F0';
+      case 'orange': return '#FF8C42';
+      default: return '#F5F5F0';
+    }
+  };
+
   const getStatsBgClass = (bgColor: string) => {
     return bgColor === 'yellow' ? 'bg-white' : 'bg-white/20';
   };
@@ -40,155 +50,200 @@ const Projects = () => {
     return bgColor === 'cream' ? 'bg-yellow' : 'bg-white/20';
   };
 
+  // Wavy divider SVG path for card top edge
+  const wavePath = "M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,256L1392,256C1344,256,1248,256,1152,256C1056,256,960,256,864,256C768,256,672,256,576,256C480,256,384,256,288,256C192,256,96,256,48,256L0,256Z";
+
   return (
-    <>
-      {projects.map((project, index) => {
-        const bgClass = getBgClass(project.bgColor);
-        const textClass = getTextClass(project.textColor);
+    <section className="bg-cream grain-overlay py-12 relative">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.h2
+          className="text-4xl md:text-5xl font-display font-black text-magenta mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          Projects
+        </motion.h2>
 
-        return (
-          <section
-            key={project.id}
-            className={`${bgClass} grain-overlay py-20 relative`}
-          >
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                {/* Left: Image/Visual */}
-                <motion.div
-                  className={project.featured ? 'order-1' : 'order-2 md:order-1'}
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <BlobFrame className="w-full">
-                    <div className="aspect-square bg-gradient-to-br from-yellow to-orange flex items-center justify-center">
-                      <div className="text-6xl">🚀</div>
-                    </div>
-                  </BlobFrame>
-                </motion.div>
+        <div className="masonry-grid">
+          {projects.map((project, index) => {
+            const bgClass = getBgClass(project.bgColor);
+            const textClass = getTextClass(project.textColor);
+            const colorHex = getColorHex(project.bgColor);
 
-                {/* Right: Content */}
-                <motion.div
-                  className={project.featured ? 'order-2' : 'order-1 md:order-2'}
-                  initial={{ opacity: 0, y: 60 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
-                >
-                  <h2 className={`text-5xl md:text-7xl font-display font-black ${textClass} mb-4`}>
-                    {project.title}
-                  </h2>
-                  <p className={`text-xl ${textClass}/90 mb-2`}>
-                    {project.subtitle}
-                  </p>
-                  <p className={`${textClass}/70 italic mb-6`}>
-                    {project.timeline}
-                  </p>
+            return (
+              <motion.div
+                key={project.id}
+                className="masonry-item"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className={`${bgClass} grain-overlay rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow`}>
+                  {/* Wavy top edge */}
+                  <div className="relative w-full h-16 overflow-hidden">
+                    <motion.svg
+                      viewBox="0 0 1440 256"
+                      className="absolute top-0 left-0 w-full h-full"
+                      initial={{ x: 0 }}
+                      animate={{ x: [0, 10, 0] }}
+                      transition={{
+                        duration: 10,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <path
+                        d={wavePath}
+                        fill={colorHex}
+                      />
+                    </motion.svg>
+                  </div>
 
-                  {project.collaborator && (
-                    <p className={`${textClass}/90 mb-4`}>
-                      {project.collaborator}
+                  {/* Card content */}
+                  <div className="p-4 md:p-5">
+                    {/* Optional image */}
+                    {project.hasImage && (
+                      <motion.div
+                        className="mb-4"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <BlobFrame className="w-full">
+                          <div className="aspect-square bg-gradient-to-br from-yellow to-orange flex items-center justify-center">
+                            <div className="text-4xl">🚀</div>
+                          </div>
+                        </BlobFrame>
+                      </motion.div>
+                    )}
+
+                    {/* Title and subtitle */}
+                    <h3 className={`text-2xl md:text-3xl font-display font-black ${textClass} mb-1`}>
+                      {project.title}
+                    </h3>
+                    <p className={`text-sm md:text-base ${textClass}/90 mb-1`}>
+                      {project.subtitle}
                     </p>
-                  )}
+                    <p className={`text-xs ${textClass}/70 italic mb-3`}>
+                      {project.timeline}
+                    </p>
 
-                  <p className={`${textClass}/90 mb-6 text-lg`}>
-                    {project.description}
-                  </p>
+                    {/* Collaborator/Role */}
+                    {(project.collaborator || project.role) && (
+                      <p className={`text-xs ${textClass}/90 mb-3`}>
+                        {project.collaborator || project.role}
+                      </p>
+                    )}
 
-                  {project.stats && (
-                    <div className={`${getStatsBgClass(project.bgColor)} rounded-xl p-6 mb-6`}>
-                      <h4 className={`${textClass} font-bold text-xl mb-4`}>Some Stats...</h4>
-                      <div className="space-y-2">
-                        <p className={textClass}>
-                          <strong>Max Altitude:</strong> {project.stats.maxAltitude.ft}ft ({project.stats.maxAltitude.m}m)
-                        </p>
-                        <p className={textClass}>
-                          <strong>Max Velocity:</strong> {project.stats.maxVelocity.mph} mph ({project.stats.maxVelocity.mps} m/s)
-                        </p>
-                        <p className={textClass}>
-                          <strong>Max G forces:</strong> {project.stats.maxG} Gs
-                        </p>
-                        <p className={textClass}>
-                          <strong>Motor Used:</strong> {project.stats.motor}
-                        </p>
+                    {/* Description */}
+                    <p className={`${textClass}/90 mb-4 text-sm leading-relaxed`}>
+                      {project.description}
+                    </p>
+
+                    {/* Stats */}
+                    {project.stats && (
+                      <div className={`${getStatsBgClass(project.bgColor)} rounded-lg p-3 mb-4`}>
+                        <h4 className={`${textClass} font-bold text-sm mb-2`}>Some Stats...</h4>
+                        <div className="space-y-1 text-xs">
+                          <p className={textClass}>
+                            <strong>Max Altitude:</strong> {project.stats.maxAltitude.ft}ft ({project.stats.maxAltitude.m}m)
+                          </p>
+                          <p className={textClass}>
+                            <strong>Max Velocity:</strong> {project.stats.maxVelocity.mph} mph ({project.stats.maxVelocity.mps} m/s)
+                          </p>
+                          <p className={textClass}>
+                            <strong>Max G forces:</strong> {project.stats.maxG} Gs
+                          </p>
+                          <p className={textClass}>
+                            <strong>Motor Used:</strong> {project.stats.motor}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {project.certification && (
-                    <div className={`${getCertBgClass(project.bgColor)} rounded-lg px-4 py-2 inline-block mb-6`}>
-                      <p className="text-white font-bold">{project.certification}</p>
-                    </div>
-                  )}
+                    {/* Certification */}
+                    {project.certification && (
+                      <div className={`${getCertBgClass(project.bgColor)} rounded-lg px-3 py-1.5 inline-block mb-4`}>
+                        <p className="text-white font-bold text-xs">{project.certification}</p>
+                      </div>
+                    )}
 
-                  {project.features && (
-                    <ul className={`space-y-2 mb-6 ${textClass}/90`}>
-                      {project.features.map((feature, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>{feature}</span>
-                        </li>
+                    {/* Features */}
+                    {project.features && (
+                      <ul className={`space-y-1 mb-4 ${textClass}/90 text-xs`}>
+                        {project.features.map((feature, i) => (
+                          <li key={i} className="flex items-start">
+                            <span className="mr-1.5">•</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {/* Impact */}
+                    {project.impact && (
+                      <p className={`${textClass}/90 italic mb-4 text-xs`}>
+                        <strong>Impact:</strong> {project.impact}
+                      </p>
+                    )}
+
+                    {/* Achievement */}
+                    {project.achievement && (
+                      <div className={`${getAchievementBgClass(project.bgColor)} rounded-lg px-3 py-2 mb-4`}>
+                        <p className={`${textClass} font-semibold text-xs`}>{project.achievement}</p>
+                      </div>
+                    )}
+
+                    {/* Tech stack */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.techStack.map((tech, i) => (
+                        <span
+                          key={i}
+                          className={`${getTechBgClass(project.bgColor)} ${textClass} px-2 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {tech}
+                        </span>
                       ))}
-                    </ul>
-                  )}
-
-                  {project.impact && (
-                    <p className={`${textClass}/90 italic mb-6`}>
-                      <strong>Impact:</strong> {project.impact}
-                    </p>
-                  )}
-
-                  {project.achievement && (
-                    <div className={`${getAchievementBgClass(project.bgColor)} rounded-lg px-4 py-3 mb-6`}>
-                      <p className={`${textClass} font-semibold`}>{project.achievement}</p>
                     </div>
-                  )}
 
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    {project.techStack.map((tech, i) => (
-                      <span
-                        key={i}
-                        className={`${getTechBgClass(project.bgColor)} ${textClass} px-4 py-2 rounded-full text-sm font-medium`}
-                      >
-                        {tech}
-                      </span>
-                    ))}
+                    {/* Links */}
+                    <div className="flex gap-3">
+                      {project.links?.github && (
+                        <a
+                          href={project.links.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-1.5 ${textClass} hover:underline font-semibold text-sm`}
+                        >
+                          <Github className="w-4 h-4" />
+                          GitHub
+                        </a>
+                      )}
+                      {project.links?.video && (
+                        <a
+                          href={project.links.video}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-1.5 ${textClass} hover:underline font-semibold text-sm`}
+                        >
+                          <Play className="w-4 h-4" />
+                          Watch Video
+                        </a>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="flex gap-4">
-                    {project.links?.github && (
-                      <a
-                        href={project.links.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center gap-2 ${textClass} hover:underline font-semibold`}
-                      >
-                        <Github className="w-5 h-5" />
-                        GitHub
-                      </a>
-                    )}
-                    {project.links?.video && (
-                      <a
-                        href={project.links.video}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center gap-2 ${textClass} hover:underline font-semibold`}
-                      >
-                        <Play className="w-5 h-5" />
-                        Watch Video
-                      </a>
-                    )}
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </section>
-        );
-      })}
-    </>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 };
 
 export default Projects;
-

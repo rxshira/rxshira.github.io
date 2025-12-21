@@ -50,3 +50,40 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Masonry layout for projects */
+.masonry-grid {
+  column-count: 1;
+  column-gap: 1rem;
+  column-fill: balance;
+}
+
+@media (min-width: 768px) {
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 1280px) {
+  .masonry-grid {
+    column-count: 4;
+  }
+}
+
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-item {
+    margin-bottom: 1.25rem;
+  }
+}
+
