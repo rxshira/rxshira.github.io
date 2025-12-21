@@ -63,26 +63,6 @@ const Research = () => {
             </motion.p>
             
             <motion.div 
-              className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <div>
-                <h4 className="text-xl font-bold mb-2">Key Contributions</h4>
-                <p className="text-sm leading-relaxed">
-                  <strong>Functional Correctness:</strong> Formal proof that the join operation maintains strict AVL height-balance invariant (balance factors within {'{-1, 0, 1}'}) after rebalancing.
-                </p>
-              </div>
-              <div>
-                <p className="text-sm leading-relaxed">
-                  <strong>Complexity Analysis:</strong> Proof that operations have O(|h_L - h_R|) cost bounds, where h represents tree rank (height). By encoding these bounds directly into decalf's type system, I provide certified guarantees that the rebalancing logic is both correct and efficiently bounded.
-                </p>
-              </div>
-            </motion.div>
-            
-            <motion.div 
               className="flex flex-wrap gap-2"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
