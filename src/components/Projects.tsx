@@ -171,35 +171,33 @@ const Projects = () => {
   return (
     <>
       {/* SpecML and RoboGrader side by side */}
-      <section className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-6">
-            {specml && (
-              <motion.div 
-                style={{ backgroundColor: getColorHex(specml.bgColor) }} 
-                className="p-8 rounded-2xl"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                {renderProjectCard(specml)}
-              </motion.div>
-            )}
+      <section className="relative py-20 px-0">
+        <div className="flex flex-col md:flex-row">
+          {specml && (
+            <motion.div 
+              style={{ backgroundColor: getColorHex(specml.bgColor) }} 
+              className="flex-1 p-8 md:p-12"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              {renderProjectCard(specml)}
+            </motion.div>
+          )}
 
-            {robograder && (
-              <motion.div 
-                style={{ backgroundColor: getColorHex(robograder.bgColor) }} 
-                className="p-8 rounded-2xl"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                {renderProjectCard(robograder)}
-              </motion.div>
-            )}
-          </div>
+          {robograder && (
+            <motion.div 
+              style={{ backgroundColor: getColorHex(robograder.bgColor) }} 
+              className="flex-1 p-8 md:p-12"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {renderProjectCard(robograder)}
+            </motion.div>
+          )}
         </div>
       </section>
 
