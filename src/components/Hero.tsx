@@ -12,33 +12,41 @@ const Hero = () => {
             transition={{ duration: 0.6 }}
           >
             <img 
-              src="/images/hero.jpg" 
+              src="/images/IMG-190.jpg" 
               alt="Shira Rubin"
               className="w-full h-full object-cover rounded-3xl shadow-xl"
               onError={(e) => {
-                // Fallback to placeholder if image doesn't exist
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=600&fit=crop';
+                // Fallback to hero.jpg if IMG-190.jpg doesn't exist
+                (e.target as HTMLImageElement).src = '/images/hero.jpg';
               }}
             />
           </motion.div>
           
           <div className="space-y-6">
-            <motion.h2 
-              className="text-5xl md:text-7xl font-black leading-tight"
-              style={{ color: '#E84A3F' }}
+            {/* Hi, I'm Shira! in a gentle square bubble */}
+            <motion.div
+              className="bg-white rounded-3xl p-8 shadow-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              Hi, I'm
-              <br />
-              <span className="relative inline-block">
-                Shira!
-                <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 300 15">
-                  <path d="M0,10 Q75,0 150,10 T300,10" stroke="#C2185B" strokeWidth="8" fill="none" strokeLinecap="round"/>
-                </svg>
-              </span>
-            </motion.h2>
+              <motion.h2 
+                className="text-5xl md:text-7xl font-black leading-tight"
+                style={{ color: '#E84A3F' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                Hi, I'm
+                <br />
+                <span className="relative inline-block">
+                  Shira!
+                  <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 300 15">
+                    <path d="M0,10 Q75,0 150,10 T300,10" stroke="#C2185B" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </span>
+              </motion.h2>
+            </motion.div>
             
             <motion.p 
               className="text-xl md:text-2xl leading-relaxed"
