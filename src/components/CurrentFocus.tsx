@@ -4,20 +4,20 @@ import { GraduationCap, BookOpen, Rocket } from 'lucide-react';
 const activities = [
   {
     icon: GraduationCap,
-    title: '15150 TAing',
-    description: 'Teaching Functional Programming (SML) at CMU',
+    title: '15-150 - Principles of Functional Programming',
+    description: 'TA-ing Functional Programming @ CMU',
     color: 'orange'
   },
   {
     icon: BookOpen,
-    title: 'Hype for Types',
-    description: 'Instructing type theory course (StuCo 98-317)',
+    title: '98-317 - Hype for Types',
+    description: 'Instructing type theory course @ CMU',
     color: 'red-orange'
   },
   {
     icon: Rocket,
-    title: 'Space Robotics',
-    description: 'Building autonomous systems',
+    title: 'Research',
+    description: 'Researching mechanized verification of AVL trees in Decalf',
     color: 'hot-pink'
   }
 ];

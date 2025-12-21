@@ -5,18 +5,18 @@ const TeachingExperience = () => {
   const experiences = [
     {
       icon: GraduationCap,
-      title: '15150 TAing',
+      title: 'Principles of Functional Programming',
       subtitle: 'Teaching Assistant for Functional Programming (SML)',
-      organization: 'Carnegie Mellon University',
-      timeline: '2024 - Present',
+      organization: 'CMU School of Computer Science (15-150)',
+      timeline: 'May 2025 - August 2025, Janurary 2026 - Present',
       description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.',
       color: '#FF8C42'
     },
     {
       icon: BookOpen,
       title: 'Hype for Types',
-      subtitle: 'Student Instructor for Type Theory',
-      organization: 'CMU Student College (StuCo 98-317)',
+      subtitle: 'Instructor',
+      organization: 'CMU Student College (98-317)',
       timeline: '2024 - Present',
       description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification. Designed curriculum and teach weekly lectures to undergraduate students interested in advanced type systems.',
       color: '#E84A3F'

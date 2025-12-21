@@ -53,7 +53,7 @@ const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              I like rockets, robots, and people.
+              I like programming languages, space, and people.
             </motion.p>
             
             <motion.p 
@@ -62,10 +62,31 @@ const Hero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              Scroll down to explore some of my projects...
+              I also really like music. Here's my current playlist. Click play to listen to it as you learn more about me!
             </motion.p>
           </div>
         </div>
+        
+        {/* Spotify Playlist Embed */}
+        <motion.div
+          className="mt-12 max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <iframe
+              style={{ borderRadius: '12px' }}
+              src="https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator"
+              width="100%"
+              height="352"
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+            />
+          </div>
+        </motion.div>
       </div>
     </section>
   );
