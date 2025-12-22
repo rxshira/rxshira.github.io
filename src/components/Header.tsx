@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,6 +9,16 @@ interface HeaderProps {
 
 const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -23,20 +33,26 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
     { id: 'focus', label: 'Focus' },
     { id: 'projects', label: 'Projects' },
     { id: 'teaching', label: 'Teaching' },
+    { id: 'courses', label: 'Courses' },
     { id: 'awards', label: 'Awards' },
     { id: 'volunteering', label: 'Volunteering' },
     { id: 'contact', label: 'Contact' }
   ];
 
   return (
-    <header className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/80">
+    <header 
+      className="fixed top-0 w-full z-50 backdrop-blur-md transition-colors duration-300"
+      style={{ 
+        backgroundColor: isScrolled ? '#FFD93D' : 'rgba(255, 255, 255, 0.8)'
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <h1 
           className="text-2xl md:text-3xl font-black cursor-pointer hover:opacity-80 transition-opacity"
           style={{ color: '#C2185B' }}
-          onClick={() => scrollToSection('hero')}
-        >
-          Shira Rubin
+            onClick={() => scrollToSection('hero')}
+          >
+            Shira Rubin
         </h1>
         
         <nav className="hidden md:flex items-center gap-4">
@@ -54,7 +70,7 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
               {link.label}
             </a>
           ))}
-          <button 
+            <button
             onClick={onToggleMusic}
             className="p-2 rounded-full hover:bg-gray-200 transition-colors ml-2"
           >
@@ -70,13 +86,13 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
+        {/* Mobile Menu */}
+        <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white pt-4 px-6 pb-6 border-t"
           >
             <nav className="flex flex-col gap-4">
@@ -95,7 +111,7 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
                 </a>
               ))}
               <div className="flex items-center gap-4 pt-4 border-t">
-                <button 
+                <button
                   onClick={onToggleMusic}
                   className="p-2 rounded-full hover:bg-gray-200"
                 >
@@ -103,9 +119,9 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
                 </button>
               </div>
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </header>
   );
 };

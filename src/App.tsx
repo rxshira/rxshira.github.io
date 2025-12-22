@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import CurrentFocus from './components/CurrentFocus';
 import Projects from './components/Projects';
 import TeachingExperience from './components/TeachingExperience';
+import Courses from './components/Courses';
 import Awards from './components/Awards';
 import Volunteering from './components/Volunteering';
 import Footer from './components/Footer';
@@ -50,6 +51,8 @@ function App() {
       <Projects />
       
       <TeachingExperience />
+      
+      <Courses />
       
       <Awards />
       

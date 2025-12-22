@@ -200,9 +200,7 @@ const Projects = () => {
                           key={tech}
                           className="px-3 py-1 rounded-full font-bold text-xs"
                           style={{
-                            backgroundColor: project.bgColor === 'magenta' || project.bgColor === 'orange' 
-                              ? 'rgba(255,255,255,0.2)' 
-                              : '#C2185B',
+                            backgroundColor: '#C2185B',
                             color: 'white'
                           }}
                       >
