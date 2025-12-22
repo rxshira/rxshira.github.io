@@ -68,8 +68,9 @@ export const projects: Project[] = [
     description: 'A high-power rocket reaching 1400ft altitude with custom avionics and recovery systems.',
     techStack: ['Rocketry', 'Electronics', 'Engineering'],
     links: {
-      video: 'https://youtube.com/watch?v=example'
+      video: 'https://www.youtube.com/watch?v=U4lhcouNYFA'
     },
+    imagePath: 'rocketcollage.png',
     bgColor: 'yellow',
     textColor: 'magenta',
     featured: true,
@@ -91,9 +92,22 @@ export const projects: Project[] = [
     techStack: ['Python', 'NumPy', 'Matplotlib'],
     bgColor: 'cream',
     textColor: 'black',
-    hasImage: false,
+    hasImage: true,
+    imagePath: 'ligo.jpeg',
     role: 'Research Intern',
     achievement: 'Improved optical efficiency from ~30% to ~90% in 40m prototype'
+  },
+  {
+    id: 'avltrees',
+    title: 'Mechanizing AVL Trees',
+    subtitle: 'Mechanizing AVL Trees in Decalf',
+    timeline: 'Current',
+    description: 'My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I\'m formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.',
+    techStack: ['Decalf', 'Type Theory', 'Formal Verification', 'AVL Trees'],
+    bgColor: 'magenta',
+    textColor: 'white',
+    hasImage: false,
+    collaborator: 'with Prof. Robert Harper + Runming Li'
   }
 ];
 

@@ -1,8 +1,11 @@
-import { motion } from 'framer-motion';
-import { Github, Play } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { Github, Play, X } from 'lucide-react';
 import { projects } from '../data/projects';
 
 const Projects = () => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const getColorHex = (color: string) => {
     switch (color) {
       case 'yellow': return '#FFD93D';
@@ -23,400 +26,211 @@ const Projects = () => {
     }
   };
 
-  // Get specific projects
-  const specml = projects.find(p => p.id === 'specml');
-  const robograder = projects.find(p => p.id === 'robograder');
-  const asteria = projects.find(p => p.id === 'asteria1');
-  const ligo = projects.find(p => p.id === 'ligo');
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
 
-  const renderProjectCard = (project: typeof projects[0]) => {
-    const textColor = getTextColor(project.bgColor);
-
-    return (
-      <div className="space-y-4">
+  return (
+    <section id="projects" className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
+      <div className="max-w-7xl mx-auto text-white">
         <motion.h2 
-          className="text-4xl md:text-5xl font-black relative inline-block"
-          style={{ color: textColor }}
+          className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          {project.title}
+          Projects
           <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-            <path d="M0,10 Q100,0 200,10 T400,10" stroke={textColor} strokeWidth="6" fill="none" strokeLinecap="round"/>
+            <path d="M0,10 Q100,0 200,10 T400,10" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
           </svg>
         </motion.h2>
-        
-        <motion.p 
-          className="text-lg font-bold"
-          style={{ color: textColor }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          {project.subtitle}
-        </motion.p>
-        
-        {(project.collaborator || project.role) && (
-          <motion.p 
-            className="text-base opacity-90"
-            style={{ color: textColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            {project.collaborator || project.role} • {project.timeline}
-          </motion.p>
-        )}
-        
-        {!project.collaborator && !project.role && (
-          <motion.p 
-            className="text-base italic opacity-80"
-            style={{ color: textColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            {project.timeline}
-          </motion.p>
-        )}
-        
-        <motion.p 
-          className="text-base leading-relaxed"
-          style={{ color: textColor }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {project.description}
-        </motion.p>
-        
-        {project.impact && (
-          <motion.p 
-            className="text-base italic"
-            style={{ color: textColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {project.impact}
-          </motion.p>
-        )}
-        
-        {project.achievement && (
-          <motion.p 
-            className="text-base font-bold"
-            style={{ color: textColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {project.achievement}
-          </motion.p>
-        )}
-        
-        <motion.div 
-          className="flex flex-wrap gap-2"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          {project.techStack.map((tech) => (
-            <span 
-              key={tech}
-              className="px-3 py-1 rounded-full font-bold text-xs"
-              style={{ 
-                backgroundColor: project.bgColor === 'magenta' ? 'rgba(255,255,255,0.2)' : project.bgColor === 'orange' ? 'rgba(255,255,255,0.2)' : '#C2185B',
-                color: project.bgColor === 'magenta' || project.bgColor === 'orange' ? 'white' : 'white'
-              }}
-            >
-              {tech}
-            </span>
-          ))}
-        </motion.div>
-        
-        {project.links?.github && (
-          <motion.div 
-            className="flex gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <a 
-              href={project.links.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-transform text-sm"
-              style={{ backgroundColor: project.bgColor === 'magenta' ? 'white' : '#E84A3F', color: project.bgColor === 'magenta' ? '#D81B60' : 'white' }}
-            >
-              <Github className="w-4 h-4" />
-              View on GitHub
-            </a>
-          </motion.div>
-        )}
-      </div>
-    );
-  };
 
-  return (
-    <>
-      {/* SpecML and RoboGrader side by side */}
-      <section className="relative py-20 px-0">
-        <div className="flex flex-col md:flex-row">
-          {specml && (
-            <motion.div 
-              style={{ backgroundColor: getColorHex(specml.bgColor) }} 
-              className="flex-1 p-8 md:p-12"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              {renderProjectCard(specml)}
-            </motion.div>
-          )}
+        <div className="grid md:grid-cols-3 gap-6">
+          {projects.map((project, index) => {
+            const isExpanded = expandedId === project.id;
+            const bgColor = getColorHex(project.bgColor);
+            const textColor = getTextColor(project.bgColor);
 
-          {robograder && (
-            <motion.div 
-              style={{ backgroundColor: getColorHex(robograder.bgColor) }} 
-              className="flex-1 p-8 md:p-12"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              {renderProjectCard(robograder)}
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      {/* Asteria 1 - Full width with rocket collage */}
-      {asteria && (
-        <section className="relative py-20 px-6" style={{ backgroundColor: getColorHex(asteria.bgColor) }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <motion.div 
-                className="relative"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <img 
-                  src="/images/rocketcollage.png"
-                  alt="Asteria 1 Rocket Collage"
-                  className="w-full rounded-2xl shadow-xl object-cover"
-                />
-              </motion.div>
-              
-              <div className="space-y-6">
-                <motion.h2 
-                  className="text-6xl md:text-7xl font-black relative inline-block"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {asteria.title}
-                  <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-                    <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(asteria.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
-                  </svg>
-                </motion.h2>
-                
-                <motion.p 
-                  className="text-2xl font-bold"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  {asteria.subtitle}
-                </motion.p>
-                
-                <motion.p 
-                  className="text-xl italic opacity-80"
-                  style={{ color: getTextColor(asteria.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  {asteria.timeline}
-                </motion.p>
-                
-                {asteria.stats && (
-                  <motion.div 
-                    className="bg-white rounded-2xl p-6 shadow-lg space-y-3"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                  >
-                    <h3 className="text-3xl font-black" style={{ color: '#E84A3F' }}>
-                      Some Stats...
-                    </h3>
-                    
-                    <div className="space-y-2 text-lg">
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Altitude:</span> {asteria.stats.maxAltitude.ft}ft [or] {asteria.stats.maxAltitude.m}m</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Velocity:</span> {asteria.stats.maxVelocity.mph} mph [or] {asteria.stats.maxVelocity.mps} m/s</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Max G forces:</span> {asteria.stats.maxG} Gs</p>
-                      <p><span className="font-bold" style={{ color: '#C2185B' }}>Motor Used:</span> {asteria.stats.motor}</p>
-                    </div>
-                  </motion.div>
-                )}
-                
-                {asteria.certification && (
-                  <motion.div 
-                    className="bg-green-100 border-2 border-green-600 rounded-xl p-4 inline-block"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    <p className="font-bold text-green-800">🚀 {asteria.certification}</p>
-                  </motion.div>
-                )}
-                
-                {asteria.links?.video && (
-                  <motion.a 
-                    href={asteria.links.video}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white hover:scale-105 transition-transform"
-                    style={{ backgroundColor: '#E84A3F' }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                  >
-                    <Play className="w-5 h-5" />
-                    Watch Video
-                  </motion.a>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* LIGO - Full width with image */}
-      {ligo && (
-        <section className="relative py-20 px-6" style={{ backgroundColor: getColorHex(ligo.bgColor) }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <motion.h2 
-                  className="text-5xl md:text-6xl font-black relative inline-block"
-                  style={{ color: getTextColor(ligo.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {ligo.title}
-                  <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-                    <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(ligo.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
-                  </svg>
-                </motion.h2>
-                
-                <motion.p 
-                  className="text-xl font-bold"
-                  style={{ color: getTextColor(ligo.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  {ligo.subtitle}
-                </motion.p>
-                
-                <motion.p 
-                  className="text-lg opacity-90"
-                  style={{ color: getTextColor(ligo.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  {ligo.role} • {ligo.timeline}
-                </motion.p>
-                
-                <motion.p 
-                  className="text-lg leading-relaxed"
-                  style={{ color: getTextColor(ligo.bgColor) }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                >
-                  {ligo.description}
-                </motion.p>
-                
-                {ligo.achievement && (
-                  <motion.p 
-                    className="text-lg font-bold"
-                    style={{ color: getTextColor(ligo.bgColor) }}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  >
-                    {ligo.achievement}
-                  </motion.p>
-                )}
-                
-                <motion.div 
-                  className="flex flex-wrap gap-2"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
-                  {ligo.techStack.map((tech) => (
-                    <span 
-                      key={tech}
-                      className="px-4 py-2 rounded-full font-bold text-sm"
-                      style={{ 
-                        backgroundColor: '#C2185B',
-                        color: 'white'
-                      }}
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </motion.div>
-              </div>
-              
+            return (
               <motion.div
-                className="relative"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                key={project.id}
+                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                onClick={() => toggleExpand(project.id)}
+                animate={{
+                  backgroundColor: isExpanded ? bgColor : 'white',
+                  color: isExpanded ? textColor : '#1A1A1A'
+                }}
+                transition={{ duration: 0.3 }}
               >
-                <img 
-                  src="/images/ligo.jpeg"
-                  alt="LIGO"
-                  className="w-full rounded-3xl shadow-xl object-cover"
-                />
+                <AnimatePresence mode="wait">
+                  {!isExpanded ? (
+                    // Collapsed state - just title and subtitle
+                    <motion.div
+                      key="collapsed"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-6"
+                    >
+                      <h3 className="text-2xl font-black mb-2" style={{ color: '#E84A3F' }}>
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-700 font-bold">{project.subtitle}</p>
+                    </motion.div>
+                  ) : (
+                    // Expanded state - full details
+                    <motion.div
+                      key="expanded"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="p-6 space-y-4"
+                    >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-3xl font-black mb-2">
+                          {project.title}
+                        </h3>
+                        <p className="text-xl font-bold mb-2">{project.subtitle}</p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedId(null);
+                        }}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {(project.collaborator || project.role) && (
+                      <p className="text-base opacity-90">
+                        {project.collaborator || project.role} • {project.timeline}
+                      </p>
+                    )}
+
+                    {!project.collaborator && !project.role && (
+                      <p className="text-base italic opacity-80">
+                        {project.timeline}
+                      </p>
+                    )}
+
+                    <p className="text-base leading-relaxed">
+                      {project.description}
+                    </p>
+
+                    {project.impact && (
+                      <p className="text-base italic">
+                        {project.impact}
+                      </p>
+                    )}
+
+                    {project.achievement && (
+                      <p className="text-base font-bold">
+                        {project.achievement}
+                      </p>
+                    )}
+
+                    {/* Special handling for Asteria stats */}
+                    {project.id === 'asteria1' && project.stats && (
+                      <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 space-y-2">
+                        <h4 className="text-xl font-black">Some Stats...</h4>
+                        <div className="space-y-1 text-sm">
+                          <p><span className="font-bold">Max Altitude:</span> {project.stats.maxAltitude.ft}ft [or] {project.stats.maxAltitude.m}m</p>
+                          <p><span className="font-bold">Max Velocity:</span> {project.stats.maxVelocity.mph} mph [or] {project.stats.maxVelocity.mps} m/s</p>
+                          <p><span className="font-bold">Max G forces:</span> {project.stats.maxG} Gs</p>
+                          <p><span className="font-bold">Motor Used:</span> {project.stats.motor}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {project.certification && (
+                      <div className="bg-green-100 border-2 border-green-600 rounded-xl p-3 inline-block">
+                        <p className="font-bold text-green-800 text-sm">🚀 {project.certification}</p>
+                      </div>
+                    )}
+
+                    {/* Image */}
+                    {project.hasImage && project.imagePath && (
+                      <div className="relative">
+                        <img
+                          src={`/images/${project.imagePath}`}
+                          alt={project.title}
+                          className="w-full rounded-2xl shadow-lg object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Tech stack */}
+                    <div className="flex flex-wrap gap-2">
+                      {project.techStack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="px-3 py-1 rounded-full font-bold text-xs"
+                          style={{
+                            backgroundColor: project.bgColor === 'magenta' || project.bgColor === 'orange' 
+                              ? 'rgba(255,255,255,0.2)' 
+                              : '#C2185B',
+                            color: 'white'
+                          }}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Links */}
+                    <div className="flex gap-3 flex-wrap">
+                      {project.links?.github && (
+                        <a
+                          href={project.links.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-transform text-sm"
+                          style={{ 
+                            backgroundColor: project.bgColor === 'magenta' ? 'white' : '#E84A3F',
+                            color: project.bgColor === 'magenta' ? '#D81B60' : 'white'
+                          }}
+                        >
+                          <Github className="w-4 h-4" />
+                          View on GitHub
+                        </a>
+                      )}
+                      {project.links?.video && (
+                        <a
+                          href={project.links.video}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-transform text-sm"
+                          style={{ backgroundColor: '#E84A3F' }}
+                        >
+                          <Play className="w-4 h-4" />
+                          Watch Video
+                        </a>
+                      )}
+                    </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
-            </div>
-          </div>
-        </section>
-      )}
-    </>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 };
 

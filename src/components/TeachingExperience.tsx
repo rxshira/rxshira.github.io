@@ -6,7 +6,7 @@ const TeachingExperience = () => {
     {
       icon: GraduationCap,
       title: 'Principles of Functional Programming',
-      subtitle: 'Teaching Assistant for Functional Programming (SML)',
+      subtitle: 'Teaching Assistant',
       organization: 'CMU School of Computer Science (15-150)',
       timeline: 'May 2025 - August 2025, Janurary 2026 - Present',
       description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.',
@@ -24,7 +24,7 @@ const TeachingExperience = () => {
   ];
 
   return (
-    <section className="relative py-20 px-6" style={{ backgroundColor: '#D81B60' }}>
+    <section className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
       <div className="max-w-7xl mx-auto text-white">
         <motion.h2 
           className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
@@ -45,7 +45,7 @@ const TeachingExperience = () => {
             return (
               <motion.div 
                 key={i}
-                className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
+                className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

@@ -8,6 +8,7 @@ interface HeroProps {
 
 const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const clickDetectedRef = useRef(false);
 
   // Try to control Spotify iframe when play state changes from header button
   useEffect(() => {
@@ -39,19 +40,23 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
     }
   }, [isPlaying]);
 
-  // Also try to detect when user plays directly in iframe
+  // Detect when user clicks play directly in iframe
   useEffect(() => {
     if (!onPlayStateChange) return;
 
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    // Listen for messages from Spotify
     const handleMessage = (event: MessageEvent) => {
       if (event.origin === 'https://open.spotify.com') {
         try {
           const data = event.data;
           if (data && typeof data === 'object') {
             // Try to detect playback state changes from Spotify
-            if (data.type === 'play' || data.command === 'play') {
+            if (data.type === 'play' || data.command === 'play' || data.event === 'play') {
               onPlayStateChange(true);
-            } else if (data.type === 'pause' || data.command === 'pause') {
+            } else if (data.type === 'pause' || data.command === 'pause' || data.event === 'pause') {
               onPlayStateChange(false);
             }
           }
@@ -61,9 +66,32 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
       }
     };
 
+    // Detect clicks on the iframe container area
+    // When user clicks on/near the iframe, assume they're interacting with it
+    const container = iframe.parentElement?.parentElement;
+    const handleClick = (e: MouseEvent) => {
+      // Only trigger if clicking on the container (not already playing)
+      if (!isPlaying) {
+        // Small delay to let iframe handle the click first
+        setTimeout(() => {
+          // Assume they clicked play if not already playing
+          onPlayStateChange(true);
+        }, 300);
+      }
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onPlayStateChange]);
+    if (container) {
+      container.addEventListener('click', handleClick);
+    }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      if (container) {
+        container.removeEventListener('click', handleClick);
+      }
+    };
+  }, [onPlayStateChange, isPlaying]);
 
   return (
     <section 

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import CurrentFocus from './components/CurrentFocus';
-import Research from './components/Research';
 import Projects from './components/Projects';
 import TeachingExperience from './components/TeachingExperience';
 import Awards from './components/Awards';
@@ -13,14 +12,29 @@ import GrainTexture from './components/GrainTexture';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [currentSong, setCurrentSong] = useState<string>('rock revival');
 
   const toggleMusic = () => {
-    setIsPlaying(!isPlaying);
+    const newState = !isPlaying;
+    setIsPlaying(newState);
+    // When playing, show the indicator
+    if (newState) {
+      setShowMusicPlayer(true);
+    }
   };
 
   const closeMusicPlayer = () => {
-    setIsPlaying(false);
+    // Only hide the indicator, don't pause the music
+    setShowMusicPlayer(false);
+  };
+
+  const handlePlayStateChange = (playing: boolean) => {
+    setIsPlaying(playing);
+    // When playing starts, show the indicator
+    if (playing) {
+      setShowMusicPlayer(true);
+    }
   };
 
   return (
@@ -29,11 +43,9 @@ function App() {
       
       <Header isPlaying={isPlaying} onToggleMusic={toggleMusic} />
       
-      <Hero isPlaying={isPlaying} onPlayStateChange={setIsPlaying} />
+      <Hero isPlaying={isPlaying} onPlayStateChange={handlePlayStateChange} />
       
       <CurrentFocus />
-      
-      <Research />
       
       <Projects />
       
@@ -46,7 +58,7 @@ function App() {
       <Footer />
       
       <MusicPlayer 
-        isPlaying={isPlaying} 
+        isPlaying={isPlaying && showMusicPlayer} 
         onToggle={toggleMusic}
         currentSong={currentSong}
         onClose={closeMusicPlayer}

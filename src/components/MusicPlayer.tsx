@@ -12,6 +12,7 @@ interface MusicPlayerProps {
 const MusicPlayer = ({ isPlaying, onToggle, currentSong, onClose }: MusicPlayerProps) => {
   const [showSong, setShowSong] = useState(false);
 
+  // Only show if isPlaying is true (which now includes the showMusicPlayer state)
   if (!isPlaying) return null;
 
   return (

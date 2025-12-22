@@ -46,7 +46,7 @@ const Research = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I'm formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.
+              My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I'm formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic.
             </motion.p>
             
             <motion.div 
