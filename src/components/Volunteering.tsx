@@ -4,13 +4,13 @@ import { Heart } from 'lucide-react';
 
 const Volunteering = () => {
   return (
-    <section id="volunteering" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
+    <section id="volunteering" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
       <div className="max-w-7xl mx-auto">
         <motion.h2 
           className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
           style={{ 
-            color: '#C2185B',
-            textShadow: '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)'
+            color: 'white',
+            textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)'
           }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -19,7 +19,7 @@ const Volunteering = () => {
         >
           Volunteering
           <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-            <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+            <path d="M0,10 Q100,0 200,10 T400,10" stroke="white" strokeWidth="6" fill="none" strokeLinecap="round"/>
           </svg>
         </motion.h2>
         
