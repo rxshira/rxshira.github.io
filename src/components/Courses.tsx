@@ -10,7 +10,7 @@ interface CoursesProps {
 }
 
 const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: CoursesProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {
@@ -93,8 +93,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   key={course.code}
                   className="px-4 py-2 rounded-full font-bold text-sm inline-block"
                   style={{
-                    backgroundColor: '#C2185B',
-                    boxShadow: '0 0 15px rgba(194, 24, 91, 0.6), 0 0 30px rgba(194, 24, 91, 0.4)'
+                    backgroundColor: '#C2185B'
                   }}
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}

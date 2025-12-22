@@ -93,7 +93,7 @@ export const projects: Project[] = [
     bgColor: 'cream',
     textColor: 'black',
     hasImage: true,
-    imagePath: 'ligo.jpeg',
+    imagePath: 'ligo.JPG',
     role: 'Research Intern',
     achievement: 'Improved optical efficiency from ~30% to ~90% in 40m prototype'
   },

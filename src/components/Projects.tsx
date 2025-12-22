@@ -11,7 +11,7 @@ interface ProjectsProps {
 
 const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: ProjectsProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  const [isSectionExpanded, setIsSectionExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {

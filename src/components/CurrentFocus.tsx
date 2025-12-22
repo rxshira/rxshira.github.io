@@ -30,7 +30,7 @@ interface CurrentFocusProps {
 }
 
 const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: CurrentFocusProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {

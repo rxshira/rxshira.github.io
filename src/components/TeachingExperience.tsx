@@ -9,7 +9,7 @@ interface TeachingExperienceProps {
 }
 
 const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: TeachingExperienceProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {

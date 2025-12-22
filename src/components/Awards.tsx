@@ -10,7 +10,7 @@ interface AwardsProps {
 }
 
 const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: AwardsProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {

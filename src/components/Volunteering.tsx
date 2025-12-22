@@ -11,7 +11,7 @@ interface VolunteeringProps {
 
 const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: VolunteeringProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  const [isSectionExpanded, setIsSectionExpanded] = useState(true);
   
   useEffect(() => {
     if (externalExpanded !== undefined) {
@@ -95,7 +95,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
             return (
               <motion.div
                 key={vol.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300"
+                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300 relative"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2)';
                 }}
@@ -109,6 +109,16 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                 onClick={() => toggleExpand(vol.id)}
                 style={{ alignSelf: 'start' }}
               >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleExpand(vol.id);
+                  }}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
+                  style={{ color: '#E84A3F' }}
+                >
+                  {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                </button>
                 <AnimatePresence mode="wait">
                   {!isExpanded ? (
                     // Collapsed state
