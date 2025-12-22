@@ -24,10 +24,14 @@ const TeachingExperience = () => {
   ];
 
   return (
-    <section className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
-      <div className="max-w-7xl mx-auto text-white">
+    <section id="teaching" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
+      <div className="max-w-7xl mx-auto">
         <motion.h2 
           className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
+          style={{ 
+            color: 'white',
+            textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)'
+          }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -39,13 +43,13 @@ const TeachingExperience = () => {
           </svg>
         </motion.h2>
         
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {experiences.map((exp, i) => {
             const Icon = exp.icon;
             return (
               <motion.div 
                 key={i}
-                className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
+                className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -59,13 +63,13 @@ const TeachingExperience = () => {
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-black mb-1">{exp.title}</h3>
-                    <p className="text-xl font-bold mb-2 opacity-90">{exp.subtitle}</p>
-                    <p className="text-lg opacity-80">{exp.organization}</p>
-                    <p className="text-sm opacity-70 italic mt-1">{exp.timeline}</p>
+                    <h3 className="text-3xl font-black mb-1" style={{ color: '#E84A3F' }}>{exp.title}</h3>
+                    <p className="text-xl font-bold mb-2" style={{ color: '#C2185B' }}>{exp.subtitle}</p>
+                    <p className="text-lg text-gray-700">{exp.organization}</p>
+                    <p className="text-sm opacity-70 italic text-gray-600 mt-1">{exp.timeline}</p>
                   </div>
                 </div>
-                <p className="text-white/90 leading-relaxed">{exp.description}</p>
+                <p className="text-gray-700 leading-relaxed">{exp.description}</p>
               </motion.div>
             );
           })}

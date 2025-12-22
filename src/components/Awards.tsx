@@ -4,11 +4,14 @@ import { Trophy } from 'lucide-react';
 
 const Awards = () => {
   return (
-    <section className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
+    <section id="awards" className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
       <div className="max-w-7xl mx-auto">
         <motion.h2 
           className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
-          style={{ color: '#FF8C42' }}
+          style={{ 
+            color: '#FF8C42',
+            textShadow: '0 0 20px rgba(255, 140, 66, 0.5), 0 0 40px rgba(255, 140, 66, 0.3)'
+          }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
