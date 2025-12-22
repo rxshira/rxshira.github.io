@@ -3,9 +3,19 @@ import { useState } from 'react';
 import { Github, Play, X } from 'lucide-react';
 import { projects } from '../data/projects';
 
-const Projects = () => {
+interface ProjectsProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+const Projects = ({ onExpandedChange }: ProjectsProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  
+  const handleSectionToggle = () => {
+    const newExpanded = !isSectionExpanded;
+    setIsSectionExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
+  };
 
   const getColorHex = (color: string) => {
     switch (color) {
@@ -36,19 +46,25 @@ const Projects = () => {
       <div className="max-w-7xl mx-auto">
         <div 
           className="cursor-pointer mb-12"
-          onClick={() => setIsSectionExpanded(!isSectionExpanded)}
+          onClick={handleSectionToggle}
         >
           <motion.h2 
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
             style={{ 
               color: '#FFD93D',
-              textShadow: '0 0 0px rgba(255, 217, 61, 0)'
+              textShadow: isSectionExpanded ? '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)' : '0 0 0px rgba(255, 217, 61, 0)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.textShadow = '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)';
+              if (!isSectionExpanded) {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.textShadow = '0 0 0px rgba(255, 217, 61, 0)';
+              if (!isSectionExpanded) {
+                e.currentTarget.style.textShadow = '0 0 0px rgba(255, 217, 61, 0)';
+              } else {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)';
+              }
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -249,12 +265,6 @@ const Projects = () => {
                             backgroundColor: project.bgColor === 'magenta' ? 'white' : '#E84A3F',
                             color: project.bgColor === 'magenta' ? '#D81B60' : 'white'
                           }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.boxShadow = '0 0 15px rgba(232, 74, 63, 0.6), 0 0 30px rgba(232, 74, 63, 0.4)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.boxShadow = '';
-                          }}
                         >
                           <Github className="w-4 h-4" />
                           View on GitHub
@@ -268,12 +278,6 @@ const Projects = () => {
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
                           style={{ backgroundColor: '#E84A3F' }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.boxShadow = '0 0 15px rgba(232, 74, 63, 0.6), 0 0 30px rgba(232, 74, 63, 0.4)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.boxShadow = '';
-                          }}
                         >
                           <Play className="w-4 h-4" />
                           Watch Video

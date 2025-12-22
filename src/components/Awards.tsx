@@ -3,27 +3,43 @@ import { useState } from 'react';
 import { awards } from '../data/awards';
 import { Trophy } from 'lucide-react';
 
-const Awards = () => {
+interface AwardsProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+const Awards = ({ onExpandedChange }: AwardsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  const handleToggle = () => {
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
+  };
 
   return (
     <section id="awards" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
       <div className="max-w-7xl mx-auto">
         <div 
           className="cursor-pointer mb-12"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={handleToggle}
         >
           <motion.h2
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
             style={{ 
               color: '#C2185B',
-              textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+              if (!isExpanded) {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+              if (!isExpanded) {
+                e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+              } else {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+              }
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -50,13 +66,7 @@ const Awards = () => {
           {awards.map((award, i) => (
         <motion.div
               key={i}
-              className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2), 0 10px 30px rgba(0, 0, 0, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '';
-              }}
+              className="bg-white rounded-3xl p-6 shadow-lg transition-all duration-300"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

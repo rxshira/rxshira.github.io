@@ -2,8 +2,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { GraduationCap, BookOpen } from 'lucide-react';
 
-const TeachingExperience = () => {
+interface TeachingExperienceProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+const TeachingExperience = ({ onExpandedChange }: TeachingExperienceProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  const handleToggle = () => {
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
+  };
   
   const experiences = [
     {
@@ -31,19 +41,25 @@ const TeachingExperience = () => {
       <div className="max-w-7xl mx-auto">
         <div 
           className="cursor-pointer mb-12"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={handleToggle}
         >
           <motion.h2 
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
             style={{ 
               color: 'white',
-              textShadow: '0 0 0px rgba(255, 255, 255, 0)'
+              textShadow: isExpanded ? '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)' : '0 0 0px rgba(255, 255, 255, 0)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              if (!isExpanded) {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.textShadow = '0 0 0px rgba(255, 255, 255, 0)';
+              if (!isExpanded) {
+                e.currentTarget.style.textShadow = '0 0 0px rgba(255, 255, 255, 0)';
+              } else {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              }
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -72,13 +88,7 @@ const TeachingExperience = () => {
             return (
               <motion.div 
                 key={i}
-                className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 cursor-pointer"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2), 0 10px 30px rgba(0, 0, 0, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '';
-                }}
+                className="bg-white rounded-3xl p-8 shadow-lg transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

@@ -3,9 +3,19 @@ import { useState } from 'react';
 import { Heart, X, ExternalLink } from 'lucide-react';
 import { volunteering } from '../data/volunteering';
 
-const Volunteering = () => {
+interface VolunteeringProps {
+  onExpandedChange?: (expanded: boolean) => void;
+}
+
+const Volunteering = ({ onExpandedChange }: VolunteeringProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  
+  const handleSectionToggle = () => {
+    const newExpanded = !isSectionExpanded;
+    setIsSectionExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -16,19 +26,25 @@ const Volunteering = () => {
       <div className="max-w-7xl mx-auto">
         <div 
           className="cursor-pointer mb-12"
-          onClick={() => setIsSectionExpanded(!isSectionExpanded)}
+          onClick={handleSectionToggle}
         >
           <motion.h2 
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
             style={{ 
               color: 'white',
-              textShadow: '0 0 0px rgba(255, 255, 255, 0)'
+              textShadow: isSectionExpanded ? '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)' : '0 0 0px rgba(255, 255, 255, 0)'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              if (!isSectionExpanded) {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.textShadow = '0 0 0px rgba(255, 255, 255, 0)';
+              if (!isSectionExpanded) {
+                e.currentTarget.style.textShadow = '0 0 0px rgba(255, 255, 255, 0)';
+              } else {
+                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)';
+              }
             }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -147,12 +163,6 @@ const Volunteering = () => {
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.boxShadow = '0 0 15px rgba(232, 74, 63, 0.6), 0 0 30px rgba(232, 74, 63, 0.4)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.boxShadow = '';
-                          }}
                           style={{ backgroundColor: '#E84A3F' }}
                         >
                           <ExternalLink className="w-4 h-4" />

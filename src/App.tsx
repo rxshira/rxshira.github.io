@@ -15,6 +15,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [currentSong, setCurrentSong] = useState<string>('rock revival');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleMusic = () => {
     const newState = !isPlaying;
@@ -42,21 +43,51 @@ function App() {
     <div className="min-h-screen bg-cream text-gray-900 transition-colors duration-300 relative overflow-x-hidden">
       <GrainTexture />
       
-      <Header isPlaying={isPlaying} onToggleMusic={toggleMusic} />
+      <Header isPlaying={isPlaying} onToggleMusic={toggleMusic} expandedSections={expandedSections} />
       
       <Hero isPlaying={isPlaying} onPlayStateChange={handlePlayStateChange} />
       
-      <CurrentFocus />
+      <CurrentFocus onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('focus');
+        else newSet.delete('focus');
+        setExpandedSections(newSet);
+      }} />
       
-      <Projects />
+      <Projects onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('projects');
+        else newSet.delete('projects');
+        setExpandedSections(newSet);
+      }} />
       
-      <TeachingExperience />
+      <TeachingExperience onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('teaching');
+        else newSet.delete('teaching');
+        setExpandedSections(newSet);
+      }} />
       
-      <Courses />
+      <Courses onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('courses');
+        else newSet.delete('courses');
+        setExpandedSections(newSet);
+      }} />
       
-      <Awards />
+      <Awards onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('awards');
+        else newSet.delete('awards');
+        setExpandedSections(newSet);
+      }} />
       
-      <Volunteering />
+      <Volunteering onExpandedChange={(expanded) => {
+        const newSet = new Set(expandedSections);
+        if (expanded) newSet.add('volunteering');
+        else newSet.delete('volunteering');
+        setExpandedSections(newSet);
+      }} />
       
       <Footer />
       
