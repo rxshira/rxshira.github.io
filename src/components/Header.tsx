@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Play, Pause, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,16 +9,6 @@ interface HeaderProps {
 
 const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -40,12 +30,7 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
   ];
 
   return (
-    <header 
-      className="fixed top-0 w-full z-50 backdrop-blur-md transition-colors duration-300"
-      style={{ 
-        backgroundColor: isScrolled ? '#FFD93D' : 'rgba(255, 255, 255, 0.8)'
-      }}
-    >
+    <header className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/80">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <h1 
           className="text-2xl md:text-3xl font-black cursor-pointer hover:opacity-80 transition-opacity"
