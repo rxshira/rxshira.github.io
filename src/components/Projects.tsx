@@ -65,7 +65,6 @@ const Projects = () => {
                   backgroundColor: isExpanded ? bgColor : 'white',
                   color: isExpanded ? textColor : '#1A1A1A'
                 }}
-                transition={{ duration: 0.3 }}
               >
                 <AnimatePresence mode="wait">
                   {!isExpanded ? (
