@@ -13,8 +13,15 @@ import GrainTexture from './components/GrainTexture';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentSong, setCurrentSong] = useState<string>('rock revival');
 
-  const toggleMusic = () => setIsPlaying(!isPlaying);
+  const toggleMusic = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const closeMusicPlayer = () => {
+    setIsPlaying(false);
+  };
 
   return (
     <div className="min-h-screen bg-cream text-gray-900 transition-colors duration-300 relative overflow-x-hidden">
@@ -22,7 +29,7 @@ function App() {
       
       <Header isPlaying={isPlaying} onToggleMusic={toggleMusic} />
       
-      <Hero />
+      <Hero isPlaying={isPlaying} onPlayStateChange={setIsPlaying} />
       
       <CurrentFocus />
       
@@ -38,7 +45,12 @@ function App() {
       
       <Footer />
       
-      <MusicPlayer isPlaying={isPlaying} onToggle={toggleMusic} />
+      <MusicPlayer 
+        isPlaying={isPlaying} 
+        onToggle={toggleMusic}
+        currentSong={currentSong}
+        onClose={closeMusicPlayer}
+      />
     </div>
   );
 }

@@ -1,6 +1,70 @@
 import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
-const Hero = () => {
+interface HeroProps {
+  onPlayStateChange?: (isPlaying: boolean) => void;
+  isPlaying?: boolean;
+}
+
+const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Try to control Spotify iframe when play state changes from header button
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    // When isPlaying changes (from header button), try to control the iframe
+    if (isPlaying) {
+      // Try to send play command to iframe
+      // Note: This may not work due to Spotify's security, but we try
+      try {
+        iframe.contentWindow?.postMessage(
+          { command: 'play' },
+          'https://open.spotify.com'
+        );
+      } catch (e) {
+        // Silently fail if postMessage doesn't work
+      }
+    } else {
+      // Try to send pause command
+      try {
+        iframe.contentWindow?.postMessage(
+          { command: 'pause' },
+          'https://open.spotify.com'
+        );
+      } catch (e) {
+        // Silently fail
+      }
+    }
+  }, [isPlaying]);
+
+  // Also try to detect when user plays directly in iframe
+  useEffect(() => {
+    if (!onPlayStateChange) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin === 'https://open.spotify.com') {
+        try {
+          const data = event.data;
+          if (data && typeof data === 'object') {
+            // Try to detect playback state changes from Spotify
+            if (data.type === 'play' || data.command === 'play') {
+              onPlayStateChange(true);
+            } else if (data.type === 'pause' || data.command === 'pause') {
+              onPlayStateChange(false);
+            }
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onPlayStateChange]);
+
   return (
     <section 
       id="hero" 
@@ -84,6 +148,8 @@ const Hero = () => {
             >
               <div className="rounded-2xl overflow-hidden">
                 <iframe
+                  ref={iframeRef}
+                  id="spotify-embed"
                   style={{ borderRadius: '12px' }}
                   src="https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator"
                   width="100%"

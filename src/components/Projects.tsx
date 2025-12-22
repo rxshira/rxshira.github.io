@@ -311,90 +311,106 @@ const Projects = () => {
         </section>
       )}
 
-      {/* LIGO - Full width */}
+      {/* LIGO - Full width with image */}
       {ligo && (
         <section className="relative py-20 px-6" style={{ backgroundColor: getColorHex(ligo.bgColor) }}>
           <div className="max-w-7xl mx-auto">
-            <div className="max-w-4xl mx-auto">
-              <motion.h2 
-                className="text-5xl md:text-6xl font-black relative inline-block mb-6"
-                style={{ color: getTextColor(ligo.bgColor) }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                {ligo.title}
-                <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-                  <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(ligo.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
-                </svg>
-              </motion.h2>
-              
-              <motion.p 
-                className="text-xl font-bold mb-4"
-                style={{ color: getTextColor(ligo.bgColor) }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                {ligo.subtitle}
-              </motion.p>
-              
-              <motion.p 
-                className="text-lg opacity-90 mb-6"
-                style={{ color: getTextColor(ligo.bgColor) }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                {ligo.role} • {ligo.timeline}
-              </motion.p>
-              
-              <motion.p 
-                className="text-lg leading-relaxed mb-6"
-                style={{ color: getTextColor(ligo.bgColor) }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                {ligo.description}
-              </motion.p>
-              
-              {ligo.achievement && (
-                <motion.p 
-                  className="text-lg font-bold mb-6"
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <motion.h2 
+                  className="text-5xl md:text-6xl font-black relative inline-block"
                   style={{ color: getTextColor(ligo.bgColor) }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
+                  transition={{ duration: 0.6 }}
                 >
-                  {ligo.achievement}
+                  {ligo.title}
+                  <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+                    <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTextColor(ligo.bgColor)} strokeWidth="6" fill="none" strokeLinecap="round"/>
+                  </svg>
+                </motion.h2>
+                
+                <motion.p 
+                  className="text-xl font-bold"
+                  style={{ color: getTextColor(ligo.bgColor) }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                >
+                  {ligo.subtitle}
                 </motion.p>
-              )}
-              
-              <motion.div 
-                className="flex flex-wrap gap-2"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                {ligo.techStack.map((tech) => (
-                  <span 
-                    key={tech}
-                    className="px-4 py-2 rounded-full font-bold text-sm"
-                    style={{ 
-                      backgroundColor: '#C2185B',
-                      color: 'white'
-                    }}
+                
+                <motion.p 
+                  className="text-lg opacity-90"
+                  style={{ color: getTextColor(ligo.bgColor) }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  {ligo.role} • {ligo.timeline}
+                </motion.p>
+                
+                <motion.p 
+                  className="text-lg leading-relaxed"
+                  style={{ color: getTextColor(ligo.bgColor) }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  {ligo.description}
+                </motion.p>
+                
+                {ligo.achievement && (
+                  <motion.p 
+                    className="text-lg font-bold"
+                    style={{ color: getTextColor(ligo.bgColor) }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
                   >
-                    {tech}
-                  </span>
-                ))}
+                    {ligo.achievement}
+                  </motion.p>
+                )}
+                
+                <motion.div 
+                  className="flex flex-wrap gap-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                >
+                  {ligo.techStack.map((tech) => (
+                    <span 
+                      key={tech}
+                      className="px-4 py-2 rounded-full font-bold text-sm"
+                      style={{ 
+                        backgroundColor: '#C2185B',
+                        color: 'white'
+                      }}
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </motion.div>
+              </div>
+              
+              <motion.div
+                className="relative"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <img 
+                  src="/images/ligo.jpeg"
+                  alt="LIGO"
+                  className="w-full rounded-3xl shadow-xl object-cover"
+                />
               </motion.div>
             </div>
           </div>

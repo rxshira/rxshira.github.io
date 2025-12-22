@@ -1,23 +1,10 @@
 import { motion } from 'framer-motion';
-import BlobFrame from './BlobFrame';
 
 const Research = () => {
   return (
     <section className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
       <div className="max-w-7xl mx-auto text-white">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <BlobFrame className="w-full max-w-md mx-auto">
-            <img 
-              src="/images/avl-trees.jpg"
-              alt="Abstract tree structure"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to placeholder if image doesn't exist
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=600&h=600&fit=crop';
-              }}
-            />
-          </BlobFrame>
-          
+        <div className="max-w-4xl mx-auto">
           <div className="space-y-6">
             <motion.h2 
               className="text-5xl md:text-6xl font-black relative inline-block"
