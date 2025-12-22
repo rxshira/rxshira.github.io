@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import CurrentFocus from './components/CurrentFocus';
@@ -16,6 +16,33 @@ function App() {
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [currentSong, setCurrentSong] = useState<string>('rock revival');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [activeSection, setActiveSection] = useState<string>('hero');
+
+  // Track scroll position to determine active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['hero', 'focus', 'projects', 'teaching', 'courses', 'awards', 'volunteering', 'contact'];
+      const scrollPosition = window.scrollY + 200; // Offset for header
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = document.getElementById(sections[i]);
+        if (section && section.offsetTop <= scrollPosition) {
+          setActiveSection(sections[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleExpandSection = (sectionId: string) => {
+    const newSet = new Set(expandedSections);
+    newSet.add(sectionId);
+    setExpandedSections(newSet);
+  };
 
   const toggleMusic = () => {
     const newState = !isPlaying;
@@ -43,51 +70,81 @@ function App() {
     <div className="min-h-screen bg-cream text-gray-900 transition-colors duration-300 relative overflow-x-hidden">
       <GrainTexture />
       
-      <Header isPlaying={isPlaying} onToggleMusic={toggleMusic} expandedSections={expandedSections} />
+      <Header 
+        isPlaying={isPlaying} 
+        onToggleMusic={toggleMusic} 
+        expandedSections={expandedSections}
+        activeSection={activeSection}
+        onExpandSection={handleExpandSection}
+      />
       
       <Hero isPlaying={isPlaying} onPlayStateChange={handlePlayStateChange} />
       
-      <CurrentFocus onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('focus');
-        else newSet.delete('focus');
-        setExpandedSections(newSet);
-      }} />
+      <CurrentFocus 
+        isExpanded={expandedSections.has('focus')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('focus');
+          else newSet.delete('focus');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('focus')}
+      />
       
-      <Projects onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('projects');
-        else newSet.delete('projects');
-        setExpandedSections(newSet);
-      }} />
+      <Projects 
+        isExpanded={expandedSections.has('projects')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('projects');
+          else newSet.delete('projects');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('projects')}
+      />
       
-      <TeachingExperience onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('teaching');
-        else newSet.delete('teaching');
-        setExpandedSections(newSet);
-      }} />
+      <TeachingExperience 
+        isExpanded={expandedSections.has('teaching')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('teaching');
+          else newSet.delete('teaching');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('teaching')}
+      />
       
-      <Courses onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('courses');
-        else newSet.delete('courses');
-        setExpandedSections(newSet);
-      }} />
+      <Courses 
+        isExpanded={expandedSections.has('courses')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('courses');
+          else newSet.delete('courses');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('courses')}
+      />
       
-      <Awards onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('awards');
-        else newSet.delete('awards');
-        setExpandedSections(newSet);
-      }} />
+      <Awards 
+        isExpanded={expandedSections.has('awards')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('awards');
+          else newSet.delete('awards');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('awards')}
+      />
       
-      <Volunteering onExpandedChange={(expanded) => {
-        const newSet = new Set(expandedSections);
-        if (expanded) newSet.add('volunteering');
-        else newSet.delete('volunteering');
-        setExpandedSections(newSet);
-      }} />
+      <Volunteering 
+        isExpanded={expandedSections.has('volunteering')}
+        onExpandedChange={(expanded) => {
+          const newSet = new Set(expandedSections);
+          if (expanded) newSet.add('volunteering');
+          else newSet.delete('volunteering');
+          setExpandedSections(newSet);
+        }}
+        onExpandRequest={() => handleExpandSection('volunteering')}
+      />
       
       <Footer />
       

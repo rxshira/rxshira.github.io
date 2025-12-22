@@ -1,14 +1,22 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { awards } from '../data/awards';
-import { Trophy } from 'lucide-react';
+import { Trophy, Plus, Minus } from 'lucide-react';
 
 interface AwardsProps {
   onExpandedChange?: (expanded: boolean) => void;
+  isExpanded?: boolean;
+  onExpandRequest?: () => void;
 }
 
-const Awards = ({ onExpandedChange }: AwardsProps) => {
+const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: AwardsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  useEffect(() => {
+    if (externalExpanded !== undefined) {
+      setIsExpanded(externalExpanded);
+    }
+  }, [externalExpanded]);
   
   const handleToggle = () => {
     const newExpanded = !isExpanded;
@@ -20,11 +28,18 @@ const Awards = ({ onExpandedChange }: AwardsProps) => {
     <section id="awards" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
       <div className="max-w-7xl mx-auto">
         <div 
-          className="cursor-pointer mb-12"
-          onClick={handleToggle}
+          className="mb-12 flex items-center justify-center gap-4"
         >
+          <button
+            onClick={handleToggle}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            style={{ color: '#C2185B' }}
+          >
+            {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+          </button>
           <motion.h2
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
+            onClick={handleToggle}
             style={{ 
               color: '#C2185B',
               textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'

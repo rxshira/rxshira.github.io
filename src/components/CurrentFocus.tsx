@@ -1,19 +1,19 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { GraduationCap, BookOpen, Rocket } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { GraduationCap, BookOpen, Rocket, Plus, Minus } from 'lucide-react';
 
 const activities = [
-  {
-    icon: GraduationCap,
-    title: '15-150 - Principles of Functional Programming',
-    description: 'TA-ing Functional Programming @ CMU',
-    color: 'orange'
-  },
   {
     icon: BookOpen,
     title: '98-317 - Hype for Types',
     description: 'Instructing type theory course @ CMU',
     color: 'red-orange'
+  },
+  {
+    icon: GraduationCap,
+    title: '15-150 - Principles of Functional Programming',
+    description: 'TA-ing Functional Programming @ CMU',
+    color: 'orange'
   },
   {
     icon: Rocket,
@@ -25,10 +25,18 @@ const activities = [
 
 interface CurrentFocusProps {
   onExpandedChange?: (expanded: boolean) => void;
+  isExpanded?: boolean;
+  onExpandRequest?: () => void;
 }
 
-const CurrentFocus = ({ onExpandedChange }: CurrentFocusProps) => {
+const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: CurrentFocusProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  useEffect(() => {
+    if (externalExpanded !== undefined) {
+      setIsExpanded(externalExpanded);
+    }
+  }, [externalExpanded]);
   
   const handleToggle = () => {
     const newExpanded = !isExpanded;
@@ -40,11 +48,18 @@ const CurrentFocus = ({ onExpandedChange }: CurrentFocusProps) => {
     <section id="focus" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
       <div className="max-w-7xl mx-auto">
         <div 
-          className="cursor-pointer mb-12"
-          onClick={handleToggle}
+          className="mb-12 flex items-center justify-center gap-4"
         >
+          <button
+            onClick={handleToggle}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            style={{ color: '#C2185B' }}
+          >
+            {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+          </button>
           <motion.h2 
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
+            onClick={handleToggle}
             style={{ 
               color: '#C2185B',
               textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'

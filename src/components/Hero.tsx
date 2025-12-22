@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
 interface HeroProps {
@@ -10,6 +10,7 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const clickDetectedRef = useRef(false);
   const [backgroundPosition, setBackgroundPosition] = useState('right center');
+  const [showMoreAboutMe, setShowMoreAboutMe] = useState(false);
 
   // Set background position based on screen size
   useEffect(() => {
@@ -142,12 +143,10 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
-                  Hi, I'm
-                  <br />
                   <span className="relative inline-block">
-                    Shira!
-                    <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 300 15">
-                      <path d="M0,10 Q75,0 150,10 T300,10" stroke="#C2185B" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                    Hi, I'm Shira!
+                    <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+                      <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="8" fill="none" strokeLinecap="round"/>
                     </svg>
                   </span>
                 </motion.h2>
@@ -178,8 +177,36 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                 >
-                  I also really like music. Here's my current playlist. Click play to listen to it as you learn more about me!
+                  I also really like music. Here's my current playlist! Click play to listen to it. Scroll to see what I do.{' '}
+                  <button
+                    onClick={() => setShowMoreAboutMe(!showMoreAboutMe)}
+                    className="underline cursor-pointer hover:opacity-70 transition-opacity"
+                    style={{ color: '#C2185B' }}
+                  >
+                    {showMoreAboutMe ? 'Less about me' : 'More about me'}
+                  </button>
                 </motion.p>
+                
+                <AnimatePresence>
+                  {showMoreAboutMe && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <motion.p 
+                        className="text-lg leading-relaxed mt-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        TEMP FIX
+                      </motion.p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
             

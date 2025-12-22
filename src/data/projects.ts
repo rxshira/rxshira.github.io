@@ -85,8 +85,8 @@ export const projects: Project[] = [
   },
   {
     id: 'ligo',
-    title: 'LIGO',
-    subtitle: '@ Caltech',
+    title: 'Laser Mode Matching Simulation',
+    subtitle: 'LIGO @ Caltech',
     timeline: 'August 2023 - April 2024',
     description: 'Developed Python simulation tool for the Laser Interferometer Gravitational-Wave Observatory (Nobel Prize in Physics, 2017) to optimize mode matching—maximizing laser power transfer. Achievement: Improved optical efficiency from ~30% to ~90% in 40m prototype.',
     techStack: ['Python', 'NumPy', 'Matplotlib'],

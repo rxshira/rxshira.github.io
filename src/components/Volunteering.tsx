@@ -1,20 +1,34 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { Heart, X, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Heart, X, ExternalLink, Plus, Minus } from 'lucide-react';
 import { volunteering } from '../data/volunteering';
 
 interface VolunteeringProps {
   onExpandedChange?: (expanded: boolean) => void;
+  isExpanded?: boolean;
+  onExpandRequest?: () => void;
 }
 
-const Volunteering = ({ onExpandedChange }: VolunteeringProps) => {
+const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: VolunteeringProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  
+  useEffect(() => {
+    if (externalExpanded !== undefined) {
+      setIsSectionExpanded(externalExpanded);
+      if (!externalExpanded) {
+        setExpandedId(null); // Close all items when section closes
+      }
+    }
+  }, [externalExpanded]);
   
   const handleSectionToggle = () => {
     const newExpanded = !isSectionExpanded;
     setIsSectionExpanded(newExpanded);
     onExpandedChange?.(newExpanded);
+    if (!newExpanded) {
+      setExpandedId(null); // Close all items when section closes
+    }
   };
 
   const toggleExpand = (id: string) => {
@@ -25,11 +39,18 @@ const Volunteering = ({ onExpandedChange }: VolunteeringProps) => {
     <section id="volunteering" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
       <div className="max-w-7xl mx-auto">
         <div 
-          className="cursor-pointer mb-12"
-          onClick={handleSectionToggle}
+          className="mb-12 flex items-center justify-center gap-4"
         >
+          <button
+            onClick={handleSectionToggle}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            style={{ color: 'white' }}
+          >
+            {isSectionExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+          </button>
           <motion.h2 
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
+            onClick={handleSectionToggle}
             style={{ 
               color: 'white',
               textShadow: isSectionExpanded ? '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)' : '0 0 0px rgba(255, 255, 255, 0)'
@@ -132,9 +153,10 @@ const Volunteering = ({ onExpandedChange }: VolunteeringProps) => {
                             e.stopPropagation();
                             setExpandedId(null);
                           }}
-                          className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                          className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
+                          style={{ color: '#E84A3F' }}
                         >
-                          <X className="w-5 h-5 text-gray-700" />
+                          <Minus className="w-5 h-5" />
                         </button>
                       </div>
 

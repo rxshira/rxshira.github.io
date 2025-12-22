@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Play, Pause, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -6,9 +6,11 @@ interface HeaderProps {
   isPlaying: boolean;
   onToggleMusic: () => void;
   expandedSections?: Set<string>;
+  activeSection?: string;
+  onExpandSection?: (sectionId: string) => void;
 }
 
-const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: HeaderProps) => {
+const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set(), activeSection, onExpandSection }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -16,6 +18,10 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: Head
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
       setMobileMenuOpen(false);
+      // Expand the section if it's not already expanded
+      if (onExpandSection && !expandedSections.has(id)) {
+        onExpandSection(id);
+      }
     }
   };
 
@@ -54,7 +60,7 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: Head
         
         <nav className="hidden md:flex items-center gap-4">
           {navLinks.map((link) => {
-            const isExpanded = expandedSections.has(link.id);
+            const isActive = activeSection === link.id;
             return (
               <a
                 key={link.id}
@@ -65,17 +71,17 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: Head
                 }}
                 className="font-bold transition-all duration-300 text-sm"
                 style={{ 
-                  color: isExpanded ? '#FF8C42' : '#C2185B',
-                  textShadow: isExpanded ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
+                  color: isActive ? '#FF8C42' : '#C2185B',
+                  textShadow: isActive ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
                 }}
                 onMouseEnter={(e) => {
-                  if (!isExpanded) {
+                  if (!isActive) {
                     e.currentTarget.style.color = '#FF8C42';
                     e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!isExpanded) {
+                  if (!isActive) {
                     e.currentTarget.style.color = '#C2185B';
                     e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
                   } else {
@@ -121,7 +127,7 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: Head
           >
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => {
-                const isExpanded = expandedSections.has(link.id);
+                const isActive = activeSection === link.id;
                 return (
                   <a
                     key={link.id}
@@ -132,17 +138,17 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set() }: Head
                     }}
                     className="text-lg font-bold transition-all duration-300"
                     style={{ 
-                      color: isExpanded ? '#FF8C42' : '#C2185B',
-                      textShadow: isExpanded ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
+                      color: isActive ? '#FF8C42' : '#C2185B',
+                      textShadow: isActive ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
                     }}
                     onMouseEnter={(e) => {
-                      if (!isExpanded) {
+                      if (!isActive) {
                         e.currentTarget.style.color = '#FF8C42';
                         e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!isExpanded) {
+                      if (!isActive) {
                         e.currentTarget.style.color = '#C2185B';
                         e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
                       } else {

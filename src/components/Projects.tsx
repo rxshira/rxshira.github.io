@@ -1,20 +1,34 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { Github, Play, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Github, Play, X, Plus, Minus } from 'lucide-react';
 import { projects } from '../data/projects';
 
 interface ProjectsProps {
   onExpandedChange?: (expanded: boolean) => void;
+  isExpanded?: boolean;
+  onExpandRequest?: () => void;
 }
 
-const Projects = ({ onExpandedChange }: ProjectsProps) => {
+const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: ProjectsProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+  
+  useEffect(() => {
+    if (externalExpanded !== undefined) {
+      setIsSectionExpanded(externalExpanded);
+      if (!externalExpanded) {
+        setExpandedId(null); // Close all projects when section closes
+      }
+    }
+  }, [externalExpanded]);
   
   const handleSectionToggle = () => {
     const newExpanded = !isSectionExpanded;
     setIsSectionExpanded(newExpanded);
     onExpandedChange?.(newExpanded);
+    if (!newExpanded) {
+      setExpandedId(null); // Close all projects when section closes
+    }
   };
 
   const getColorHex = (color: string) => {
@@ -45,11 +59,18 @@ const Projects = ({ onExpandedChange }: ProjectsProps) => {
     <section id="projects" className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
       <div className="max-w-7xl mx-auto">
         <div 
-          className="cursor-pointer mb-12"
-          onClick={handleSectionToggle}
+          className="mb-12 flex items-center justify-center gap-4"
         >
+          <button
+            onClick={handleSectionToggle}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            style={{ color: '#FFD93D' }}
+          >
+            {isSectionExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+          </button>
           <motion.h2 
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
+            onClick={handleSectionToggle}
             style={{ 
               color: '#FFD93D',
               textShadow: isSectionExpanded ? '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)' : '0 0 0px rgba(255, 217, 61, 0)'
@@ -96,7 +117,7 @@ const Projects = ({ onExpandedChange }: ProjectsProps) => {
         return (
               <motion.div
             key={project.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300"
+                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300 relative"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2)';
                 }}
@@ -110,6 +131,16 @@ const Projects = ({ onExpandedChange }: ProjectsProps) => {
                 onClick={() => toggleExpand(project.id)}
                 style={{ alignSelf: 'start' }}
               >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleExpand(project.id);
+                  }}
+                  className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
+                  style={{ color: '#E84A3F' }}
+                >
+                  {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                </button>
                 <AnimatePresence mode="wait">
                   {!isExpanded ? (
                     // Collapsed state - title, subtitle, and tech tags
@@ -169,9 +200,10 @@ const Projects = ({ onExpandedChange }: ProjectsProps) => {
                           e.stopPropagation();
                           setExpandedId(null);
                         }}
-                        className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                        className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
+                        style={{ color: '#E84A3F' }}
                       >
-                        <X className="w-5 h-5 text-gray-700" />
+                        <Minus className="w-5 h-5" />
                       </button>
                     </div>
 

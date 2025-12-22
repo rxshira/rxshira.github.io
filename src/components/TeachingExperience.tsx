@@ -1,13 +1,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import { GraduationCap, BookOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { GraduationCap, BookOpen, Plus, Minus } from 'lucide-react';
 
 interface TeachingExperienceProps {
   onExpandedChange?: (expanded: boolean) => void;
+  isExpanded?: boolean;
+  onExpandRequest?: () => void;
 }
 
-const TeachingExperience = ({ onExpandedChange }: TeachingExperienceProps) => {
+const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: TeachingExperienceProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  useEffect(() => {
+    if (externalExpanded !== undefined) {
+      setIsExpanded(externalExpanded);
+    }
+  }, [externalExpanded]);
   
   const handleToggle = () => {
     const newExpanded = !isExpanded;
@@ -40,11 +48,18 @@ const TeachingExperience = ({ onExpandedChange }: TeachingExperienceProps) => {
     <section id="teaching" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
       <div className="max-w-7xl mx-auto">
         <div 
-          className="cursor-pointer mb-12"
-          onClick={handleToggle}
+          className="mb-12 flex items-center justify-center gap-4"
         >
+          <button
+            onClick={handleToggle}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
+            style={{ color: 'white' }}
+          >
+            {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+          </button>
           <motion.h2 
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
+            onClick={handleToggle}
             style={{ 
               color: 'white',
               textShadow: isExpanded ? '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)' : '0 0 0px rgba(255, 255, 255, 0)'
