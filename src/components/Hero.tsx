@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface HeroProps {
   onPlayStateChange?: (isPlaying: boolean) => void;
@@ -9,6 +9,22 @@ interface HeroProps {
 const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const clickDetectedRef = useRef(false);
+  const [backgroundPosition, setBackgroundPosition] = useState('right center');
+
+  // Set background position based on screen size
+  useEffect(() => {
+    const updateBackgroundPosition = () => {
+      if (window.innerWidth < 768) {
+        setBackgroundPosition('right center');
+      } else {
+        setBackgroundPosition('center');
+      }
+    };
+
+    updateBackgroundPosition();
+    window.addEventListener('resize', updateBackgroundPosition);
+    return () => window.removeEventListener('resize', updateBackgroundPosition);
+  }, []);
 
   // Try to control Spotify iframe when play state changes from header button
   useEffect(() => {
@@ -100,7 +116,7 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
       style={{
         backgroundImage: 'url(/images/IMG-190.jpg)',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: backgroundPosition,
         backgroundRepeat: 'no-repeat'
       }}
     >

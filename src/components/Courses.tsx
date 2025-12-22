@@ -1,30 +1,52 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { courses } from '../data/courses';
 
 const Courses = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
   // Use courses in the order they appear in the array
   const orderedCourses = courses;
 
   return (
     <section id="courses" className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
       <div className="max-w-7xl mx-auto">
-        <motion.h2 
-          className="text-5xl md:text-6xl font-black mb-12 text-center relative inline-block"
-          style={{ 
-            color: '#C2185B',
-            textShadow: '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)'
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+        <div 
+          className="cursor-pointer mb-12"
+          onClick={() => setIsExpanded(!isExpanded)}
         >
-          Courses
-          <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-            <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
-          </svg>
-        </motion.h2>
+          <motion.h2 
+            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300"
+            style={{ 
+              color: '#C2185B',
+              textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            Courses
+            <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+            </svg>
+          </motion.h2>
+        </div>
         
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
         <motion.div 
           className="bg-white rounded-3xl p-8 shadow-xl"
           initial={{ opacity: 0, y: 30 }}
@@ -66,6 +88,9 @@ const Courses = () => {
             })}
           </div>
         </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

@@ -33,11 +33,22 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
     <header className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/80">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <h1 
-          className="text-2xl md:text-3xl font-black cursor-pointer hover:opacity-80 transition-opacity"
-          style={{ color: '#C2185B' }}
-            onClick={() => scrollToSection('hero')}
-          >
-            Shira Rubin
+          className="text-2xl md:text-3xl font-black cursor-pointer transition-all duration-300"
+          style={{ 
+            color: '#C2185B',
+            textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+          }}
+          onClick={() => scrollToSection('hero')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#FFD93D';
+            e.currentTarget.style.textShadow = '0 0 15px rgba(255, 217, 61, 0.6), 0 0 30px rgba(255, 217, 61, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#C2185B';
+            e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+          }}
+        >
+          Shira Rubin
         </h1>
         
         <nav className="hidden md:flex items-center gap-4">
@@ -49,15 +60,32 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
                 e.preventDefault();
                 scrollToSection(link.id);
               }}
-              className="font-bold hover:opacity-70 transition-opacity text-sm"
-              style={{ color: '#C2185B' }}
+              className="font-bold transition-all duration-300 text-sm"
+              style={{ 
+                color: '#C2185B',
+                textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#FFD93D';
+                e.currentTarget.style.textShadow = '0 0 15px rgba(255, 217, 61, 0.6), 0 0 30px rgba(255, 217, 61, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#C2185B';
+                e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+              }}
             >
               {link.label}
             </a>
           ))}
             <button
             onClick={onToggleMusic}
-            className="p-2 rounded-full hover:bg-gray-200 transition-colors ml-2"
+            className="p-2 rounded-full hover:bg-gray-200 transition-all duration-300 ml-2"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 217, 61, 0.6), 0 0 30px rgba(255, 217, 61, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '';
+            }}
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
@@ -89,8 +117,19 @@ const Header = ({ isPlaying, onToggleMusic }: HeaderProps) => {
                     e.preventDefault();
                     scrollToSection(link.id);
                   }}
-                  className="text-lg font-bold"
-                  style={{ color: '#C2185B' }}
+                  className="text-lg font-bold transition-all duration-300"
+                  style={{ 
+                    color: '#C2185B',
+                    textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#FFD93D';
+                    e.currentTarget.style.textShadow = '0 0 15px rgba(255, 217, 61, 0.6), 0 0 30px rgba(255, 217, 61, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#C2185B';
+                    e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+                  }}
                 >
                   {link.label}
                 </a>

@@ -29,15 +29,27 @@ const Footer = () => {
               <div className="flex gap-4 mt-6">
                 <a 
                   href="https://github.com/rxshira" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '';
+                  }}
                 >
                   <Github className="w-6 h-6" />
                 </a>
                 <a 
                   href="mailto:shirar@andrew.cmu.edu"
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '';
+                  }}
                 >
                   <Mail className="w-6 h-6" />
                 </a>
@@ -90,6 +102,8 @@ const Footer = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           © 2025 Shira Rubin. Built with React, TypeScript, and lots of type safety.
+          <br />
+          Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </motion.div>
       </div>
     </footer>
