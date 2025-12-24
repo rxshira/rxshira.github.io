@@ -335,7 +335,6 @@ const DesignTesting = () => {
         </div>
       )}
       
-      <div className="max-w-7xl mx-auto relative z-10">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12 flex items-center justify-center gap-4">
           <button
