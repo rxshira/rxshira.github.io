@@ -144,8 +144,198 @@ const DesignTesting = () => {
     });
   };
 
+  // Helper functions to get applied styles
+  const getBubbleStyle = () => {
+    const selected = selectedOptions['bubbles'];
+    if (!selected) return 'rounded-3xl';
+    const option = bubbleStyles.find(o => o.id === selected);
+    return option?.style || 'rounded-3xl';
+  };
+
+  const getTypography = () => {
+    const selected = selectedOptions['typography'];
+    if (!selected || selected === 'current') return 'Space Grotesk';
+    const option = typography.find(o => o.id === selected);
+    return option?.font || 'Space Grotesk';
+  };
+
+  const getSpacing = () => {
+    const selected = selectedOptions['spacing'];
+    if (!selected || selected === 'normal') return 'py-20';
+    const option = spacingOptions.find(o => o.id === selected);
+    return option?.value || 'py-20';
+  };
+
+  const getBorderStyle = () => {
+    const selected = selectedOptions['borders'];
+    if (!selected || selected === 'none') return 'border-0';
+    const option = borderStyles.find(o => o.id === selected);
+    return option?.style || 'border-0';
+  };
+
+  const getBackgroundColor = () => {
+    const selected = selectedOptions['colors'];
+    if (!selected || selected === 'current') return '#F5F5F0';
+    const option = colorSchemes.find(o => o.id === selected);
+    return option?.colors[3] || '#F5F5F0'; // Use last color as background
+  };
+
+  const getTitleColor = () => {
+    const selected = selectedOptions['colors'];
+    if (!selected || selected === 'current') return '#C2185B';
+    const option = colorSchemes.find(o => o.id === selected);
+    return option?.colors[1] || '#C2185B'; // Use second color for title
+  };
+
+  const getTextureStyle = () => {
+    const selected = selectedOptions['textures'];
+    if (!selected || selected === 'none' || selected === 'grain') return {};
+    
+    const textureStyles: Record<string, React.CSSProperties> = {
+      'paper': {
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23paper)'/%3E%3C/svg%3E")`,
+        opacity: 0.1
+      },
+      'noise': {
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E")`,
+        opacity: 0.15
+      },
+      'dots-pattern': {
+        backgroundImage: `radial-gradient(circle, #C2185B 1px, transparent 1px)`,
+        backgroundSize: '20px 20px',
+        opacity: 0.1
+      },
+      'lines-pattern': {
+        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(194, 24, 91, 0.1) 10px, rgba(194, 24, 91, 0.1) 20px)`,
+      },
+      'mesh': {
+        background: `linear-gradient(135deg, rgba(194, 24, 91, 0.1) 0%, rgba(255, 140, 66, 0.1) 50%, rgba(255, 217, 61, 0.1) 100%)`,
+      },
+      'crosshatch': {
+        backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(194, 24, 91, 0.1) 2px, rgba(194, 24, 91, 0.1) 4px),
+                          repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(194, 24, 91, 0.1) 2px, rgba(194, 24, 91, 0.1) 4px)`,
+      },
+      'grid': {
+        backgroundImage: `linear-gradient(rgba(194, 24, 91, 0.1) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(194, 24, 91, 0.1) 1px, transparent 1px)`,
+        backgroundSize: '20px 20px',
+      },
+      'stipple': {
+        backgroundImage: `radial-gradient(circle at 2px 2px, rgba(194, 24, 91, 0.15) 1px, transparent 0)`,
+        backgroundSize: '40px 40px',
+      },
+    };
+    
+    return textureStyles[selected] || {};
+  };
+
+  const getDivider = () => {
+    const selected = selectedOptions['dividers'];
+    if (!selected || selected === 'none') return null;
+    
+    const dividerComponents: Record<string, JSX.Element> = {
+      'wavy': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTitleColor()} strokeWidth="6" fill="none" strokeLinecap="round"/>
+        </svg>
+      ),
+      'zigzag': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <path d="M0,10 L100,0 L200,10 L300,0 L400,10" stroke={getTitleColor()} strokeWidth="6" fill="none"/>
+        </svg>
+      ),
+      'curved': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <path d="M0,10 Q100,5 200,10 T400,10" stroke={getTitleColor()} strokeWidth="6" fill="none" strokeLinecap="round"/>
+        </svg>
+      ),
+      'dots': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <circle cx="50" cy="10" r="3" fill={getTitleColor()}/>
+          <circle cx="150" cy="10" r="3" fill={getTitleColor()}/>
+          <circle cx="250" cy="10" r="3" fill={getTitleColor()}/>
+          <circle cx="350" cy="10" r="3" fill={getTitleColor()}/>
+        </svg>
+      ),
+      'dashed': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTitleColor()} strokeWidth="6" fill="none" strokeDasharray="10,10" strokeLinecap="round"/>
+        </svg>
+      ),
+      'geometric': (
+        <div className="flex justify-center gap-4 py-2">
+          <div className="w-4 h-4 rotate-45" style={{ backgroundColor: getTitleColor() }}></div>
+          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: getTitleColor() }}></div>
+          <div className="w-4 h-4" style={{ backgroundColor: getTitleColor() }}></div>
+        </div>
+      ),
+      'gradient': (
+        <div className="w-full h-2 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: getTitleColor() }}></div>
+      ),
+      'stars': (
+        <div className="flex justify-center gap-4 py-2 text-2xl" style={{ color: getTitleColor() }}>✦ ✦ ✦</div>
+      ),
+      'circles': (
+        <div className="flex justify-center gap-4 py-2">
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getTitleColor() }}></div>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getTitleColor() }}></div>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getTitleColor() }}></div>
+        </div>
+      ),
+      'diagonal': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <line x1="0" y1="0" x2="400" y2="20" stroke={getTitleColor()} strokeWidth="4"/>
+        </svg>
+      ),
+      'scalloped': (
+        <svg className="w-full h-8" viewBox="0 0 400 20" preserveAspectRatio="none">
+          <path d="M0,10 Q50,0 100,10 T200,10 T300,10 T400,10" stroke={getTitleColor()} strokeWidth="6" fill="none"/>
+        </svg>
+      ),
+    };
+    
+    return dividerComponents[selected] || null;
+  };
+
+  const getHoverClass = () => {
+    const selected = selectedOptions['hover'];
+    if (!selected || selected === 'none') return '';
+    
+    const hoverClasses: Record<string, string> = {
+      'lift': 'hover:-translate-y-2',
+      'scale': 'hover:scale-105',
+      'glow': 'hover:shadow-lg hover:shadow-pink-500/50',
+      'rotate': 'hover:rotate-2',
+      'shrink': 'hover:scale-95',
+      'tilt': 'hover:rotate-1',
+      'pulse': 'hover:animate-pulse',
+    };
+    
+    return hoverClasses[selected] || '';
+  };
+
+  const textureStyle = getTextureStyle();
+  const hasTexture = selectedOptions['textures'] && selectedOptions['textures'] !== 'none' && selectedOptions['textures'] !== 'grain';
+
   return (
-    <section id="design-testing" className="relative py-20 px-6 border-t-4 border-dashed" style={{ backgroundColor: '#F5F5F0' }}>
+    <section 
+      id="design-testing" 
+      className={`relative px-6 ${getSpacing()} ${getBorderStyle()}`}
+      style={{ 
+        backgroundColor: getBackgroundColor(),
+        borderColor: getTitleColor(),
+        fontFamily: getTypography(),
+        ...(hasTexture ? textureStyle : {})
+      }}
+    >
+      {/* Divider at top */}
+      {getDivider() && (
+        <div className="absolute top-0 left-0 right-0 z-10">
+          {getDivider()}
+        </div>
+      )}
+      
+      <div className="max-w-7xl mx-auto relative z-10">
       <div className="max-w-7xl mx-auto">
         <div className="mb-12 flex items-center justify-center gap-4">
           <button
@@ -159,13 +349,13 @@ const DesignTesting = () => {
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
             style={{
-              color: '#C2185B',
-              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
+              color: getTitleColor(),
+              textShadow: isExpanded ? `0 0 20px ${getTitleColor()}80, 0 0 40px ${getTitleColor()}50` : '0 0 0px transparent'
             }}
           >
             Design Testing (Temporary)
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke={getTitleColor()} strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -186,14 +376,18 @@ const DesignTesting = () => {
                   const selectedOption = selectedOptions[category.id];
 
                   return (
-                    <div key={category.id} className="bg-white rounded-3xl p-6">
+                    <div 
+                      key={category.id} 
+                      className={`bg-white p-6 ${getBubbleStyle()} ${getHoverClass()} transition-all duration-300`}
+                      style={{ borderColor: getTitleColor() }}
+                    >
                       <button
                         onClick={() => toggleCategory(category.id)}
                         className="w-full flex items-center justify-between mb-4"
                       >
                         <div className="flex items-center gap-3">
-                          <Icon className="w-6 h-6" style={{ color: '#C2185B' }} />
-                          <h3 className="text-2xl font-black" style={{ color: '#E84A3F' }}>
+                          <Icon className="w-6 h-6" style={{ color: getTitleColor() }} />
+                          <h3 className="text-2xl font-black" style={{ color: getTitleColor() }}>
                             {category.name}
                           </h3>
                         </div>
@@ -391,8 +585,8 @@ const DesignTesting = () => {
               </div>
 
               {/* Preview Section */}
-              <div className="mt-8 bg-white rounded-3xl p-6">
-                <h3 className="text-2xl font-black mb-4" style={{ color: '#E84A3F' }}>
+              <div className={`mt-8 bg-white p-6 ${getBubbleStyle()} ${getHoverClass()} transition-all duration-300`}>
+                <h3 className="text-2xl font-black mb-4" style={{ color: getTitleColor() }}>
                   Preview Selected Options
                 </h3>
                 <div className="space-y-2 text-sm">
