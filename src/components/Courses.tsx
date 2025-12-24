@@ -88,6 +88,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
         >
           <div className="flex flex-wrap gap-3">
             {orderedCourses.map((course, i) => {
+              const isGraduateSpaceRobotics = course.code === '16-865';
               return (
                 <motion.span
                   key={course.code}
@@ -113,6 +114,9 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   </span>
                   <span style={{ color: '#FFD93D' }}>
                     : {course.name}
+                    {isGraduateSpaceRobotics && (
+                      <strong> [GRADUATE]</strong>
+                    )}
                   </span>
                 </motion.span>
               );

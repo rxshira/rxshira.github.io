@@ -10,6 +10,7 @@ import Volunteering from './components/Volunteering';
 import Footer from './components/Footer';
 import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
+import DesignTesting from './components/DesignTesting';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -147,6 +148,8 @@ function App() {
       />
       
       <Footer />
+      
+      <DesignTesting />
       
       <MusicPlayer 
         isPlaying={isPlaying && showMusicPlayer} 

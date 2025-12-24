@@ -81,7 +81,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            What I'm up to...
+            Currently 
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
               <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
@@ -103,7 +103,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
             return (
               <motion.div 
                 key={i}
-                className="bg-white rounded-3xl p-6 shadow-lg transition-all duration-300"
+                className="bg-white rounded-3xl p-6 transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
