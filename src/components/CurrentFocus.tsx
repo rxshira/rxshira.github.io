@@ -45,7 +45,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
   };
 
   return (
-    <section id="focus" className="relative py-20 px-6" style={{ backgroundColor: '#D4D994' }}>
+    <section id="focus" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
       <div className="max-w-7xl mx-auto">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
@@ -53,7 +53,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
           <button
             onClick={handleToggle}
             className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: '#893941' }}
+            style={{ color: '#C2185B' }}
           >
             {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
           </button>
@@ -61,19 +61,19 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={handleToggle}
             style={{ 
-              color: '#893941',
-              textShadow: isExpanded ? '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)' : '0 0 0px rgba(137, 57, 65, 0)'
+              color: '#C2185B',
+              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
             }}
             onMouseEnter={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isExpanded) {
                 e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
               } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
               }
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -83,7 +83,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
           >
             Currently 
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#893941" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -109,7 +109,7 @@ const CurrentFocus = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <h3 className="text-2xl font-black mb-3" style={{ color: '#893941' }}>
+                <h3 className="text-2xl font-black mb-3" style={{ color: '#E84A3F' }}>
                   {item.title}
                 </h3>
                 <p className="text-gray-700">{item.description}</p>

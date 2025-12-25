@@ -26,9 +26,9 @@ npm run preview
 
 ## Design System
 
-The website uses a refined color palette inspired by natural, earthy aesthetics:
-- Deep Maroon (#893941)
-- Dusty Rose (#CB7885)
-- Light Green (#D4D994)
-- Olive Green (#5E6623)
-- Cream (#F5F5F0)
+The website uses a bold color palette inspired by playful, creative aesthetics:
+- Hot Pink/Magenta (#C2185B, #D81B60)
+- Bright Red/Orange-Red (#E84A3F, #FF5252)
+- Yellow (#FFD93D, #FFF176)
+- Orange (#FF8C42, #FFA726)
+- Cream/Off-White (#F5F5F0, #FAFAFA)

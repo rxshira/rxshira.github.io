@@ -36,7 +36,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
   };
 
   return (
-    <section id="volunteering" className="relative py-20 px-6" style={{ backgroundColor: '#5E6623' }}>
+    <section id="volunteering" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
       <div className="max-w-7xl mx-auto">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
@@ -97,7 +97,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                 key={vol.id}
                 className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300 relative"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(137, 57, 65, 0.4), 0 0 40px rgba(137, 57, 65, 0.2)';
+                  e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.boxShadow = '';
@@ -115,7 +115,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                     toggleExpand(vol.id);
                   }}
                   className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
-                  style={{ color: '#893941' }}
+                  style={{ color: '#E84A3F' }}
                 >
                   {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </button>
@@ -133,8 +133,8 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                       <div className="flex items-start gap-4">
                         <Heart className="w-8 h-8 text-pink-600 flex-shrink-0" />
                         <div className="flex-1">
-                          <h3 className="text-2xl font-black mb-1" style={{ color: '#893941' }}>{vol.title}</h3>
-                          <p className="text-lg font-bold mb-1" style={{ color: '#893941' }}>{vol.organization}</p>
+                          <h3 className="text-2xl font-black mb-1" style={{ color: '#E84A3F' }}>{vol.title}</h3>
+                          <p className="text-lg font-bold mb-1" style={{ color: '#C2185B' }}>{vol.organization}</p>
                           <p className="text-sm opacity-70 italic text-gray-600">{vol.timeline}</p>
                         </div>
                       </div>
@@ -153,8 +153,8 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                         <div className="flex items-start gap-4 flex-1">
                           <Heart className="w-8 h-8 text-pink-600 flex-shrink-0" />
                           <div className="flex-1">
-                            <h3 className="text-3xl font-black mb-1" style={{ color: '#893941' }}>{vol.title}</h3>
-                            <p className="text-xl font-bold mb-1" style={{ color: '#893941' }}>{vol.organization}</p>
+                            <h3 className="text-3xl font-black mb-1" style={{ color: '#E84A3F' }}>{vol.title}</h3>
+                            <p className="text-xl font-bold mb-1" style={{ color: '#C2185B' }}>{vol.organization}</p>
                             <p className="text-sm opacity-70 italic text-gray-600">{vol.timeline}</p>
                           </div>
                         </div>
@@ -164,7 +164,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                             setExpandedId(null);
                           }}
                           className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
-                          style={{ color: '#893941' }}
+                          style={{ color: '#E84A3F' }}
                         >
                           <Minus className="w-5 h-5" />
                         </button>
@@ -176,11 +176,11 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
 
                       {vol.achievements && vol.achievements.length > 0 && (
                         <div className="space-y-2">
-                          <h4 className="text-lg font-black" style={{ color: '#893941' }}>Key Achievements:</h4>
+                          <h4 className="text-lg font-black" style={{ color: '#E84A3F' }}>Key Achievements:</h4>
                           <ul className="space-y-1">
                             {vol.achievements.map((achievement, idx) => (
                               <li key={idx} className="text-sm text-gray-700 flex items-start">
-                                <span className="mr-2" style={{ color: '#893941' }}>•</span>
+                                <span className="mr-2" style={{ color: '#C2185B' }}>•</span>
                                 <span>{achievement}</span>
                               </li>
                             ))}
@@ -195,7 +195,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
-                          style={{ backgroundColor: '#893941' }}
+                          style={{ backgroundColor: '#E84A3F' }}
                         >
                           <ExternalLink className="w-4 h-4" />
                           Visit Website
