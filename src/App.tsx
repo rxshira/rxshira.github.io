@@ -10,7 +10,6 @@ import Volunteering from './components/Volunteering';
 import Footer from './components/Footer';
 import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
-import DesignTesting from './components/DesignTesting';
 import CursorTrail from './components/CursorTrail';
 
 function App() {
@@ -150,8 +149,6 @@ function App() {
       />
       
       <Footer />
-      
-      <DesignTesting />
       
       <MusicPlayer 
         isPlaying={isPlaying && showMusicPlayer} 
