@@ -204,7 +204,7 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                       >
                         I am a problem solving addict, and my favorite kinds of problems to solve are the ones from two seemingly unrelated fields. If you talk to me, you'll also learn very fast that I love to talk. My talking "specialty" is fun facts I find amusing. I am always open to hearing more!
                         <br /><br />
-                        Outside of the awesome projects I work/worked on I enjoy dancing (I used to compete in dancespot) and making chocolate completely from scratch.
+                        Outside of the awesome projects I work/worked on I enjoy dancing (I used to compete in dancesport) and making chocolate completely from scratch.
                       </motion.p>
                     </motion.div>
                   )}
