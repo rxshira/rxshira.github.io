@@ -5,16 +5,19 @@ import { Plus, Minus, Sparkles, Palette, Shapes, Zap } from 'lucide-react';
 const DesignTesting = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({
+    'animations': 'shimmer',
+    'dividers': 'gradient'
+  });
 
   const sectionDividers = [
-    { id: 'wavy', name: 'Wavy Line (Current)', component: 'wavy' },
+    { id: 'wavy', name: 'Wavy Line', component: 'wavy' },
     { id: 'zigzag', name: 'Zigzag', component: 'zigzag' },
     { id: 'curved', name: 'Curved Wave', component: 'curved' },
     { id: 'dots', name: 'Dotted Line', component: 'dots' },
     { id: 'dashed', name: 'Dashed Wave', component: 'dashed' },
     { id: 'geometric', name: 'Geometric Shapes', component: 'geometric' },
-    { id: 'gradient', name: 'Gradient Fade', component: 'gradient' },
+    { id: 'gradient', name: 'Gradient Fade (Current)', component: 'gradient' },
     { id: 'stars', name: 'Stars Pattern', component: 'stars' },
     { id: 'circles', name: 'Circles Pattern', component: 'circles' },
     { id: 'diagonal', name: 'Diagonal Lines', component: 'diagonal' },
@@ -53,7 +56,7 @@ const DesignTesting = () => {
   ];
 
   const animations = [
-    { id: 'fade', name: 'Fade In (Current)', type: 'fade' },
+    { id: 'fade', name: 'Fade In', type: 'fade' },
     { id: 'slide-up', name: 'Slide Up', type: 'slide-up' },
     { id: 'slide-down', name: 'Slide Down', type: 'slide-down' },
     { id: 'slide-left', name: 'Slide Left', type: 'slide-left' },
@@ -64,7 +67,7 @@ const DesignTesting = () => {
     { id: 'elastic', name: 'Elastic', type: 'elastic' },
     { id: 'glow-pulse', name: 'Glow Pulse', type: 'glow-pulse' },
     { id: 'float', name: 'Float', type: 'float' },
-    { id: 'shimmer', name: 'Shimmer', type: 'shimmer' },
+    { id: 'shimmer', name: 'Shimmer (Current)', type: 'shimmer' },
     { id: 'flip', name: 'Flip', type: 'flip' },
     { id: 'zoom', name: 'Zoom', type: 'zoom' },
     { id: 'wiggle', name: 'Wiggle', type: 'wiggle' },
@@ -168,9 +171,23 @@ const DesignTesting = () => {
 
   const getBorderStyle = () => {
     const selected = selectedOptions['borders'];
-    if (!selected || selected === 'none') return 'border-0';
+    if (!selected || selected === 'none') return { borderWidth: 0 };
     const option = borderStyles.find(o => o.id === selected);
-    return option?.style || 'border-0';
+    
+    const borderStylesMap: Record<string, React.CSSProperties> = {
+      'thin': { borderWidth: '1px', borderStyle: 'solid' },
+      'thick': { borderWidth: '4px', borderStyle: 'solid' },
+      'dashed': { borderWidth: '2px', borderStyle: 'dashed' },
+      'dotted': { borderWidth: '2px', borderStyle: 'dotted' },
+      'double': { borderWidth: '3px', borderStyle: 'double' },
+      'gradient': { 
+        borderWidth: '3px',
+        borderImage: `linear-gradient(90deg, ${getTitleColor()}, ${getBackgroundColor()}) 1`,
+        borderStyle: 'solid'
+      },
+    };
+    
+    return borderStylesMap[selected] || { borderWidth: 0 };
   };
 
   const getBackgroundColor = () => {
@@ -230,8 +247,8 @@ const DesignTesting = () => {
   };
 
   const getDivider = () => {
-    const selected = selectedOptions['dividers'];
-    if (!selected || selected === 'none') return null;
+    const selected = selectedOptions['dividers'] || 'gradient';
+    if (selected === 'none') return null;
     
     const dividerComponents: Record<string, JSX.Element> = {
       'wavy': (
@@ -314,17 +331,26 @@ const DesignTesting = () => {
     return hoverClasses[selected] || '';
   };
 
+  const getAnimationClass = () => {
+    const selected = selectedOptions['animations'] || 'shimmer';
+    if (selected === 'shimmer') return 'shimmer-effect';
+    return '';
+  };
+
   const textureStyle = getTextureStyle();
   const hasTexture = selectedOptions['textures'] && selectedOptions['textures'] !== 'none' && selectedOptions['textures'] !== 'grain';
 
+  const borderStyle = getBorderStyle();
+  
   return (
     <section 
       id="design-testing" 
-      className={`relative px-6 ${getSpacing()} ${getBorderStyle()}`}
+      className={`relative px-6 ${getSpacing()} ${getAnimationClass()}`}
       style={{ 
         backgroundColor: getBackgroundColor(),
         borderColor: getTitleColor(),
         fontFamily: getTypography(),
+        ...borderStyle,
         ...(hasTexture ? textureStyle : {})
       }}
     >

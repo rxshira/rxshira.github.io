@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
 import DesignTesting from './components/DesignTesting';
+import CursorTrail from './components/CursorTrail';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,6 +70,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-cream text-gray-900 transition-colors duration-300 relative overflow-x-hidden">
+      <CursorTrail />
       <GrainTexture />
       
       <Header 
