@@ -35,7 +35,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
           <button
             onClick={handleToggle}
             className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: '#C2185B' }}
+            style={{ color: '#893941' }}
           >
             {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
           </button>
@@ -43,19 +43,19 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={handleToggle}
             style={{ 
-              color: '#C2185B',
-              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
+              color: '#893941',
+              textShadow: isExpanded ? '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)' : '0 0 0px rgba(137, 57, 65, 0)'
             }}
             onMouseEnter={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isExpanded) {
                 e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
               } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(137, 57, 65, 0.5), 0 0 40px rgba(137, 57, 65, 0.3)';
               }
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -65,7 +65,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
           >
             Courses
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#893941" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -94,7 +94,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   key={course.code}
                   className="px-4 py-2 rounded-full font-bold text-sm inline-block"
                   style={{
-                    backgroundColor: '#C2185B'
+                    backgroundColor: '#893941'
                   }}
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -103,7 +103,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                 >
                   <span
                     style={{
-                      backgroundColor: '#FF8C42',
+                      backgroundColor: '#5E6623',
                       color: 'white',
                       padding: '2px 6px',
                       borderRadius: '12px',
@@ -112,7 +112,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   >
                     {course.code}
                   </span>
-                  <span style={{ color: '#FFD93D' }}>
+                  <span style={{ color: '#D4D994' }}>
                     : {course.name}
                     {isGraduateSpaceRobotics && (
                       <strong> [GRADUATE]</strong>

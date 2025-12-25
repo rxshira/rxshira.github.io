@@ -42,16 +42,16 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set(), active
         <h1 
           className="text-2xl md:text-3xl font-black cursor-pointer transition-all duration-300"
           style={{ 
-            color: '#C2185B',
-            textShadow: '0 0 0px rgba(194, 24, 91, 0)'
+            color: '#893941',
+            textShadow: '0 0 0px rgba(137, 57, 65, 0)'
           }}
           onClick={() => scrollToSection('hero')}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = '#FF8C42';
-            e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
+            e.currentTarget.style.color = '#5E6623';
+            e.currentTarget.style.textShadow = '0 0 15px rgba(94, 102, 35, 0.6), 0 0 30px rgba(94, 102, 35, 0.4)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = '#C2185B';
+            e.currentTarget.style.color = '#893941';
             e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
           }}
         >
@@ -71,21 +71,21 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set(), active
                 }}
                 className="font-bold transition-all duration-300 text-sm"
                 style={{ 
-                  color: isActive ? '#FF8C42' : '#C2185B',
-                  textShadow: isActive ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
+                  color: isActive ? '#5E6623' : '#893941',
+                  textShadow: isActive ? '0 0 15px rgba(94, 102, 35, 0.6), 0 0 30px rgba(94, 102, 35, 0.4)' : '0 0 0px rgba(137, 57, 65, 0)'
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = '#FF8C42';
+                    e.currentTarget.style.color = '#5E6623';
                     e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.color = '#C2185B';
+                    e.currentTarget.style.color = '#893941';
                     e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
                   } else {
-                    e.currentTarget.style.color = '#FF8C42';
+                    e.currentTarget.style.color = '#5E6623';
                     e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                   }
                 }}
@@ -98,7 +98,7 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set(), active
             onClick={onToggleMusic}
             className="p-2 rounded-full hover:bg-gray-200 transition-all duration-300 ml-2"
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 217, 61, 0.6), 0 0 30px rgba(255, 217, 61, 0.4)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(212, 217, 148, 0.6), 0 0 30px rgba(212, 217, 148, 0.4)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.boxShadow = '';
@@ -138,21 +138,21 @@ const Header = ({ isPlaying, onToggleMusic, expandedSections = new Set(), active
                     }}
                     className="text-lg font-bold transition-all duration-300"
                     style={{ 
-                      color: isActive ? '#FF8C42' : '#C2185B',
+                      color: isActive ? '#5E6623' : '#893941',
                       textShadow: isActive ? '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)' : '0 0 0px rgba(194, 24, 91, 0)'
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.color = '#FF8C42';
+                        e.currentTarget.style.color = '#5E6623';
                         e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.color = '#C2185B';
+                        e.currentTarget.style.color = '#893941';
                         e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
                       } else {
-                        e.currentTarget.style.color = '#FF8C42';
+                        e.currentTarget.style.color = '#5E6623';
                         e.currentTarget.style.textShadow = '0 0 15px rgba(255, 140, 66, 0.6), 0 0 30px rgba(255, 140, 66, 0.4)';
                       }
                     }}

@@ -31,7 +31,7 @@ const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, on
       organization: 'CMU School of Computer Science (15-150)',
       timeline: 'May 2025 - August 2025, Janurary 2026 - Present',
       description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.',
-      color: '#FF8C42'
+      color: '#5E6623'
     },
     {
       icon: BookOpen,
@@ -40,12 +40,12 @@ const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, on
       organization: 'CMU Student College (98-317)',
       timeline: 'January 2026 - Present',
       description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification. Designed curriculum and teach weekly lectures to undergraduate students interested in advanced type systems.',
-      color: '#E84A3F'
+      color: '#893941'
     }
   ];
 
   return (
-    <section id="teaching" className="relative py-20 px-6" style={{ backgroundColor: '#FF8C42' }}>
+    <section id="teaching" className="relative py-20 px-6" style={{ backgroundColor: '#5E6623' }}>
       <div className="max-w-7xl mx-auto">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
@@ -117,8 +117,8 @@ const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, on
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-black mb-1" style={{ color: '#E84A3F' }}>{exp.title}</h3>
-                    <p className="text-xl font-bold mb-2" style={{ color: '#C2185B' }}>{exp.subtitle}</p>
+                    <h3 className="text-3xl font-black mb-1" style={{ color: '#893941' }}>{exp.title}</h3>
+                    <p className="text-xl font-bold mb-2" style={{ color: '#893941' }}>{exp.subtitle}</p>
                     <p className="text-lg text-gray-700">{exp.organization}</p>
                     <p className="text-sm opacity-70 italic text-gray-600 mt-1">{exp.timeline}</p>
                   </div>
