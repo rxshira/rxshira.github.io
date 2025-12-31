@@ -80,28 +80,75 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
               className="overflow-hidden"
             >
         <motion.div 
-          className="bg-white rounded-3xl p-8 shadow-xl"
+          className="rounded-3xl p-8 relative overflow-hidden group"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+          }}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex flex-wrap gap-3">
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(194, 24, 91, 0.08)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+            style={{
+              background: 'rgba(255, 255, 255, 0.15)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '25%',
+              background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
+              pointerEvents: 'none',
+              borderBottomLeftRadius: '24px',
+              borderBottomRightRadius: '24px',
+            }}
+          />
+          <div className="flex flex-wrap gap-3 relative z-10">
             {orderedCourses.map((course, i) => {
               const isGraduateSpaceRobotics = course.code === '16-865';
               return (
                 <motion.span
                   key={course.code}
-                  className="px-4 py-2 rounded-full font-bold text-sm inline-block"
+                  className="px-4 py-2 rounded-full font-bold text-sm inline-block relative overflow-hidden"
                   style={{
-                    backgroundColor: '#C2185B'
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
                   }}
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.3, delay: i * 0.03 }}
                 >
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(194, 24, 91, 0.4)',
+                      pointerEvents: 'none',
+                    }}
+                  />
                   <span
+                    className="relative z-10"
                     style={{
                       backgroundColor: '#FF8C42',
                       color: 'white',
@@ -112,7 +159,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   >
                     {course.code}
                   </span>
-                  <span style={{ color: '#FFD93D' }}>
+                  <span className="relative z-10" style={{ color: '#C2185B' }}>
                     : {course.name}
                     {isGraduateSpaceRobotics && (
                       <strong> [GRADUATE]</strong>

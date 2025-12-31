@@ -95,27 +95,55 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
             return (
               <motion.div
                 key={vol.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300 relative"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '';
+                className="rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 relative group"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                  backdropFilter: 'blur(30px)',
+                  WebkitBackdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                  alignSelf: 'start',
                 }}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 onClick={() => toggleExpand(vol.id)}
-                style={{ alignSelf: 'start' }}
               >
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(255, 140, 66, 0.08)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '25%',
+                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
+                    pointerEvents: 'none',
+                    borderBottomLeftRadius: '24px',
+                    borderBottomRightRadius: '24px',
+                  }}
+                />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleExpand(vol.id);
                   }}
                   className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
-                  style={{ color: '#E84A3F' }}
+                  style={{ color: 'white' }}
                 >
                   {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </button>
@@ -147,7 +175,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="p-6 space-y-4"
+                      className="p-6 space-y-4 relative z-10"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4 flex-1">
@@ -164,7 +192,7 @@ const Volunteering = ({ onExpandedChange, isExpanded: externalExpanded, onExpand
                             setExpandedId(null);
                           }}
                           className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
-                          style={{ color: '#E84A3F' }}
+                          style={{ color: 'white' }}
                         >
                           <Minus className="w-5 h-5" />
                         </button>

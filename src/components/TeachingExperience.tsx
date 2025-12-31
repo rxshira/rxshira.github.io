@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { GraduationCap, BookOpen, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 
 interface TeachingExperienceProps {
   onExpandedChange?: (expanded: boolean) => void;
@@ -25,22 +25,18 @@ const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, on
   
   const experiences = [
     {
-      icon: GraduationCap,
       title: 'Principles of Functional Programming',
       subtitle: 'Teaching Assistant',
       organization: 'CMU School of Computer Science (15-150)',
       timeline: 'May 2025 - August 2025, Janurary 2026 - Present',
-      description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.',
-      color: '#FF8C42'
+      description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.'
     },
     {
-      icon: BookOpen,
       title: 'Hype for Types',
       subtitle: 'Instructor',
       organization: 'CMU Student College (98-317)',
       timeline: 'January 2026 - Present',
-      description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification. Designed curriculum and teach weekly lectures to undergraduate students interested in advanced type systems.',
-      color: '#E84A3F'
+      description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification. Designed curriculum and teach weekly lectures to undergraduate students interested in advanced type systems.'
     }
   ];
 
@@ -99,31 +95,56 @@ const TeachingExperience = ({ onExpandedChange, isExpanded: externalExpanded, on
             >
         <div className="grid md:grid-cols-2 gap-6">
           {experiences.map((exp, i) => {
-            const Icon = exp.icon;
             return (
               <motion.div 
                 key={i}
-                className="bg-white rounded-3xl p-8 shadow-lg transition-all duration-300"
+                className="rounded-3xl p-8 transition-all duration-300 relative overflow-hidden group"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                  backdropFilter: 'blur(30px)',
+                  WebkitBackdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                }}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <div className="flex items-start gap-4 mb-4">
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: exp.color }}
-                  >
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl font-black mb-1" style={{ color: '#E84A3F' }}>{exp.title}</h3>
-                    <p className="text-xl font-bold mb-2" style={{ color: '#C2185B' }}>{exp.subtitle}</p>
-                    <p className="text-lg text-gray-700">{exp.organization}</p>
-                    <p className="text-sm opacity-70 italic text-gray-600 mt-1">{exp.timeline}</p>
-                  </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(255, 140, 66, 0.08)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '25%',
+                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
+                    pointerEvents: 'none',
+                    borderBottomLeftRadius: '24px',
+                    borderBottomRightRadius: '24px',
+                  }}
+                />
+                <div className="mb-4 relative z-10">
+                  <h3 className="text-3xl font-black mb-1" style={{ color: '#E84A3F' }}>{exp.title}</h3>
+                  <p className="text-xl font-bold mb-2" style={{ color: '#C2185B' }}>{exp.subtitle}</p>
+                  <p className="text-lg text-gray-700">{exp.organization}</p>
+                  <p className="text-sm opacity-70 italic text-gray-600 mt-1">{exp.timeline}</p>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{exp.description}</p>
+                <p className="text-gray-700 leading-relaxed relative z-10">{exp.description}</p>
               </motion.div>
             );
           })}

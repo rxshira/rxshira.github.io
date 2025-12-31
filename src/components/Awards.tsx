@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { awards } from '../data/awards';
-import { Trophy, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 
 interface AwardsProps {
   onExpandedChange?: (expanded: boolean) => void;
@@ -81,20 +81,51 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
           {awards.map((award, i) => (
         <motion.div
               key={i}
-              className="bg-white rounded-3xl p-6 shadow-lg transition-all duration-300"
+              className="rounded-3xl p-6 transition-all duration-300 relative overflow-hidden group"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+              }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <div className="flex items-start gap-4 mb-4">
-                <Trophy className="w-8 h-8 text-yellow-400 flex-shrink-0" />
-                <div>
-                  <h3 className="text-2xl font-black mb-1" style={{ color: '#E84A3F' }}>{award.title}</h3>
-                  <p className="text-sm opacity-70 italic text-gray-600">{award.date}</p>
-                </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(255, 217, 61, 0.08)',
+                  pointerEvents: 'none',
+                }}
+              />
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '25%',
+                  background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
+                  pointerEvents: 'none',
+                  borderBottomLeftRadius: '24px',
+                  borderBottomRightRadius: '24px',
+                }}
+              />
+              <div className="mb-4 relative z-10">
+                <h3 className="text-2xl font-black mb-1" style={{ color: '#E84A3F' }}>{award.title}</h3>
+                <p className="text-sm opacity-70 italic text-gray-600">{award.date}</p>
               </div>
-              <p className="text-gray-700 leading-relaxed">{award.description}</p>
+              <p className="text-gray-700 leading-relaxed relative z-10">{award.description}</p>
             </motion.div>
           ))}
         </div>

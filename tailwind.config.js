@@ -21,6 +21,7 @@ export default {
         'dark-gray': '#212121',
       },
       fontFamily: {
+        'megisha': ['Megisha', 'cursive'],
         'display': ['"Space Grotesk"', 'sans-serif'],
         'body': ['"Space Grotesk"', 'sans-serif'],
         'sans': ['"Space Grotesk"', 'sans-serif'],

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import Header from './components/Header';
+import { useState } from 'react';
 import Hero from './components/Hero';
 import CurrentFocus from './components/CurrentFocus';
 import Projects from './components/Projects';
@@ -11,33 +10,13 @@ import Footer from './components/Footer';
 import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
 import CursorTrail from './components/CursorTrail';
+import StarPlayButton from './components/StarPlayButton';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [currentSong, setCurrentSong] = useState<string>('rock revival');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['focus', 'projects', 'teaching', 'courses', 'awards', 'volunteering']));
-  const [activeSection, setActiveSection] = useState<string>('hero');
-
-  // Track scroll position to determine active section
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['hero', 'focus', 'projects', 'teaching', 'courses', 'awards', 'volunteering', 'contact'];
-      const scrollPosition = window.scrollY + 200; // Offset for header
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sections[i]);
-        if (section && section.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i]);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const handleExpandSection = (sectionId: string) => {
     const newSet = new Set(expandedSections);
@@ -51,6 +30,9 @@ function App() {
     // When playing, show the indicator
     if (newState) {
       setShowMusicPlayer(true);
+    } else {
+      // When pausing, you can optionally hide it, but for now let's keep it visible
+      // setShowMusicPlayer(false);
     }
   };
 
@@ -72,13 +54,7 @@ function App() {
       <CursorTrail />
       <GrainTexture />
       
-      <Header 
-        isPlaying={isPlaying} 
-        onToggleMusic={toggleMusic} 
-        expandedSections={expandedSections}
-        activeSection={activeSection}
-        onExpandSection={handleExpandSection}
-      />
+      <StarPlayButton isPlaying={isPlaying} onToggle={toggleMusic} />
       
       <Hero isPlaying={isPlaying} onPlayStateChange={handlePlayStateChange} />
       

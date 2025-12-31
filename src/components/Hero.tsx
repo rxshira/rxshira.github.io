@@ -129,13 +129,32 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
           <div className="space-y-6">
             {/* Hi, I'm Shira! in a gentle square bubble with all text */}
             <motion.div
-              className="rounded-3xl p-8 shadow-xl"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.75)' }}
+              className="rounded-3xl p-8 relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+                backdropFilter: 'blur(15px)',
+                WebkitBackdropFilter: 'blur(15px)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="space-y-4">
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '25%',
+                  background: 'linear-gradient(to top, rgba(255, 255, 255, 0.1), transparent)',
+                  pointerEvents: 'none',
+                  borderBottomLeftRadius: '24px',
+                  borderBottomRightRadius: '24px',
+                }}
+              />
+              <div className="space-y-4 relative z-10">
                 <motion.h2 
                   className="text-5xl md:text-7xl font-black leading-tight"
                   style={{ color: '#E84A3F' }}

@@ -31,26 +31,6 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
     }
   };
 
-  const getColorHex = (color: string) => {
-    switch (color) {
-      case 'yellow': return '#FFD93D';
-      case 'magenta': return '#D81B60';
-      case 'cream': return '#F5F5F0';
-      case 'orange': return '#FF8C42';
-      default: return '#F5F5F0';
-    }
-  };
-
-  const getTextColor = (color: string) => {
-    switch (color) {
-      case 'yellow': return '#C2185B';
-      case 'magenta': return 'white';
-      case 'cream': return '#FF8C42';
-      case 'orange': return 'white';
-      default: return '#FF8C42';
-    }
-  };
-
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
@@ -64,7 +44,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
           <button
             onClick={handleSectionToggle}
             className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: '#FFD93D' }}
+            style={{ color: 'white' }}
           >
             {isSectionExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
           </button>
@@ -111,33 +91,59 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
         <div className="grid md:grid-cols-3 gap-6 items-start">
       {projects.map((project, index) => {
             const isExpanded = expandedId === project.id;
-            const bgColor = getColorHex(project.bgColor);
-            const textColor = getTextColor(project.bgColor);
 
         return (
               <motion.div
             key={project.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer transition-all duration-300 relative"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(194, 24, 91, 0.4), 0 0 40px rgba(194, 24, 91, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '';
+                className="rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 relative group"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                  backdropFilter: 'blur(30px)',
+                  WebkitBackdropFilter: 'blur(30px)',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
+                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                  alignSelf: 'start',
                 }}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 onClick={() => toggleExpand(project.id)}
-                style={{ alignSelf: 'start' }}
               >
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(194, 24, 91, 0.08)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '25%',
+                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
+                    pointerEvents: 'none',
+                    borderBottomLeftRadius: '24px',
+                    borderBottomRightRadius: '24px',
+                  }}
+                />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleExpand(project.id);
                   }}
                   className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
-                  style={{ color: '#E84A3F' }}
+                  style={{ color: 'white' }}
                 >
                   {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </button>
@@ -152,7 +158,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                       transition={{ duration: 0.2 }}
                       className="p-6 space-y-3"
                     >
-                      <h3 className="text-2xl font-black mb-2" style={{ color: '#E84A3F' }}>
+                      <h3 className="text-2xl font-black mb-2" style={{ color: '#C2185B' }}>
                         {project.title}
                       </h3>
                       <p className="text-gray-700 font-bold">{project.subtitle}</p>
@@ -160,13 +166,25 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                         {project.techStack.slice(0, 3).map((tech) => (
                           <span
                             key={tech}
-                            className="px-3 py-1 rounded-full font-bold text-xs"
+                            className="px-3 py-1 rounded-full font-bold text-xs relative overflow-hidden"
                             style={{
-                              backgroundColor: '#C2185B',
-                              color: 'white'
+                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                              backdropFilter: 'blur(30px)',
+                              WebkitBackdropFilter: 'blur(30px)',
+                              border: '1px solid rgba(255, 255, 255, 0.4)',
+                              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                              color: '#C2185B'
                             }}
                           >
-                            {tech}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'rgba(194, 24, 91, 0.15)',
+                                pointerEvents: 'none',
+                              }}
+                            />
+                            <span className="relative z-10">{tech}</span>
                           </span>
                         ))}
                         {project.techStack.length > 3 && (
@@ -186,11 +204,11 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="p-6 space-y-4"
+                      className="p-6 space-y-4 relative z-10"
                     >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-3xl font-black mb-2" style={{ color: '#E84A3F' }}>
+                        <h3 className="text-3xl font-black mb-2" style={{ color: '#C2185B' }}>
                           {project.title}
                         </h3>
                         <p className="text-xl font-bold mb-2 text-gray-700">{project.subtitle}</p>
@@ -201,7 +219,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                           setExpandedId(null);
                         }}
                         className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
-                        style={{ color: '#E84A3F' }}
+                        style={{ color: 'white' }}
                       >
                         <Minus className="w-5 h-5" />
                       </button>
@@ -273,13 +291,25 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                       {project.techStack.map((tech) => (
                       <span
                           key={tech}
-                          className="px-3 py-1 rounded-full font-bold text-xs"
+                          className="px-3 py-1 rounded-full font-bold text-xs relative overflow-hidden"
                           style={{
-                            backgroundColor: '#C2185B',
-                            color: 'white'
+                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                            backdropFilter: 'blur(30px)',
+                            WebkitBackdropFilter: 'blur(30px)',
+                            border: '1px solid rgba(255, 255, 255, 0.4)',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                            color: '#C2185B'
                           }}
                       >
-                        {tech}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'rgba(194, 24, 91, 0.15)',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                        <span className="relative z-10">{tech}</span>
                       </span>
                     ))}
                   </div>

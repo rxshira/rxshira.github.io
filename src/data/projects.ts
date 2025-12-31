@@ -31,6 +31,18 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    id: 'avltrees',
+    title: 'Mechanizing AVL Trees',
+    subtitle: 'Mechanizing AVL Trees in Decalf',
+    timeline: 'Current',
+    description: 'My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I\'m formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.',
+    techStack: ['Decalf', 'Type Theory', 'Formal Verification', 'AVL Trees'],
+    bgColor: 'magenta',
+    textColor: 'white',
+    hasImage: false,
+    collaborator: 'with Prof. Robert Harper + Runming Li'
+  },
+  {
     id: 'specml',
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',
@@ -61,6 +73,20 @@ export const projects: Project[] = [
     impact: 'Replaces manual grading with fast, reproducible feedback.'
   },
   {
+    id: 'ligo',
+    title: 'Laser Mode Matching Simulation',
+    subtitle: 'LIGO @ Caltech',
+    timeline: 'August 2023 - April 2024',
+    description: 'Developed Python simulation tool for the Laser Interferometer Gravitational-Wave Observatory (Nobel Prize in Physics, 2017) to optimize mode matching—maximizing laser power transfer. Achievement: Improved optical efficiency from ~30% to ~90% in 40m prototype.',
+    techStack: ['Python', 'NumPy', 'Matplotlib'],
+    bgColor: 'cream',
+    textColor: 'black',
+    hasImage: true,
+    imagePath: 'ligo.JPG',
+    role: 'Research Intern',
+    achievement: 'Improved optical efficiency from ~30% to ~90% in 40m prototype'
+  },
+  {
     id: 'asteria1',
     title: 'Asteria 1',
     subtitle: 'I built a Level 1 - High Power Rocket.',
@@ -82,32 +108,6 @@ export const projects: Project[] = [
       motor: 'Cesaroni H90 (38mm)'
     },
     certification: 'NAR Level 1 Certified - May 2024'
-  },
-  {
-    id: 'ligo',
-    title: 'Laser Mode Matching Simulation',
-    subtitle: 'LIGO @ Caltech',
-    timeline: 'August 2023 - April 2024',
-    description: 'Developed Python simulation tool for the Laser Interferometer Gravitational-Wave Observatory (Nobel Prize in Physics, 2017) to optimize mode matching—maximizing laser power transfer. Achievement: Improved optical efficiency from ~30% to ~90% in 40m prototype.',
-    techStack: ['Python', 'NumPy', 'Matplotlib'],
-    bgColor: 'cream',
-    textColor: 'black',
-    hasImage: true,
-    imagePath: 'ligo.JPG',
-    role: 'Research Intern',
-    achievement: 'Improved optical efficiency from ~30% to ~90% in 40m prototype'
-  },
-  {
-    id: 'avltrees',
-    title: 'Mechanizing AVL Trees',
-    subtitle: 'Mechanizing AVL Trees in Decalf',
-    timeline: 'Current',
-    description: 'My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I\'m formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.',
-    techStack: ['Decalf', 'Type Theory', 'Formal Verification', 'AVL Trees'],
-    bgColor: 'magenta',
-    textColor: 'white',
-    hasImage: false,
-    collaborator: 'with Prof. Robert Harper + Runming Li'
   }
 ];
 
