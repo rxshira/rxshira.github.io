@@ -24,11 +24,6 @@ const MusicPlayer = ({ isPlaying, onToggle, currentSong, onClose }: MusicPlayerP
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           className="fixed bottom-6 right-6 text-white rounded-full px-6 py-3 flex items-center gap-3 z-[100] group overflow-hidden"
           style={{
-            position: 'fixed',
-            bottom: '1.5rem',
-            right: '1.5rem',
-          }}
-          style={{
             background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
             backdropFilter: 'blur(30px)',
             WebkitBackdropFilter: 'blur(30px)',
