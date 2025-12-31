@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Github, Mail } from 'lucide-react';
+import { Github } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -31,15 +31,45 @@ const Footer = () => {
                   href="https://github.com/rxshira" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300"
+                  className="p-3 rounded-full transition-all duration-300 relative overflow-hidden group"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                  }}
                 >
-                  <Github className="w-6 h-6" />
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.15)',
+                    }}
+                  />
+                  <Github className="w-6 h-6 relative z-10" />
                 </a>
                 <a 
-                  href="mailto:shirar@andrew.cmu.edu"
-                  className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-all duration-300"
+                  href="https://x.com/shiraxrubin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-full transition-all duration-300 relative overflow-hidden group"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                  }}
                 >
-                  <Mail className="w-6 h-6" />
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.15)',
+                    }}
+                  />
+                  <svg className="w-6 h-6 relative z-10 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
                 </a>
               </div>
             </motion.div>
