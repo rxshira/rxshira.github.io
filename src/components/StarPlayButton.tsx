@@ -30,14 +30,14 @@ const StarPlayButton = ({ isPlaying, onToggle }: StarPlayButtonProps) => {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(194, 24, 91, 0.08)',
+            background: 'rgba(16, 86, 102, 0.08)',
             pointerEvents: 'none',
           }}
         />
         {isPlaying ? (
-          <Pause className="w-5 h-5 relative z-10" style={{ color: '#C2185B' }} />
+          <Pause className="w-5 h-5 relative z-10" style={{ color: '#105666' }} />
         ) : (
-          <Play className="w-5 h-5 relative z-10" style={{ color: '#C2185B' }} />
+          <Play className="w-5 h-5 relative z-10" style={{ color: '#105666' }} />
         )}
       </button>
     </motion.div>

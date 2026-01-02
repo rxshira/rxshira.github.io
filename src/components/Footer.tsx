@@ -3,7 +3,7 @@ import { Github } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer id="contact" className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
+    <footer id="contact" className="relative py-20 px-6 overflow-hidden" style={{ backgroundColor: '#3d1f12' }}>
       <div className="max-w-7xl mx-auto text-white">
         <div className="grid md:grid-cols-3 gap-12 items-start">
           <div>

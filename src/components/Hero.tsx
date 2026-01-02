@@ -157,7 +157,7 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
               <div className="space-y-4 relative z-10">
                 <motion.h2 
                   className="text-5xl md:text-7xl font-black leading-tight"
-                  style={{ color: '#E84A3F' }}
+                  style={{ color: '#0A3323' }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.1 }}
@@ -165,24 +165,25 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                   <span className="relative inline-block">
                     Hi, I'm Shira!
                     <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-                      <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                      <path d="M0,10 Q100,0 200,10 T400,10" stroke="#D3968C" strokeWidth="8" fill="none" strokeLinecap="round"/>
                     </svg>
                   </span>
                 </motion.h2>
                 
                 <motion.p 
                   className="text-xl md:text-2xl leading-relaxed"
+                  style={{ color: '#1a1a1a' }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  I am a student at <span className="font-bold" style={{ color: '#C2185B' }}>Carnegie Mellon University</span> studying{' '}
-                  <span className="font-bold" style={{ color: '#C2185B' }}>Computer Science</span>.
+                  I am a student at <span className="font-bold" style={{ color: '#F7F4D5' }}>Carnegie Mellon University</span> studying{' '}
+                  <span className="font-bold" style={{ color: '#F7F4D5' }}>Computer Science</span>.
                 </motion.p>
                 
                 <motion.p 
                   className="text-xl md:text-2xl font-bold"
-                  style={{ color: '#FF8C42' }}
+                  style={{ color: '#736390' }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
@@ -191,16 +192,17 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                 </motion.p>
                 
                 <motion.p 
-                  className="text-lg italic opacity-80"
+                  className="text-lg italic"
+                  style={{ color: '#2a2a2a', opacity: 0.9 }}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: 0.9, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                 >
                   I also really like music. Here's my current playlist! Click play to listen to it. Scroll to see what I do.{' '}
                   <button
                     onClick={() => setShowMoreAboutMe(!showMoreAboutMe)}
                     className="underline cursor-pointer hover:opacity-70 transition-opacity"
-                    style={{ color: '#C2185B' }}
+                    style={{ color: '#2d1f42' }}
                   >
                     {showMoreAboutMe ? 'Less about me' : 'More about me'}
                   </button>
@@ -217,6 +219,7 @@ const Hero = ({ onPlayStateChange, isPlaying }: HeroProps) => {
                     >
                       <motion.p 
                         className="text-lg leading-relaxed mt-2"
+                        style={{ color: '#2a2a2a' }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

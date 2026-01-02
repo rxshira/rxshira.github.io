@@ -25,7 +25,7 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
   };
 
   return (
-    <section id="awards" className="relative py-20 px-6" style={{ backgroundColor: '#FFD93D' }}>
+    <section id="awards" className="relative py-20 px-6" style={{ backgroundColor: '#839958' }}>
       <div className="max-w-7xl mx-auto">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
@@ -33,7 +33,7 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
           <button
             onClick={handleToggle}
             className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: '#C2185B' }}
+            style={{ color: 'white' }}
           >
             {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
           </button>
@@ -41,19 +41,19 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={handleToggle}
             style={{ 
-              color: '#C2185B',
-              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
+              color: '#F7F4D5',
+              textShadow: isExpanded ? '0 0 20px rgba(247, 244, 213, 0.5), 0 0 40px rgba(247, 244, 213, 0.3)' : '0 0 0px rgba(247, 244, 213, 0)'
             }}
             onMouseEnter={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(247, 244, 213, 0.5), 0 0 40px rgba(247, 244, 213, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+                e.currentTarget.style.textShadow = '0 0 0px rgba(247, 244, 213, 0)';
               } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(247, 244, 213, 0.5), 0 0 40px rgba(247, 244, 213, 0.3)';
               }
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -63,7 +63,7 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
           >
             Awards
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#F7F4D5" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -98,7 +98,7 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'rgba(255, 217, 61, 0.08)',
+                  background: 'rgba(211, 150, 140, 0.08)',
                   pointerEvents: 'none',
                 }}
               />
@@ -122,7 +122,7 @@ const Awards = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReques
                 }}
               />
               <div className="mb-4 relative z-10">
-                <h3 className="text-2xl font-black mb-1" style={{ color: '#E84A3F' }}>{award.title}</h3>
+                <h3 className="text-2xl font-black mb-1" style={{ color: '#F7F4D5' }}>{award.title}</h3>
                 <p className="text-sm opacity-70 italic text-gray-600">{award.date}</p>
               </div>
               <p className="text-gray-700 leading-relaxed relative z-10">{award.description}</p>

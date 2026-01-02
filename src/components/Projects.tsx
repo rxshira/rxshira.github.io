@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Github, Play, X, Plus, Minus } from 'lucide-react';
 import { projects } from '../data/projects';
+import TwinklingStars from './TwinklingStars';
 
 interface ProjectsProps {
   onExpandedChange?: (expanded: boolean) => void;
@@ -36,8 +37,9 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
   };
 
   return (
-    <section id="projects" className="relative py-20 px-6" style={{ backgroundColor: '#C2185B' }}>
-      <div className="max-w-7xl mx-auto">
+    <section id="projects" className="relative py-20 px-6 overflow-hidden" style={{ backgroundColor: '#736390' }}>
+      <TwinklingStars count={28} />
+      <div className="max-w-7xl mx-auto relative z-10">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
         >
@@ -52,19 +54,19 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={handleSectionToggle}
             style={{ 
-              color: '#FFD93D',
-              textShadow: isSectionExpanded ? '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)' : '0 0 0px rgba(255, 217, 61, 0)'
+              color: '#2d1f42',
+              textShadow: isSectionExpanded ? '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)' : '0 0 0px rgba(45, 31, 66, 0)'
             }}
             onMouseEnter={(e) => {
               if (!isSectionExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isSectionExpanded) {
-                e.currentTarget.style.textShadow = '0 0 0px rgba(255, 217, 61, 0)';
+                e.currentTarget.style.textShadow = '0 0 0px rgba(45, 31, 66, 0)';
               } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(255, 217, 61, 0.5), 0 0 40px rgba(255, 217, 61, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)';
               }
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -74,7 +76,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
           >
             Projects
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#FFD93D" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#2d1f42" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -114,7 +116,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'rgba(194, 24, 91, 0.08)',
+                    background: 'rgba(10, 51, 35, 0.08)',
                     pointerEvents: 'none',
                   }}
                 />
@@ -158,7 +160,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                       transition={{ duration: 0.2 }}
                       className="p-6 space-y-3"
                     >
-                      <h3 className="text-2xl font-black mb-2" style={{ color: '#C2185B' }}>
+                      <h3 className="text-2xl font-black mb-2" style={{ color: '#2d1f42' }}>
                         {project.title}
                       </h3>
                       <p className="text-gray-700 font-bold">{project.subtitle}</p>
@@ -173,14 +175,14 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                               WebkitBackdropFilter: 'blur(30px)',
                               border: '1px solid rgba(255, 255, 255, 0.4)',
                               boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                              color: '#C2185B'
+                              color: '#2d1f42'
                             }}
                           >
                             <div
                               style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background: 'rgba(194, 24, 91, 0.15)',
+                                background: 'rgba(45, 31, 66, 0.15)',
                                 pointerEvents: 'none',
                               }}
                             />
@@ -208,7 +210,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                     >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="text-3xl font-black mb-2" style={{ color: '#C2185B' }}>
+                        <h3 className="text-3xl font-black mb-2" style={{ color: '#2d1f42' }}>
                           {project.title}
                         </h3>
                         <p className="text-xl font-bold mb-2 text-gray-700">{project.subtitle}</p>
@@ -256,12 +258,12 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                     {/* Special handling for Asteria stats */}
                     {project.id === 'asteria1' && project.stats && (
                       <div className="bg-gray-100 rounded-2xl p-4 space-y-2">
-                        <h4 className="text-xl font-black" style={{ color: '#E84A3F' }}>Some Stats...</h4>
+                        <h4 className="text-xl font-black" style={{ color: '#105666' }}>Some Stats...</h4>
                         <div className="space-y-1 text-sm text-gray-700">
-                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Altitude:</span> {project.stats.maxAltitude.ft}ft [or] {project.stats.maxAltitude.m}m</p>
-                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max Velocity:</span> {project.stats.maxVelocity.mph} mph [or] {project.stats.maxVelocity.mps} m/s</p>
-                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Max G forces:</span> {project.stats.maxG} Gs</p>
-                          <p><span className="font-bold" style={{ color: '#C2185B' }}>Motor Used:</span> {project.stats.motor}</p>
+                          <p><span className="font-bold" style={{ color: '#736390' }}>Max Altitude:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxAltitude.ft}ft [or] {project.stats.maxAltitude.m}m</span></p>
+                          <p><span className="font-bold" style={{ color: '#736390' }}>Max Velocity:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxVelocity.mph} mph [or] {project.stats.maxVelocity.mps} m/s</span></p>
+                          <p><span className="font-bold" style={{ color: '#736390' }}>Max G forces:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxG} Gs</span></p>
+                          <p><span className="font-bold" style={{ color: '#736390' }}>Motor Used:</span> <span style={{ color: '#2d1f42' }}>{project.stats.motor}</span></p>
                       </div>
                     </div>
                   )}
@@ -298,14 +300,14 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                             WebkitBackdropFilter: 'blur(30px)',
                             border: '1px solid rgba(255, 255, 255, 0.4)',
                             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                            color: '#C2185B'
+                            color: '#2d1f42'
                           }}
                       >
                         <div
                           style={{
                             position: 'absolute',
                             inset: 0,
-                            background: 'rgba(194, 24, 91, 0.15)',
+                            background: 'rgba(45, 31, 66, 0.15)',
                             pointerEvents: 'none',
                           }}
                         />
@@ -324,8 +326,8 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
                           style={{ 
-                            backgroundColor: project.bgColor === 'magenta' ? 'white' : '#E84A3F',
-                            color: project.bgColor === 'magenta' ? '#D81B60' : 'white'
+                            backgroundColor: '#2d1f42',
+                            color: 'white'
                           }}
                         >
                           <Github className="w-4 h-4" />
@@ -339,7 +341,7 @@ const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequ
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
-                          style={{ backgroundColor: '#E84A3F' }}
+                          style={{ backgroundColor: '#2d1f42' }}
                         >
                           <Play className="w-4 h-4" />
                           Watch Video

@@ -15,7 +15,7 @@ export default {
         'yellow-light': '#FFF176',
         'orange': '#FF8C42',
         'orange-light': '#FFA726',
-        'cream': '#F5F5F0',
+        'cream': '#F7F4D5',
         'off-white': '#FAFAFA',
         'black': '#1A1A1A',
         'dark-gray': '#212121',

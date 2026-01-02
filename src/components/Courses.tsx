@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { courses } from '../data/courses';
 import { Plus, Minus } from 'lucide-react';
+import LittleBirds from './LittleBirds';
 
 interface CoursesProps {
   onExpandedChange?: (expanded: boolean) => void;
@@ -27,15 +28,16 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
   const orderedCourses = courses;
 
   return (
-    <section id="courses" className="relative py-20 px-6" style={{ backgroundColor: '#F5F5F0' }}>
-      <div className="max-w-7xl mx-auto">
+    <section id="courses" className="relative py-20 px-6 overflow-hidden" style={{ backgroundColor: '#F7F4D5' }}>
+      <LittleBirds />
+      <div className="max-w-7xl mx-auto relative z-10">
         <div 
           className="mb-12 flex items-center justify-center gap-4"
         >
           <button
             onClick={handleToggle}
             className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: '#C2185B' }}
+            style={{ color: '#0A3323' }}
           >
             {isExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
           </button>
@@ -43,19 +45,19 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
             className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
             onClick={handleToggle}
             style={{ 
-              color: '#C2185B',
-              textShadow: isExpanded ? '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)' : '0 0 0px rgba(194, 24, 91, 0)'
+              color: '#839958',
+              textShadow: isExpanded ? '0 0 20px rgba(131, 153, 88, 0.5), 0 0 40px rgba(131, 153, 88, 0.3)' : '0 0 0px rgba(131, 153, 88, 0)'
             }}
             onMouseEnter={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(131, 153, 88, 0.5), 0 0 40px rgba(131, 153, 88, 0.3)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isExpanded) {
-                e.currentTarget.style.textShadow = '0 0 0px rgba(194, 24, 91, 0)';
+                e.currentTarget.style.textShadow = '0 0 0px rgba(131, 153, 88, 0)';
               } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(194, 24, 91, 0.5), 0 0 40px rgba(194, 24, 91, 0.3)';
+                e.currentTarget.style.textShadow = '0 0 20px rgba(131, 153, 88, 0.5), 0 0 40px rgba(131, 153, 88, 0.3)';
               }
             }}
             initial={{ opacity: 0, y: 20 }}
@@ -65,7 +67,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
           >
             Courses
             <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#C2185B" strokeWidth="6" fill="none" strokeLinecap="round"/>
+              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#839958" strokeWidth="6" fill="none" strokeLinecap="round"/>
             </svg>
           </motion.h2>
         </div>
@@ -97,7 +99,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(194, 24, 91, 0.08)',
+              background: 'rgba(247, 244, 213, 0.08)',
               pointerEvents: 'none',
             }}
           />
@@ -143,14 +145,14 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      background: 'rgba(194, 24, 91, 0.4)',
+                      background: 'rgba(131, 153, 88, 0.4)',
                       pointerEvents: 'none',
                     }}
                   />
                   <span
                     className="relative z-10"
                     style={{
-                      backgroundColor: '#FF8C42',
+                      backgroundColor: '#105666',
                       color: 'white',
                       padding: '2px 6px',
                       borderRadius: '12px',
@@ -159,7 +161,7 @@ const Courses = ({ onExpandedChange, isExpanded: externalExpanded, onExpandReque
                   >
                     {course.code}
                   </span>
-                  <span className="relative z-10" style={{ color: '#C2185B' }}>
+                  <span className="relative z-10" style={{ color: '#839958' }}>
                     : {course.name}
                     {isGraduateSpaceRobotics && (
                       <strong> [GRADUATE]</strong>

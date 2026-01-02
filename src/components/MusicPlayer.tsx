@@ -37,7 +37,7 @@ const MusicPlayer = ({ isPlaying, onToggle, currentSong, onClose }: MusicPlayerP
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(194, 24, 91, 0.4)',
+              background: 'rgba(16, 86, 102, 0.4)',
               pointerEvents: 'none',
             }}
           />

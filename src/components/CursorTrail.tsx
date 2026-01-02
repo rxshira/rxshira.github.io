@@ -10,7 +10,7 @@ interface Particle {
   size: number;
 }
 
-const colors = ['#C2185B', '#FFD93D', '#FF8C42', '#E84A3F', '#D81B60'];
+const colors = ['#0A3323', '#839958', '#F7F4D5', '#D3968C', '#105666'];
 
 const CursorTrail = () => {
   const [particles, setParticles] = useState<Particle[]>([]);

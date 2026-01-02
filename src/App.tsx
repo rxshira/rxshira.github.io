@@ -11,6 +11,8 @@ import MusicPlayer from './components/MusicPlayer';
 import GrainTexture from './components/GrainTexture';
 import CursorTrail from './components/CursorTrail';
 import StarPlayButton from './components/StarPlayButton';
+import LayeredForestDivider from './components/LayeredForestDivider';
+import SmoothGradientDivider from './components/SmoothGradientDivider';
 
 function App() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,6 +71,12 @@ function App() {
         onExpandRequest={() => handleExpandSection('focus')}
       />
       
+      <SmoothGradientDivider
+        topColor="#2d1f42"
+        bottomColor="#736390"
+        isExpanded={expandedSections.has('focus')}
+      />
+      
       <Projects 
         isExpanded={expandedSections.has('projects')}
         onExpandedChange={(expanded) => {
@@ -78,6 +86,12 @@ function App() {
           setExpandedSections(newSet);
         }}
         onExpandRequest={() => handleExpandSection('projects')}
+      />
+      
+      <SmoothGradientDivider
+        topColor="#736390"
+        bottomColor="#d66c61"
+        isExpanded={expandedSections.has('projects')}
       />
       
       <TeachingExperience 
@@ -91,6 +105,12 @@ function App() {
         onExpandRequest={() => handleExpandSection('teaching')}
       />
       
+      <SmoothGradientDivider
+        topColor="#d66c61"
+        bottomColor="#F7F4D5"
+        isExpanded={expandedSections.has('teaching')}
+      />
+      
       <Courses 
         isExpanded={expandedSections.has('courses')}
         onExpandedChange={(expanded) => {
@@ -100,6 +120,16 @@ function App() {
           setExpandedSections(newSet);
         }}
         onExpandRequest={() => handleExpandSection('courses')}
+      />
+      
+      <LayeredForestDivider
+        topColor="#F7F4D5"
+        bottomColor="#839958"
+        backLayerColor="#3d1f12"
+        middleLayerColor="#d66c61"
+        frontLayerColor="#839958"
+        isExpanded={expandedSections.has('courses')}
+        isImportant={false}
       />
       
       <Awards 
@@ -113,6 +143,16 @@ function App() {
         onExpandRequest={() => handleExpandSection('awards')}
       />
       
+      <LayeredForestDivider
+        topColor="#839958"
+        bottomColor="#0A3323"
+        backLayerColor="#3d1f12"
+        middleLayerColor="#736390"
+        frontLayerColor="#0A3323"
+        isExpanded={expandedSections.has('awards')}
+        isImportant={true}
+      />
+      
       <Volunteering 
         isExpanded={expandedSections.has('volunteering')}
         onExpandedChange={(expanded) => {
@@ -122,6 +162,16 @@ function App() {
           setExpandedSections(newSet);
         }}
         onExpandRequest={() => handleExpandSection('volunteering')}
+      />
+      
+      <LayeredForestDivider
+        topColor="#0A3323"
+        bottomColor="#3d1f12"
+        backLayerColor="#2d1f42"
+        middleLayerColor="#736390"
+        frontLayerColor="#3d1f12"
+        isExpanded={expandedSections.has('volunteering')}
+        isImportant={true}
       />
       
       <Footer />
