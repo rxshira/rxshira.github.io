@@ -82,7 +82,10 @@
   }
 
   .tag {
-    @apply px-3.5 py-1.5 border font-medium bg-pink/10 border-pink/30 text-pink;
+    @apply px-3.5 py-1.5 border font-medium;
+    background-color: rgba(var(--pink-rgb) / 0.1);
+    border-color: rgba(var(--pink-rgb) / 0.3);
+    color: var(--pink);
   }
 
   .expandable {
@@ -91,7 +94,8 @@
 
   .expandable::before {
     content: '';
-    @apply absolute left-0 top-0 w-[3px] h-0 transition-all duration-300 bg-pink;
+    @apply absolute left-0 top-0 w-[3px] h-0 transition-all duration-300;
+    background-color: var(--pink);
   }
 
   .expandable:hover::before {
@@ -103,7 +107,10 @@
   }
 
   .btn:hover {
-    @apply border-white bg-pink/10 border-pink shadow-[0_0_30px_rgba(var(--pink-rgb)/0.5)];
+    @apply border-white transition-all;
+    background-color: rgba(var(--pink-rgb) / 0.1);
+    border-color: var(--pink);
+    box-shadow: 0 0 30px rgba(var(--pink-rgb) / 0.5);
   }
 
   .neon-text {
