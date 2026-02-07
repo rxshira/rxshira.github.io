@@ -3,6 +3,15 @@ import { projects as initialProjects, Project } from '../data/projects';
 import { courses as initialCourses, Course } from '../data/courses';
 import { awards as initialAwards, Award } from '../data/awards';
 import { volunteering as initialVolunteering, Volunteering } from '../data/volunteering';
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  collection, 
+  onSnapshot 
+} from 'firebase/firestore';
+import { auth } from '../lib/firebase';
 
 export type { Project, Course, Award, Volunteering };
 
@@ -25,6 +34,7 @@ export interface SiteSettings {
   emails: string[];
   lastUpdated: string;
   spotifyLink: string;
+  primaryColor: string;
 }
 
 const initialTeaching: Teaching[] = [
@@ -34,28 +44,21 @@ const initialTeaching: Teaching[] = [
     role: 'Teaching Assistant',
     organization: 'CMU School of Computer Science (15-150)',
     timeline: 'May 2025 - August 2025, January 2026 - Present',
-    description: 'Helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support.'
-  },
-  {
-    id: 'type-theory',
-    title: 'Hype for Types',
-    role: 'Instructor',
-    organization: 'CMU Student College (98-317)',
-    timeline: 'January 2026 - Present',
-    description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification.'
+    description: 'Helping students learn Standard ML and functional programming concepts.'
   }
 ];
 
 const initialSettings: SiteSettings = {
   name: 'Shira Rubin',
-  aboutMe: `I am a problem solving addict, and my favorite kinds of problems to solve are the ones from two seemingly unrelated fields. If you talk to me, you'll also learn very fast that I love to talk. My talking "specialty" is fun facts I find amusing. I am always open to hearing more!\n\nOutside of the awesome projects I work/worked on I enjoy dancing (I used to compete in dancesport) and making chocolate completely from scratch.`,
+  aboutMe: `I am a problem solving addict...`,
   headline1: 'Computer Science @ Carnegie Mellon University',
   headline2: 'Programming Languages · Space · People',
   linkedin: 'https://linkedin.com/in/rxshira',
   xcom: 'https://x.com/rxshira',
   emails: ['shirar@andrew.cmu.edu', 'rxshira@gmail.com'],
   lastUpdated: 'February 2026',
-  spotifyLink: 'https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator'
+  spotifyLink: 'https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator',
+  primaryColor: '#ff006e'
 };
 
 interface DataContextType {
@@ -65,101 +68,212 @@ interface DataContextType {
   volunteering: Volunteering[];
   teaching: Teaching[];
   settings: SiteSettings;
-  updateProject: (project: Project) => void;
-  addProject: (project: Project) => void;
-  deleteProject: (id: string) => void;
-  updateCourse: (course: Course) => void;
-  addCourse: (course: Course) => void;
-  deleteCourse: (code: string) => void;
-  updateAward: (award: Award) => void;
-  addAward: (award: Award) => void;
-  deleteAward: (id: string) => void;
-  updateVolunteering: (vol: Volunteering) => void;
-  addVolunteering: (vol: Volunteering) => void;
-  deleteVolunteering: (id: string) => void;
-  updateTeaching: (t: Teaching) => void;
-  addTeaching: (newT: Teaching) => void;
-  deleteTeaching: (id: string) => void;
-  updateSettings: (s: SiteSettings) => void;
-  reorderItem: (type: 'projects' | 'courses' | 'awards' | 'volunteering' | 'teaching', startIndex: number, endIndex: number) => void;
-  resetData: () => void;
+  loading: boolean;
+  updateProject: (project: Project) => Promise<void>;
+  addProject: (project: Project) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  updateCourse: (course: Course) => Promise<void>;
+  addCourse: (course: Course) => Promise<void>;
+  deleteCourse: (code: string) => Promise<void>;
+  updateAward: (award: Award) => Promise<void>;
+  addAward: (award: Award) => Promise<void>;
+  deleteAward: (id: string) => Promise<void>;
+  updateVolunteering: (vol: Volunteering) => Promise<void>;
+  addVolunteering: (vol: Volunteering) => Promise<void>;
+  deleteVolunteering: (id: string) => Promise<void>;
+  updateTeaching: (t: Teaching) => Promise<void>;
+  addTeaching: (newT: Teaching) => Promise<void>;
+  deleteTeaching: (id: string) => Promise<void>;
+  updateSettings: (s: SiteSettings) => Promise<void>;
+  reorderItem: (type: string, startIndex: number, endIndex: number) => Promise<void>;
+  resetData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  if (typeof window !== 'undefined' && window.location.search.includes('reset=true')) {
-    localStorage.clear();
-  }
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)} ${parseInt(result[2], 16)} ${parseInt(result[3], 16)}` : '255 0 110';
+};
 
-  const loadData = <T,>(key: string, fallback: T): T => {
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const db = getFirestore();
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [awards, setAwards] = useState<Award[]>(initialAwards);
+  const [volunteering, setVolunteering] = useState<Volunteering[]>(initialVolunteering);
+  const [teaching, setTeaching] = useState<Teaching[]>(initialTeaching);
+  const [settings, setSettings] = useState<SiteSettings>(initialSettings);
+  const [loading, setLoading] = useState(true);
+
+  // Sync with Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'site', 'content'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.projects) setProjects(data.projects);
+        if (data.courses) setCourses(data.courses);
+        if (data.awards) setAwards(data.awards);
+        if (data.volunteering) setVolunteering(data.volunteering);
+        if (data.teaching) setTeaching(data.teaching);
+        if (data.settings) setSettings(data.settings);
+      }
+      setLoading(false);
+    }, (err) => {
+      console.warn("Firestore sync failed, using local/initial data.", err);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, [db]);
+
+  useEffect(() => {
+    if (settings.primaryColor) {
+      document.documentElement.style.setProperty('--pink', settings.primaryColor);
+      document.documentElement.style.setProperty('--pink-rgb', hexToRgb(settings.primaryColor));
+    }
+  }, [settings.primaryColor]);
+
+  const saveToCloud = async (newData: any) => {
     try {
-      const saved = localStorage.getItem(key);
-      if (!saved) return fallback;
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(fallback) && !Array.isArray(parsed)) return fallback;
-      if (!Array.isArray(fallback) && typeof parsed !== 'object') return fallback;
-      return typeof fallback === 'object' && fallback !== null ? { ...fallback, ...parsed } : parsed;
+      await setDoc(doc(db, 'site', 'content'), newData, { merge: true });
     } catch (e) {
-      return fallback;
+      console.error("Failed to save to cloud", e);
+      alert("Unauthorized: You must be logged in as an admin to save changes.");
     }
   };
 
-  const [projects, setProjects] = useState<Project[]>(() => loadData('site_projects', initialProjects));
-  const [courses, setCourses] = useState<Course[]>(() => loadData('site_courses', initialCourses));
-  const [awards, setAwards] = useState<Award[]>(() => loadData('site_awards', initialAwards));
-  const [volunteering, setVolunteering] = useState<Volunteering[]>(() => loadData('site_volunteering', initialVolunteering));
-  const [teaching, setTeaching] = useState<Teaching[]>(() => loadData('site_teaching', initialTeaching));
-  const [settings, setSettings] = useState<SiteSettings>(() => loadData('site_settings', initialSettings));
-
-  useEffect(() => { localStorage.setItem('site_projects', JSON.stringify(projects)); }, [projects]);
-  useEffect(() => { localStorage.setItem('site_courses', JSON.stringify(courses)); }, [courses]);
-  useEffect(() => { localStorage.setItem('site_awards', JSON.stringify(awards)); }, [awards]);
-  useEffect(() => { localStorage.setItem('site_volunteering', JSON.stringify(volunteering)); }, [volunteering]);
-  useEffect(() => { localStorage.setItem('site_teaching', JSON.stringify(teaching)); }, [teaching]);
-  useEffect(() => { localStorage.setItem('site_settings', JSON.stringify(settings)); }, [settings]);
-
-  const updateProject = (upd: Project) => setProjects(prev => prev.map(p => p.id === upd.id ? upd : p));
-  const addProject = (newP: Project) => setProjects(prev => [newP, ...prev]);
-  const deleteProject = (id: string) => setProjects(prev => prev.filter(p => p.id !== id));
-  const updateCourse = (upd: Course) => setCourses(prev => prev.map(c => c.code === upd.code ? upd : c));
-  const addCourse = (newC: Course) => setCourses(prev => [newC, ...prev]);
-  const deleteCourse = (code: string) => setCourses(prev => prev.filter(c => c.code !== code));
-  const updateAward = (upd: Award) => setAwards(prev => prev.map(a => a.title === upd.title ? upd : a));
-  const addAward = (newA: Award) => setAwards(prev => [newA, ...prev]);
-  const deleteAward = (title: string) => setAwards(prev => prev.filter(a => a.title !== title));
-  const updateVolunteering = (upd: Volunteering) => setVolunteering(prev => prev.map(v => v.id === upd.id ? upd : v));
-  const addVolunteering = (newV: Volunteering) => setVolunteering(prev => [newV, ...prev]);
-  const deleteVolunteering = (id: string) => setVolunteering(prev => prev.filter(v => v.id !== id));
-  const updateTeaching = (upd: Teaching) => setTeaching(prev => prev.map(t => t.id === upd.id ? upd : t));
-  const addTeaching = (newT: Teaching) => setTeaching(prev => [newT, ...prev]);
-  const deleteTeaching = (id: string) => setTeaching(prev => prev.filter(t => t.id !== id));
-  const updateSettings = (upd: SiteSettings) => setSettings(upd);
-
-  const reorderItem = (type: string, startIndex: number, endIndex: number) => {
-    const setters: any = { projects: setProjects, courses: setCourses, awards: setAwards, volunteering: setVolunteering, teaching: setTeaching };
-    if (!setters[type]) return;
-    setters[type]((prev: any[]) => {
-      const result = Array.from(prev);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-      return result;
-    });
+  const updateProject = async (upd: Project) => {
+    const newList = projects.map(p => p.id === upd.id ? upd : p);
+    setProjects(newList);
+    await saveToCloud({ projects: newList });
   };
 
-  const resetData = () => {
+  const addProject = async (newP: Project) => {
+    const newList = [newP, ...projects];
+    setProjects(newList);
+    await saveToCloud({ projects: newList });
+  };
+
+  const deleteProject = async (id: string) => {
+    const newList = projects.filter(p => p.id !== id);
+    setProjects(newList);
+    await saveToCloud({ projects: newList });
+  };
+
+  const updateCourse = async (upd: Course) => {
+    const newList = courses.map(c => c.code === upd.code ? upd : c);
+    setCourses(newList);
+    await saveToCloud({ courses: newList });
+  };
+
+  const addCourse = async (newC: Course) => {
+    const newList = [...courses, newC];
+    setCourses(newList);
+    await saveToCloud({ courses: newList });
+  };
+
+  const deleteCourse = async (code: string) => {
+    const newList = courses.filter(c => c.code !== code);
+    setCourses(newList);
+    await saveToCloud({ courses: newList });
+  };
+
+  const updateAward = async (upd: Award) => {
+    const newList = awards.map(a => a.title === upd.title ? upd : a);
+    setAwards(newList);
+    await saveToCloud({ awards: newList });
+  };
+
+  const addAward = async (newA: Award) => {
+    const newList = [newA, ...awards];
+    setAwards(newList);
+    await saveToCloud({ awards: newList });
+  };
+
+  const deleteAward = async (title: string) => {
+    const newList = awards.filter(a => a.title !== title);
+    setAwards(newList);
+    await saveToCloud({ awards: newList });
+  };
+
+  const updateVolunteering = async (upd: Volunteering) => {
+    const newList = volunteering.map(v => v.id === upd.id ? upd : v);
+    setVolunteering(newList);
+    await saveToCloud({ volunteering: newList });
+  };
+
+  const addVolunteering = async (newV: Volunteering) => {
+    const newList = [newV, ...volunteering];
+    setVolunteering(newList);
+    await saveToCloud({ volunteering: newList });
+  };
+
+  const deleteVolunteering = async (id: string) => {
+    const newList = volunteering.filter(v => v.id !== id);
+    setVolunteering(newList);
+    await saveToCloud({ volunteering: newList });
+  };
+
+  const updateTeaching = async (upd: Teaching) => {
+    const newList = teaching.map(t => t.id === upd.id ? upd : t);
+    setTeaching(newList);
+    await saveToCloud({ teaching: newList });
+  };
+
+  const addTeaching = async (newT: Teaching) => {
+    const newList = [newT, ...teaching];
+    setTeaching(newList);
+    await saveToCloud({ teaching: newList });
+  };
+
+  const deleteTeaching = async (id: string) => {
+    const newList = teaching.filter(t => t.id !== id);
+    setTeaching(newList);
+    await saveToCloud({ teaching: newList });
+  };
+
+  const updateSettings = async (upd: SiteSettings) => {
+    setSettings(upd);
+    await saveToCloud({ settings: upd });
+  };
+
+  const reorderItem = async (type: string, startIndex: number, endIndex: number) => {
+    const listMap: any = { projects, courses, awards, volunteering, teaching };
+    const list = Array.from(listMap[type]);
+    const [removed] = list.splice(startIndex, 1);
+    list.splice(endIndex, 0, removed);
+    
+    const setters: any = { 
+      projects: setProjects, 
+      courses: setCourses, 
+      awards: setAwards, 
+      volunteering: setVolunteering, 
+      teaching: setTeaching 
+    };
+    setters[type](list);
+    await saveToCloud({ [type]: list });
+  };
+
+  const resetData = async () => {
     setProjects(initialProjects);
     setCourses(initialCourses);
     setAwards(initialAwards);
     setVolunteering(initialVolunteering);
     setTeaching(initialTeaching);
     setSettings(initialSettings);
-    localStorage.clear();
+    await saveToCloud({
+      projects: initialProjects,
+      courses: initialCourses,
+      awards: initialAwards,
+      volunteering: initialVolunteering,
+      teaching: initialTeaching,
+      settings: initialSettings
+    });
   };
 
   return (
     <DataContext.Provider value={{
-      projects, courses, awards, volunteering, teaching, settings,
+      projects, courses, awards, volunteering, teaching, settings, loading,
       updateProject, addProject, deleteProject,
       updateCourse, addCourse, deleteCourse,
       updateAward, addAward, deleteAward,
