@@ -168,7 +168,11 @@ const Admin = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg">{p.title}</h3>
-                        {p.featured && <Star className="w-4 h-4 text-yellow fill-yellow" title="Featured" />}
+                        {p.featured && (
+                          <span title="Featured">
+                            <Star className="w-4 h-4 text-yellow fill-yellow" />
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-text-gray">{p.subtitle}</p>
                     </div>
