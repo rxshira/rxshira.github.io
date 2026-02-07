@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Save, X, LogOut, LayoutGrid, BookOpen, Award, Heart, ChevronUp, ChevronDown, Image as ImageIcon, Settings as SettingsIcon } from 'lucide-react';
+import { Plus, Trash2, Save, X, LogOut, LayoutGrid, BookOpen, Award, Heart, ChevronUp, ChevronDown, Image as ImageIcon, Settings as SettingsIcon, Palette, Star } from 'lucide-react';
 import { Project, Award as AwardType, Volunteering, Teaching } from '../context/DataContext';
 
 const Admin = () => {
@@ -40,7 +40,7 @@ const Admin = () => {
     if (!editingItem) return;
     
     if (activeTab === 'projects') {
-      const p = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9), hasImage: !!editingItem.imagePath } as Project;
+      const p = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9) } as Project;
       isNew ? addProject(p) : updateProject(p);
     } else if (activeTab === 'academic' && editingItem.role) {
       const t = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9) } as Teaching;
@@ -56,7 +56,7 @@ const Admin = () => {
     setEditingItem(null);
   };
 
-  const ReorderControls = ({ type, index, total }: { type: 'projects' | 'courses' | 'awards' | 'volunteering' | 'teaching', index: number, total: number }) => (
+  const ReorderControls = ({ type, index, total }: { type: any, index: number, total: number }) => (
     <div className="flex flex-col gap-1 mr-4">
       <button disabled={index === 0} onClick={(e) => { e.stopPropagation(); reorderItem(type, index, index - 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronUp className="w-4 h-4" /></button>
       <button disabled={index === total - 1} onClick={(e) => { e.stopPropagation(); reorderItem(type, index, index + 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronDown className="w-4 h-4" /></button>
@@ -87,10 +87,32 @@ const Admin = () => {
           <div className="max-w-4xl mx-auto space-y-8">
             <h2 className="text-3xl font-bold">Site Settings</h2>
             <div className="bg-white/5 border border-white/10 p-8 rounded-xl space-y-6 text-sm">
-              <div className="space-y-2">
-                <label className="text-text-gray font-bold uppercase text-[10px]">Name (Super Header)</label>
-                <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.name || ''} onChange={e => setLocalSettings({...localSettings, name: e.target.value})} />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-text-gray font-bold uppercase text-[10px]">Name (Super Header)</label>
+                  <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.name || ''} onChange={e => setLocalSettings({...localSettings, name: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-text-gray font-bold uppercase text-[10px] flex items-center gap-2">
+                    <Palette className="w-3 h-3" /> Theme Accent Color
+                  </label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      className="h-11 w-20 bg-black/50 border border-white/10 rounded p-1 cursor-pointer" 
+                      value={localSettings.primaryColor || '#ff006e'} 
+                      onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
+                    />
+                    <input 
+                      type="text"
+                      className="flex-1 bg-black/50 border border-white/10 rounded p-3 font-mono uppercase" 
+                      value={localSettings.primaryColor || '#ff006e'} 
+                      onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
+                    />
+                  </div>
+                </div>
               </div>
+
               <div className="space-y-2">
                 <label className="text-text-gray font-bold uppercase text-[10px]">Headline 1</label>
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.headline1} onChange={e => setLocalSettings({...localSettings, headline1: e.target.value})} />
@@ -136,41 +158,64 @@ const Admin = () => {
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-bold">Projects</h2>
-              {!editingItem && <button onClick={() => { setIsNew(true); setEditingItem({ techStack: [], links: {} }); }} className="bg-white text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Add Project</button>}
+              {!editingItem && <button onClick={() => { setIsNew(true); setEditingItem({ techStack: [], links: {}, featured: false }); }} className="bg-white text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Add Project</button>}
             </div>
             {!editingItem ? (
               <div className="grid gap-4">
                 {projects.map((p, i) => (
                   <div key={p.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center group hover:border-pink/50 transition-colors">
                     <ReorderControls type="projects" index={i} total={projects.length} />
-                    <div className="flex-1"><h3 className="font-bold text-lg">{p.title}</h3><p className="text-sm text-text-gray">{p.subtitle}</p></div>
-                    <div className="flex gap-2"><button onClick={() => { setIsNew(false); setEditingItem(p); }} className="p-2 hover:bg-white/10 rounded-lg">Edit</button><button onClick={() => { if(confirm('Delete?')) deleteProject(p.id); }} className="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><Trash2 className="w-4 h-4" /></button></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg">{p.title}</h3>
+                        {p.featured && <Star className="w-4 h-4 text-yellow fill-yellow" title="Featured" />}
+                      </div>
+                      <p className="text-sm text-text-gray">{p.subtitle}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => { setIsNew(false); setEditingItem(p); }} className="p-2 hover:bg-white/10 rounded-lg">Edit</button>
+                      <button onClick={() => { if(confirm('Delete?')) deleteProject(p.id); }} className="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><Trash2 className="w-4 h-4" /></button>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-dark-gray border border-white/10 rounded-2xl p-8 space-y-6">
-                <div className="flex justify-between items-center border-b border-white/10 pb-4"><h3 className="text-xl font-bold">{isNew ? 'New Project' : 'Edit Project'}</h3><button onClick={() => setEditingItem(null)}><X className="w-6 h-6" /></button></div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="bg-dark-gray border border-white/10 rounded-2xl p-8 space-y-6 text-sm">
+                <div className="flex justify-between items-center border-b border-white/10 pb-4">
+                  <h3 className="text-xl font-bold">{isNew ? 'New Project' : 'Edit Project'}</h3>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={editingItem.featured || false} 
+                        onChange={e => setEditingItem({...editingItem, featured: e.target.checked})}
+                        className="accent-pink"
+                      />
+                      <span className="font-bold uppercase text-[10px] text-text-gray">Featured Work</span>
+                    </label>
+                    <button onClick={() => setEditingItem(null)}><X className="w-6 h-6" /></button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-4">
-                    <input className="w-full bg-black/50 border border-white/10 rounded p-3 text-sm" value={editingItem.title || ''} onChange={e => setEditingItem({...editingItem, title: e.target.value})} placeholder="Title" />
-                    <input className="w-full bg-black/50 border border-white/10 rounded p-3 text-sm" value={editingItem.subtitle || ''} onChange={e => setEditingItem({...editingItem, subtitle: e.target.value})} placeholder="Subtitle" />
-                    <input className="w-full bg-black/50 border border-white/10 rounded p-3 text-sm" value={editingItem.timeline || ''} onChange={e => setEditingItem({...editingItem, timeline: e.target.value})} placeholder="Timeline" />
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.title || ''} onChange={e => setEditingItem({...editingItem, title: e.target.value})} placeholder="Title" />
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.subtitle || ''} onChange={e => setEditingItem({...editingItem, subtitle: e.target.value})} placeholder="Subtitle" />
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.timeline || ''} onChange={e => setEditingItem({...editingItem, timeline: e.target.value})} placeholder="Timeline" />
                   </div>
                   <div className="bg-black/30 border border-white/5 rounded p-4 flex flex-col items-center justify-center">
                     {editingItem.imagePath ? <img src={editingItem.imagePath.startsWith('http') ? editingItem.imagePath : `/images/${editingItem.imagePath}`} className="max-h-24 rounded mb-2" alt="Preview" /> : <ImageIcon className="w-8 h-8 text-text-gray" />}
                     <input className="w-full bg-black/50 border border-white/10 rounded p-2 text-[10px]" value={editingItem.imagePath || ''} onChange={e => setEditingItem({...editingItem, imagePath: e.target.value})} placeholder="Image filename/URL" />
                   </div>
                 </div>
-                <textarea className="w-full bg-black/50 border border-white/10 rounded p-3 h-32 text-sm" value={editingItem.description || ''} onChange={e => setEditingItem({...editingItem, description: e.target.value})} placeholder="Description" />
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <textarea className="w-full bg-black/50 border border-white/10 rounded p-3 h-32" value={editingItem.description || ''} onChange={e => setEditingItem({...editingItem, description: e.target.value})} placeholder="Description" />
+                <div className="grid grid-cols-2 gap-4">
                   <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.achievement || ''} onChange={e => setEditingItem({...editingItem, achievement: e.target.value})} placeholder="Achievement" />
                   <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.role || ''} onChange={e => setEditingItem({...editingItem, role: e.target.value})} placeholder="My Role" />
                 </div>
-                <div className="grid grid-cols-1 gap-4 text-sm">
+                <div className="grid grid-cols-1 gap-4">
                   <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.collaborator || ''} onChange={e => setEditingItem({...editingItem, collaborator: e.target.value})} placeholder="Collaborator" />
                 </div>
-                <input className="w-full bg-black/50 border border-white/10 rounded p-3 text-sm" value={editingItem.techStack?.join(', ') || ''} onChange={e => setEditingItem({...editingItem, techStack: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} placeholder="Tags (comma separated)" />
+                <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.techStack?.join(', ') || ''} onChange={e => setEditingItem({...editingItem, techStack: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} placeholder="Tags (comma separated)" />
                 <div className="flex justify-end gap-3 pt-4"><button onClick={() => setEditingItem(null)} className="px-6 py-2">Cancel</button><button onClick={handleSave} className="bg-pink px-6 py-2 rounded-lg font-bold">Save Project</button></div>
               </div>
             )}

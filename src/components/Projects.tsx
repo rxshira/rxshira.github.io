@@ -9,9 +9,12 @@ const Projects = () => {
   const data = useData();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Filter only projects marked as featured in Admin
   const featuredProjects = useMemo(() => {
     if (!data || !data.projects) return [];
-    return data.projects.slice(0, 3);
+    const featured = data.projects.filter(p => p.featured);
+    // If none marked, fallback to first 3
+    return featured.length > 0 ? featured : data.projects.slice(0, 3);
   }, [data]);
 
   const toggleExpand = (id: string) => {
@@ -38,7 +41,7 @@ const Projects = () => {
 
   return (
     <section id="projects">
-      <div className="flex justify-between items-baseline mb-12">
+      <div className="flex justify-between items-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Featured Work</h2>
         <Link 
           to="/projects" 
