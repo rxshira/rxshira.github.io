@@ -7,18 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'hot-pink': '#C2185B',
-        'magenta': '#D81B60',
-        'red-orange': '#E84A3F',
-        'bright-red': '#FF5252',
-        'yellow': '#FFD93D',
-        'yellow-light': '#FFF176',
-        'orange': '#FF8C42',
-        'orange-light': '#FFA726',
-        'cream': '#F7F4D5',
-        'off-white': '#FAFAFA',
-        'black': '#1A1A1A',
-        'dark-gray': '#212121',
+        'bg': '#000000',
+        'white': '#ffffff',
+        'pink': 'var(--pink)',
+        'hot-pink': '#ff3399',
+        'text-gray': '#b0b0b0',
+        'dark-gray': '#0a0a0a',
       },
       fontFamily: {
         'megisha': ['Megisha', 'cursive'],

@@ -12,16 +12,19 @@
     "build:gh-pages": "GITHUB_PAGES=true npm run build"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "firebase": "^12.9.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.344.0",
-    "react-howler": "^3.7.11"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-howler": "^3.7.11",
+    "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
+    "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
@@ -35,4 +38,3 @@
     "vite": "^5.0.8"
   }
 }
-

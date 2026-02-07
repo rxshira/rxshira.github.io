@@ -14,7 +14,7 @@ export interface Project {
   textColor: string;
   featured?: boolean;
   hasImage?: boolean;
-  imagePath?: string; // Path to image in public/images/ folder (e.g., "specml.jpg")
+  imagePath?: string;
   stats?: {
     maxAltitude: { ft: number; m: number };
     maxVelocity: { mph: number; mps: number };
@@ -35,7 +35,7 @@ export const projects: Project[] = [
     title: 'Mechanizing AVL Trees',
     subtitle: 'Mechanizing AVL Trees in Decalf',
     timeline: 'Current',
-    description: 'My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I\'m formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.',
+    description: `My research focuses on mechanized verification of AVL trees within the decalf (Directed Effectful Cost-Aware Logical Framework) system. I'm formalizing the "Join-based" algorithmic framework developed by Blelloch, Sun, and Ferizovic, which shifts verification from monolithic insertion routines to a modular join(L, k, R) primitive—the constructive building block for efficient parallel set operations.`,
     techStack: ['Decalf', 'Type Theory', 'Formal Verification', 'AVL Trees'],
     bgColor: 'magenta',
     textColor: 'white',
@@ -47,7 +47,7 @@ export const projects: Project[] = [
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',
     timeline: 'May 2025 - Present',
-    description: 'A provably-correct OCaml pipeline for mapping planetary surface chemical compositions from NASA Cassini\'s VIMS hyperspectral imagery. Uses type-theoretic abstractions and the Rocq (Coq) proof assistant for formal verification.',
+    description: `A provably-correct OCaml pipeline for mapping planetary surface chemical compositions from NASA Cassini's VIMS hyperspectral imagery. Uses type-theoretic abstractions and the Rocq (Coq) proof assistant for formal verification.`,
     techStack: ['OCaml', 'Seq', 'Rocq/Coq', 'Git'],
     links: {
       github: 'https://github.com/rxshira/SpecML'
@@ -110,4 +110,3 @@ export const projects: Project[] = [
     certification: 'NAR Level 1 Certified - May 2024'
   }
 ];
-

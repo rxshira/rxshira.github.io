@@ -21,4 +21,3 @@ export const awards: Award[] = [
     description: 'Seattle region recognition'
   }
 ];
-

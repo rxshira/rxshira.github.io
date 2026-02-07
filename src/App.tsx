@@ -1,188 +1,202 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Hero from './components/Hero';
-import CurrentFocus from './components/CurrentFocus';
 import Projects from './components/Projects';
-import TeachingExperience from './components/TeachingExperience';
-import Courses from './components/Courses';
-import Awards from './components/Awards';
-import Volunteering from './components/Volunteering';
 import Footer from './components/Footer';
-import MusicPlayer from './components/MusicPlayer';
-import GrainTexture from './components/GrainTexture';
-import CursorTrail from './components/CursorTrail';
-import StarPlayButton from './components/StarPlayButton';
-import LayeredForestDivider from './components/LayeredForestDivider';
-import SmoothGradientDivider from './components/SmoothGradientDivider';
+import TwinklingStars from './components/TwinklingStars';
+import MeteorShower from './components/MeteorShower';
+import MeteorCursor from './components/MeteorCursor';
+import Expandable from './components/Expandable';
+import AllProjects from './components/AllProjects';
+import Login from './pages/Login';
+import Admin from './pages/Admin';
+import { useData } from './context/DataContext';
+import GlowWrapper from './components/GlowWrapper';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-function App() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
-  const [currentSong, setCurrentSong] = useState<string>('rock revival');
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['focus', 'projects', 'teaching', 'courses', 'awards', 'volunteering']));
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
-  const handleExpandSection = (sectionId: string) => {
-    const newSet = new Set(expandedSections);
-    newSet.add(sectionId);
-    setExpandedSections(newSet);
-  };
+const MusicSection = () => {
+  const data = useData();
+  if (!data || !data.settings) return null;
+  
+  return (
+    <section className="container mx-auto px-6 py-12 border-t border-white/5 mt-12">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
+        <div className="md:w-1/3 text-center md:text-left">
+          <p className="text-lg md:text-xl text-pink leading-relaxed font-medium">
+            I really like music... <br className="hidden md:block" />here is my current playlist.
+          </p>
+        </div>
+        <div className="w-full md:w-2/3">
+          <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+            <iframe
+              src={data.settings.spotifyLink}
+              width="100%"
+              height="152"
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
-  const toggleMusic = () => {
-    const newState = !isPlaying;
-    setIsPlaying(newState);
-    // When playing, show the indicator
-    if (newState) {
-      setShowMusicPlayer(true);
-    } else {
-      // When pausing, you can optionally hide it, but for now let's keep it visible
-      // setShowMusicPlayer(false);
-    }
-  };
+const TeachingCard = ({ item }: { item: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  if (!item) return null;
+  return (
+    <GlowWrapper className="bg-white/5 border border-white/10 rounded-none overflow-hidden">
+      <div 
+        className="p-6 cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="text-xl font-bold text-white leading-tight">{item.title}</h4>
+          {isOpen ? <ChevronUp className="text-pink flex-shrink-0 ml-2" /> : <ChevronDown className="text-text-gray flex-shrink-0 ml-2" />}
+        </div>
+        <p className="text-pink font-semibold">{item.role} • {item.organization}</p>
+        <p className="text-xs text-text-gray mt-1 italic">{item.timeline}</p>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <p className="pt-4 mt-4 border-t border-white/10 text-text-gray leading-relaxed">
+                {item.description}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </GlowWrapper>
+  );
+};
 
-  const closeMusicPlayer = () => {
-    // Only hide the indicator, don't pause the music
-    setShowMusicPlayer(false);
-  };
+const Home = () => {
+  const data = useData();
+  
+  if (!data) {
+    console.error("Home: Data context is null!");
+    return <div className="p-20 text-white text-center">Loading data...</div>;
+  }
 
-  const handlePlayStateChange = (playing: boolean) => {
-    setIsPlaying(playing);
-    // When playing starts, show the indicator
-    if (playing) {
-      setShowMusicPlayer(true);
-    }
-  };
+  const { courses, awards, volunteering, teaching } = data;
 
   return (
-    <div className="min-h-screen bg-cream text-gray-900 transition-colors duration-300 relative overflow-x-hidden">
-      <CursorTrail />
-      <GrainTexture />
+    <div className="space-y-12">
+      <Hero />
       
-      <StarPlayButton isPlaying={isPlaying} onToggle={toggleMusic} />
-      
-      <Hero isPlaying={isPlaying} onPlayStateChange={handlePlayStateChange} />
-      
-      <CurrentFocus 
-        isExpanded={expandedSections.has('focus')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('focus');
-          else newSet.delete('focus');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('focus')}
-      />
-      
-      <SmoothGradientDivider
-        topColor="#2d1f42"
-        bottomColor="#736390"
-        isExpanded={expandedSections.has('focus')}
-      />
-      
-      <Projects 
-        isExpanded={expandedSections.has('projects')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('projects');
-          else newSet.delete('projects');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('projects')}
-      />
-      
-      <SmoothGradientDivider
-        topColor="#736390"
-        bottomColor="#d66c61"
-        isExpanded={expandedSections.has('projects')}
-      />
-      
-      <TeachingExperience 
-        isExpanded={expandedSections.has('teaching')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('teaching');
-          else newSet.delete('teaching');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('teaching')}
-      />
-      
-      <SmoothGradientDivider
-        topColor="#d66c61"
-        bottomColor="#F7F4D5"
-        isExpanded={expandedSections.has('teaching')}
-      />
-      
-      <Courses 
-        isExpanded={expandedSections.has('courses')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('courses');
-          else newSet.delete('courses');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('courses')}
-      />
-      
-      <LayeredForestDivider
-        topColor="#F7F4D5"
-        bottomColor="#839958"
-        backLayerColor="#3d1f12"
-        middleLayerColor="#d66c61"
-        frontLayerColor="#839958"
-        isExpanded={expandedSections.has('courses')}
-        isImportant={false}
-      />
-      
-      <Awards 
-        isExpanded={expandedSections.has('awards')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('awards');
-          else newSet.delete('awards');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('awards')}
-      />
-      
-      <LayeredForestDivider
-        topColor="#839958"
-        bottomColor="#0A3323"
-        backLayerColor="#3d1f12"
-        middleLayerColor="#736390"
-        frontLayerColor="#0A3323"
-        isExpanded={expandedSections.has('awards')}
-        isImportant={true}
-      />
-      
-      <Volunteering 
-        isExpanded={expandedSections.has('volunteering')}
-        onExpandedChange={(expanded) => {
-          const newSet = new Set(expandedSections);
-          if (expanded) newSet.add('volunteering');
-          else newSet.delete('volunteering');
-          setExpandedSections(newSet);
-        }}
-        onExpandRequest={() => handleExpandSection('volunteering')}
-      />
-      
-      <LayeredForestDivider
-        topColor="#0A3323"
-        bottomColor="#3d1f12"
-        backLayerColor="#2d1f42"
-        middleLayerColor="#736390"
-        frontLayerColor="#3d1f12"
-        isExpanded={expandedSections.has('volunteering')}
-        isImportant={true}
-      />
-      
-      <Footer />
-      
-      <MusicPlayer 
-        isPlaying={isPlaying && showMusicPlayer} 
-        onToggle={toggleMusic}
-        currentSong={currentSong}
-        onClose={closeMusicPlayer}
-      />
+      <main className="container mx-auto px-6 space-y-24 pb-12">
+        <Projects />
+
+        <section id="experience" className="space-y-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Experience & Recognition</h2>
+          
+          <div className="grid grid-cols-1 gap-6">
+            <Expandable title="Academic Experience">
+              <div className="space-y-10 py-4">
+                <div>
+                  <h4 className="text-white text-xl font-bold mb-6">Teaching</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {teaching && teaching.map(item => (
+                      <TeachingCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-white text-xl font-bold mb-4">Selected Coursework</h4>
+                  <div className="flex flex-wrap gap-3">
+                    {courses && courses.map(course => (
+                      <span key={course.code} className="tag text-xs py-2 px-4">
+                        {course.code}: {course.name} {course.code === '16-865' && '[GRADUATE]'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Expandable>
+
+            <Expandable title="Service & Leadership">
+              <div className="space-y-10 py-4">
+                {volunteering && volunteering.map(vol => (
+                  <div key={vol.id} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
+                    <h4 className="text-white text-2xl font-bold mb-2">{vol.title}</h4>
+                    <p className="text-pink text-base font-semibold mb-4">{vol.organization} • {vol.timeline}</p>
+                    <p className="text-base md:text-lg mb-6 leading-relaxed text-text-gray">
+                      {vol.description}
+                    </p>
+                    {vol.achievements && vol.achievements.length > 0 && (
+                      <div className="space-y-3">
+                        <p className="text-white text-sm font-bold uppercase tracking-wider">Key Impact:</p>
+                        <ul className="list-disc list-inside space-y-2 text-sm md:text-base text-text-gray/80">
+                          {vol.achievements.map((achievement, i) => (
+                            <li key={i}>{achievement}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Expandable>
+
+            <Expandable title="Awards & Recognition">
+              <div className="space-y-10 py-4">
+                {awards && awards.map((award, i) => (
+                  <div key={i} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
+                    <h4 className="text-white text-2xl font-bold mb-2">{award.title}</h4>
+                    <p className="text-pink text-base font-semibold mb-3">{award.date}</p>
+                    <p className="text-base md:text-lg text-text-gray leading-relaxed">
+                      {award.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Expandable>
+          </div>
+        </section>
+
+        <MusicSection />
+      </main>
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <ScrollToTop />
+      <div className="min-h-screen bg-bg text-white font-body antialiased relative overflow-x-hidden">
+        <TwinklingStars />
+        <MeteorShower />
+        <MeteorCursor />
+        
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<AllProjects />} />
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+
+        <Footer />
+      </div>
+    </Router>
   );
 }
 

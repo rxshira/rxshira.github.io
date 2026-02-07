@@ -1,363 +1,164 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { Github, Play, X, Plus, Minus } from 'lucide-react';
-import { projects } from '../data/projects';
-import TwinklingStars from './TwinklingStars';
+import { useState, useMemo } from 'react';
+import { Github, Play, ChevronDown, ChevronUp } from 'lucide-react';
+import { useData } from '../context/DataContext';
+import GlowWrapper from './GlowWrapper';
+import { Link } from 'react-router-dom';
 
-interface ProjectsProps {
-  onExpandedChange?: (expanded: boolean) => void;
-  isExpanded?: boolean;
-  onExpandRequest?: () => void;
-}
+const Projects = () => {
+  const data = useData();
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-const Projects = ({ onExpandedChange, isExpanded: externalExpanded, onExpandRequest }: ProjectsProps) => {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isSectionExpanded, setIsSectionExpanded] = useState(true);
-  
-  useEffect(() => {
-    if (externalExpanded !== undefined) {
-      setIsSectionExpanded(externalExpanded);
-      if (!externalExpanded) {
-        setExpandedId(null); // Close all projects when section closes
-      }
-    }
-  }, [externalExpanded]);
-  
-  const handleSectionToggle = () => {
-    const newExpanded = !isSectionExpanded;
-    setIsSectionExpanded(newExpanded);
-    onExpandedChange?.(newExpanded);
-    if (!newExpanded) {
-      setExpandedId(null); // Close all projects when section closes
-    }
-  };
+  const featuredProjects = useMemo(() => {
+    if (!data || !data.projects) return [];
+    return data.projects.slice(0, 3);
+  }, [data]);
 
   const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
+    const newIds = new Set(expandedIds);
+    if (newIds.has(id)) {
+      newIds.delete(id);
+    } else {
+      newIds.add(id);
+    }
+    setExpandedIds(newIds);
   };
 
+  const columns = useMemo(() => {
+    const cols: any[][] = [[], [], []];
+    featuredProjects.forEach((project, index) => {
+      cols[index % 3].push(project);
+    });
+    return cols;
+  }, [featuredProjects]);
+
+  if (!data || !data.projects || data.projects.length === 0) {
+    return null;
+  }
+
   return (
-    <section id="projects" className="relative py-20 px-6 overflow-hidden" style={{ backgroundColor: '#736390' }}>
-      <TwinklingStars count={28} />
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div 
-          className="mb-12 flex items-center justify-center gap-4"
+    <section id="projects">
+      <div className="flex justify-between items-baseline mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Featured Work</h2>
+        <Link 
+          to="/projects" 
+          className="text-pink hover:opacity-80 transition-all font-bold text-sm md:text-base border-b-2 border-pink/30 hover:border-pink pb-1"
         >
-          <button
-            onClick={handleSectionToggle}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
-            style={{ color: 'white' }}
-          >
-            {isSectionExpanded ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-          </button>
-          <motion.h2 
-            className="text-5xl md:text-6xl font-black text-center relative inline-block transition-all duration-300 cursor-pointer"
-            onClick={handleSectionToggle}
-            style={{ 
-              color: '#2d1f42',
-              textShadow: isSectionExpanded ? '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)' : '0 0 0px rgba(45, 31, 66, 0)'
-            }}
-            onMouseEnter={(e) => {
-              if (!isSectionExpanded) {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSectionExpanded) {
-                e.currentTarget.style.textShadow = '0 0 0px rgba(45, 31, 66, 0)';
-              } else {
-                e.currentTarget.style.textShadow = '0 0 20px rgba(45, 31, 66, 0.5), 0 0 40px rgba(45, 31, 66, 0.3)';
-              }
-            }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            Projects
-            <svg className="absolute -bottom-3 left-0 w-full" height="15" viewBox="0 0 400 15">
-              <path d="M0,10 Q100,0 200,10 T400,10" stroke="#2d1f42" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            </svg>
-          </motion.h2>
-        </div>
-
-        <AnimatePresence>
-          {isSectionExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-        <div className="grid md:grid-cols-3 gap-6 items-start">
-      {projects.map((project, index) => {
-            const isExpanded = expandedId === project.id;
-
-        return (
-              <motion.div
-            key={project.id}
-                className="rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 relative group"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
-                  backdropFilter: 'blur(30px)',
-                  WebkitBackdropFilter: 'blur(30px)',
-                  border: '1px solid rgba(255, 255, 255, 0.4)',
-                  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                  alignSelf: 'start',
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                onClick={() => toggleExpand(project.id)}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(10, 51, 35, 0.08)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.15)',
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '25%',
-                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent)',
-                    pointerEvents: 'none',
-                    borderBottomLeftRadius: '24px',
-                    borderBottomRightRadius: '24px',
-                  }}
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleExpand(project.id);
-                  }}
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4 z-10"
-                  style={{ color: 'white' }}
-                >
-                  {isExpanded ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                </button>
-                <AnimatePresence mode="wait">
-                  {!isExpanded ? (
-                    // Collapsed state - title, subtitle, and tech tags
-                    <motion.div
-                      key="collapsed"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="p-6 space-y-3"
-                    >
-                      <h3 className="text-2xl font-black mb-2" style={{ color: '#2d1f42' }}>
+          See all projects →
+        </Link>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {columns.map((column, colIndex) => (
+          <div key={colIndex} className="flex flex-col gap-10">
+            {column.map((project) => (
+              <GlowWrapper key={project.id} className="card flex flex-col cursor-pointer" >
+                <div className="h-full flex flex-col">
+                  <div 
+                    onClick={() => toggleExpand(project.id)} 
+                    className="group/header"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <h3 className="text-2xl font-bold text-white leading-tight group-hover:text-pink transition-colors">
                         {project.title}
                       </h3>
-                      <p className="text-gray-700 font-bold">{project.subtitle}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.slice(0, 3).map((tech) => (
-                          <span
-                            key={tech}
-                            className="px-3 py-1 rounded-full font-bold text-xs relative overflow-hidden"
-                            style={{
-                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
-                              backdropFilter: 'blur(30px)',
-                              WebkitBackdropFilter: 'blur(30px)',
-                              border: '1px solid rgba(255, 255, 255, 0.4)',
-                              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                              color: '#2d1f42'
-                            }}
-                          >
-                            <div
-                              style={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'rgba(45, 31, 66, 0.15)',
-                                pointerEvents: 'none',
-                              }}
-                            />
-                            <span className="relative z-10">{tech}</span>
-                          </span>
-                        ))}
-                        {project.techStack.length > 3 && (
-                          <span
-                            className="px-3 py-1 rounded-full font-bold text-xs text-gray-600"
-                          >
-                            +{project.techStack.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    // Expanded state - full details
-                <motion.div
-                      key="expanded"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="p-6 space-y-4 relative z-10"
-                    >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-3xl font-black mb-2" style={{ color: '#2d1f42' }}>
-                          {project.title}
-                        </h3>
-                        <p className="text-xl font-bold mb-2 text-gray-700">{project.subtitle}</p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedId(null);
-                        }}
-                        className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0 absolute top-4 right-4"
-                        style={{ color: 'white' }}
-                      >
-                        <Minus className="w-5 h-5" />
-                      </button>
+                      {expandedIds.has(project.id) ? (
+                        <ChevronUp className="text-pink w-6 h-6 flex-shrink-0" />
+                      ) : (
+                        <ChevronDown className="text-text-gray group-hover/header:text-white w-6 h-6 transition-colors flex-shrink-0" />
+                      )}
                     </div>
-
-                    {(project.collaborator || project.role) && (
-                      <p className="text-base text-gray-600">
-                        {project.collaborator || project.role} • {project.timeline}
-                      </p>
-                    )}
-
-                    {!project.collaborator && !project.role && (
-                      <p className="text-base italic text-gray-600">
-                    {project.timeline}
+                    
+                    <p className="text-text-gray text-base mb-6 leading-relaxed">
+                      {project.subtitle}
                     </p>
-                  )}
+                  </div>
 
-                    <p className="text-base leading-relaxed text-gray-700">
-                    {project.description}
-                  </p>
-
-                    {project.impact && (
-                      <p className="text-base italic text-gray-700">
-                        {project.impact}
-                      </p>
-                    )}
-
-                    {project.achievement && (
-                      <p className="text-base font-bold text-gray-800">
-                        {project.achievement}
-                      </p>
-                    )}
-
-                    {/* Special handling for Asteria stats */}
-                    {project.id === 'asteria1' && project.stats && (
-                      <div className="bg-gray-100 rounded-2xl p-4 space-y-2">
-                        <h4 className="text-xl font-black" style={{ color: '#105666' }}>Some Stats...</h4>
-                        <div className="space-y-1 text-sm text-gray-700">
-                          <p><span className="font-bold" style={{ color: '#736390' }}>Max Altitude:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxAltitude.ft}ft [or] {project.stats.maxAltitude.m}m</span></p>
-                          <p><span className="font-bold" style={{ color: '#736390' }}>Max Velocity:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxVelocity.mph} mph [or] {project.stats.maxVelocity.mps} m/s</span></p>
-                          <p><span className="font-bold" style={{ color: '#736390' }}>Max G forces:</span> <span style={{ color: '#2d1f42' }}>{project.stats.maxG} Gs</span></p>
-                          <p><span className="font-bold" style={{ color: '#736390' }}>Motor Used:</span> <span style={{ color: '#2d1f42' }}>{project.stats.motor}</span></p>
-                      </div>
-                    </div>
-                  )}
-
-                  {project.certification && (
-                      <div className="bg-green-100 border-2 border-green-600 rounded-xl p-3 inline-block">
-                        <p className="font-bold text-green-800 text-sm">🚀 {project.certification}</p>
-                    </div>
-                  )}
-
-                    {/* Image */}
-                    {project.hasImage && project.imagePath && (
-                      <div className="relative">
-                        <img
-                          src={`/images/${project.imagePath}`}
-                          alt={project.title}
-                          className="w-full rounded-2xl shadow-lg object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                    </div>
-                  )}
-
-                    {/* Tech stack */}
-                    <div className="flex flex-wrap gap-2">
-                      {project.techStack.map((tech) => (
-                      <span
-                          key={tech}
-                          className="px-3 py-1 rounded-full font-bold text-xs relative overflow-hidden"
-                          style={{
-                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3))',
-                            backdropFilter: 'blur(30px)',
-                            WebkitBackdropFilter: 'blur(30px)',
-                            border: '1px solid rgba(255, 255, 255, 0.4)',
-                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                            color: '#2d1f42'
-                          }}
+                  <AnimatePresence>
+                    {expandedIds.has(project.id) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden mb-6"
                       >
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'rgba(45, 31, 66, 0.15)',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                        <span className="relative z-10">{tech}</span>
-                      </span>
+                        <div className="pt-6 border-t border-white/10 space-y-6 cursor-default" onClick={(e) => e.stopPropagation()}>
+                          <p className="text-base md:text-lg text-text-gray leading-relaxed">
+                            {project.description}
+                          </p>
+                          
+                          {project.role && (
+                            <p className="text-sm font-bold text-white uppercase tracking-wider">
+                              Role: {project.role}
+                            </p>
+                          )}
+
+                          {project.collaborator && (
+                            <p className="text-sm italic text-text-gray/80">
+                              {project.collaborator}
+                            </p>
+                          )}
+
+                          {project.achievement && (
+                            <p className="text-base font-bold text-pink">
+                              Achievement: {project.achievement}
+                            </p>
+                          )}
+
+                          {project.imagePath && (
+                            <img 
+                              src={project.imagePath.startsWith('http') ? project.imagePath : `/images/${project.imagePath}`} 
+                              alt={project.title}
+                              className="w-full border border-white/10 shadow-lg object-cover"
+                              onError={(e) => (e.currentTarget.style.display = 'none')}
+                            />
+                          )}
+                          
+                          {project.id === 'asteria1' && project.stats && (
+                            <div className="bg-white/5 p-6 rounded-none text-sm space-y-2 text-text-gray border border-white/5">
+                              <p><span className="text-pink font-semibold">Max Altitude:</span> {project.stats.maxAltitude.ft}ft</p>
+                              <p><span className="text-pink font-semibold">Max Velocity:</span> {project.stats.maxVelocity.mph} mph</p>
+                              <p><span className="text-pink font-semibold">Max G forces:</span> {project.stats.maxG} Gs</p>
+                            </div>
+                          )}
+
+                          <div className="flex gap-6">
+                            {project.links?.github && (
+                              <a 
+                                href={project.links.github} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-pink hover:opacity-80 transition-colors inline-flex items-center gap-2 text-base font-semibold"
+                              >
+                                <Github className="w-5 h-5" /> GitHub
+                              </a>
+                            )}
+                            {project.links?.video && (
+                              <a 
+                                href={project.links.video} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-pink hover:opacity-80 transition-colors inline-flex items-center gap-2 text-base font-semibold"
+                              >
+                                <Play className="w-5 h-5" /> Video
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="flex flex-wrap gap-3 mt-auto pt-4 cursor-default" onClick={(e) => e.stopPropagation()}>
+                    {project.techStack && project.techStack.map((tech: string) => (
+                      <span key={tech} className="tag text-xs py-1.5 px-3">{tech}</span>
                     ))}
                   </div>
-
-                    {/* Links */}
-                    <div className="flex gap-3 flex-wrap">
-                      {project.links?.github && (
-                        <a
-                          href={project.links.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
-                          style={{ 
-                            backgroundColor: '#2d1f42',
-                            color: 'white'
-                          }}
-                        >
-                          <Github className="w-4 h-4" />
-                          View on GitHub
-                        </a>
-                      )}
-                      {project.links?.video && (
-                        <a
-                          href={project.links.video}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-white hover:scale-105 transition-all duration-300 text-sm"
-                          style={{ backgroundColor: '#2d1f42' }}
-                        >
-                          <Play className="w-4 h-4" />
-                          Watch Video
-                        </a>
-                      )}
-                  </div>
-                </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              </GlowWrapper>
+            ))}
+          </div>
+        ))}
       </div>
     </section>
   );
