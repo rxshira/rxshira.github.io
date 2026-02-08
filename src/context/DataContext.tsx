@@ -37,20 +37,20 @@ export interface SiteSettings {
 
 const initialTeaching: Teaching[] = [
   {
-    id: 'fp-ta',
+    id: 'fp-ta-2025',
     title: 'Principles of Functional Programming',
     role: 'Teaching Assistant',
     organization: 'CMU School of Computer Science (15-150)',
     timeline: 'May 2025 - August 2025, January 2026 - Present',
-    description: 'Helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support.'
+    description: 'Teaching assistant for 15-150 Principles of Functional Programming, helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support to students.'
   },
   {
-    id: 'type-theory',
+    id: 'hype-types-2026',
     title: 'Hype for Types',
     role: 'Instructor',
     organization: 'CMU Student College (98-317)',
     timeline: 'January 2026 - Present',
-    description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification.'
+    description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification. Designed curriculum and teach weekly lectures to undergraduate students interested in advanced type systems.'
   }
 ];
 
