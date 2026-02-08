@@ -4,11 +4,11 @@ import { courses as initialCourses, Course } from '../data/courses';
 import { awards as initialAwards, Award } from '../data/awards';
 import { volunteering as initialVolunteering, Volunteering } from '../data/volunteering';
 import { 
-  getFirestore, 
   doc, 
   onSnapshot, 
   setDoc 
 } from 'firebase/firestore';
+import { db, isConfigValid } from '../lib/firebase';
 
 export type { Project, Course, Award, Volunteering };
 
@@ -41,7 +41,7 @@ const initialTeaching: Teaching[] = [
     role: 'Teaching Assistant',
     organization: 'CMU School of Computer Science (15-150)',
     timeline: 'May 2025 - August 2025, January 2026 - Present',
-    description: 'Helping students learn Standard ML and functional programming concepts. Lead recitations, grade assignments, and provide one-on-one support.'
+    description: 'Helping students learn Standard ML and functional programming concepts.'
   },
   {
     id: 'type-theory',
@@ -49,13 +49,13 @@ const initialTeaching: Teaching[] = [
     role: 'Instructor',
     organization: 'CMU Student College (98-317)',
     timeline: 'January 2026 - Present',
-    description: 'Instructing a student-taught course on type theory, covering dependent types, proof assistants, and formal verification.'
+    description: 'Instructing a student-taught course on type theory.'
   }
 ];
 
 const initialSettings: SiteSettings = {
   name: 'Shira Rubin',
-  aboutMe: `I am a problem solving addict, and my favorite kinds of problems to solve are the ones from two seemingly unrelated fields. If you talk to me, you'll also learn very fast that I love to talk. My talking "specialty" is fun facts I find amusing. I am always open to hearing more!\n\nOutside of the awesome projects I work/worked on I enjoy dancing (I used to compete in dancesport) and making chocolate completely from scratch.`,
+  aboutMe: `I am a problem solving addict...`,
   headline1: 'Computer Science @ Carnegie Mellon University',
   headline2: 'Programming Languages · Space · People',
   linkedin: 'https://linkedin.com/in/rxshira',
@@ -102,7 +102,6 @@ const hexToRgb = (hex: string) => {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const db = getFirestore();
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [awards, setAwards] = useState<Award[]>(initialAwards);
@@ -112,6 +111,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isConfigValid) {
+      console.warn("DataContext: Firebase not configured. Cloud sync disabled.");
+      setLoading(false);
+      return;
+    }
+
     const unsub = onSnapshot(doc(db, 'site', 'content'), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
@@ -124,11 +129,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setLoading(false);
     }, (err) => {
-      console.warn("Firestore sync failed, using initial data.", err);
+      console.error("Firestore sync error:", err);
       setLoading(false);
     });
     return () => unsub();
-  }, [db]);
+  }, []);
 
   useEffect(() => {
     if (settings.primaryColor) {
@@ -138,11 +143,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [settings.primaryColor]);
 
   const saveToCloud = async (newData: any) => {
+    if (!isConfigValid) {
+      alert("Database error: Website is currently running in local mode. Changes will not be saved permanently.");
+      return;
+    }
     try {
       await setDoc(doc(db, 'site', 'content'), newData, { merge: true });
     } catch (e) {
-      console.error("Failed to save to cloud", e);
-      alert("Unauthorized: You must be logged in as an admin to save changes.");
+      console.error("Save failed:", e);
+      alert("Permission denied: Check your Firestore Security Rules.");
     }
   };
 
