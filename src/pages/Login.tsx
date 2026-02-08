@@ -11,6 +11,9 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // Check if credentials are even configured in the build
+  const isConfigured = !!(import.meta as any).env?.VITE_ADMIN_PASSWORD;
+
   useEffect(() => {
     if (user && isAdmin) {
       navigate('/admin');
@@ -19,6 +22,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isConfigured) return;
     setIsSubmitting(true);
     const success = await login(username, password);
     setIsSubmitting(false);
@@ -27,7 +31,6 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink/10 blur-[100px] rounded-full opacity-50"></div>
       </div>
@@ -41,6 +44,13 @@ const Login = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Admin Access</h1>
           <p className="text-text-gray mb-8 text-sm uppercase tracking-widest font-bold">Internal Use Only</p>
           
+          {(!isConfigured) && (
+            <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500 text-xs text-left">
+              <p className="font-bold mb-1">Configuration Required:</p>
+              <p>Please add VITE_ADMIN_USERNAME and VITE_ADMIN_PASSWORD to your GitHub Secrets and wait for the build to finish.</p>
+            </div>
+          )}
+
           {authError && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-400 text-sm text-left">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -75,10 +85,10 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-white text-black font-bold hover:bg-pink hover:text-white transition-all disabled:opacity-50 mt-4"
+              disabled={isSubmitting || !isConfigured}
+              className="w-full py-3 px-4 bg-white text-black font-bold hover:bg-pink hover:text-white transition-all disabled:opacity-30 mt-4"
             >
-              {isSubmitting ? 'Verifying...' : 'Login to Dashboard'}
+              {!isConfigured ? 'System Not Configured' : isSubmitting ? 'Verifying...' : 'Login to Dashboard'}
             </button>
 
             <Link 

@@ -7,15 +7,11 @@ const Hero = () => {
   const [showMoreAboutMe, setShowMoreAboutMe] = useState(false);
   const data = useData();
   
-  if (!data || !data.settings) {
-    return (
-      <section id="hero" className="relative pt-32 pb-16 px-6 min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-white text-5xl font-bold">Shira Rubin</h1>
-      </section>
-    );
-  }
-
-  const { settings } = data;
+  // Fallback values if context is still loading or partially missing
+  const name = data?.settings?.name || "Shira Rubin";
+  const h1 = data?.settings?.headline1 || "Computer Science @ Carnegie Mellon University";
+  const h2 = data?.settings?.headline2 || "Programming Languages · Space · People";
+  const about = data?.settings?.aboutMe || "";
 
   return (
     <section id="hero" className="relative pt-32 pb-16 px-6 min-h-[60vh] flex flex-col items-center justify-center text-center">
@@ -34,15 +30,15 @@ const Hero = () => {
               textShadow: '0 10px 40px rgba(var(--pink-rgb) / 0.2)'
             }}
           >
-            {settings.name}
+            {name}
           </h1>
           
           <div className="space-y-4 max-w-3xl mx-auto">
             <p className="text-xl md:text-2xl text-white font-medium">
-              {settings.headline1}
+              {h1}
             </p>
             <p className="text-base md:text-lg text-text-gray tracking-wide">
-              {settings.headline2}
+              {h2}
             </p>
           </div>
 
@@ -55,18 +51,20 @@ const Hero = () => {
                 View Work
               </button>
             </GlowWrapper>
-            <GlowWrapper>
-              <button 
-                onClick={() => setShowMoreAboutMe(!showMoreAboutMe)}
-                className="btn text-base py-3 px-8"
-              >
-                {showMoreAboutMe ? 'Less about me' : 'More about me'}
-              </button>
-            </GlowWrapper>
+            {about && (
+              <GlowWrapper>
+                <button 
+                  onClick={() => setShowMoreAboutMe(!showMoreAboutMe)}
+                  className="btn text-base py-3 px-8"
+                >
+                  {showMoreAboutMe ? 'Less about me' : 'More about me'}
+                </button>
+              </GlowWrapper>
+            )}
           </div>
 
           <AnimatePresence>
-            {showMoreAboutMe && (
+            {showMoreAboutMe && about && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -75,7 +73,7 @@ const Hero = () => {
               >
                 <div className="mt-8 text-left max-w-3xl mx-auto px-6 border-l-2 border-pink/30">
                   <p className="text-lg md:text-xl text-text-gray/90 leading-relaxed font-light whitespace-pre-wrap">
-                    {settings.aboutMe}
+                    {about}
                   </p>
                 </div>
               </motion.div>
