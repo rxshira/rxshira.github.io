@@ -1,0 +1,18 @@
+type User @table {
+  username: String!
+  email: String!
+  passwordHash: String!
+  createdAt: Timestamp!
+  displayName: String
+  profilePictureUrl: String
+}
+
+type Post @table {
+  title: String!
+  content: String!
+  createdAt: Timestamp!
+  isPublic: Boolean!
+  updatedAt: Timestamp
+  imageUrl: String
+  author: User
+}

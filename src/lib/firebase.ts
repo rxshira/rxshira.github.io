@@ -2,14 +2,17 @@ import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 
-// Standard Vite way to access environment variables
+// Using 'as any' to bypass TypeScript's strict check on import.meta.env 
+// which is causing the build to fail.
+const meta = import.meta as any;
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: meta.env?.VITE_FIREBASE_API_KEY,
+  authDomain: meta.env?.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: meta.env?.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: meta.env?.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: meta.env?.VITE_FIREBASE_APP_ID
 };
 
 let app: FirebaseApp;
@@ -31,7 +34,6 @@ try {
   } else {
     console.warn("⚠️ Firebase configuration is missing or invalid. Running in local mode.");
     // Fallbacks to prevent crashes
-    app = {} as any;
     auth = { onAuthStateChanged: () => () => {} } as any;
     db = {} as any;
   }

@@ -1,0 +1,30 @@
+mutation CreateUser @auth(level: USER) {
+  user_insert(data: {
+    username: "exampleUser",
+    email: "example@email.com",
+    passwordHash: "hashed_password",
+    createdAt_expr: "request.time"
+  })
+}
+
+query GetPublicPosts @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  posts(where: {isPublic: {eq: true}}) {
+    id
+    title
+    content
+    createdAt
+  }
+}
+
+mutation UpdatePost($id: UUID!, $content: String) @auth(level: USER) {
+  post_update(key: {id: $id}, data: {content: $content, updatedAt_expr: "request.time"})
+}
+
+query GetUserPosts @auth(level: USER) {
+  posts(where: {authorId: {eq_expr: "auth.uid"}}) {
+    id
+    title
+    content
+    createdAt
+  }
+}
