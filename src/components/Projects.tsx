@@ -9,12 +9,14 @@ const Projects = () => {
   const data = useData();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  // Filter only projects marked as featured in Admin
+  // Filter only projects marked as featured in Admin, but ensure we show at least 3
   const featuredProjects = useMemo(() => {
     if (!data || !data.projects) return [];
     const featured = data.projects.filter(p => p.featured);
-    // If none marked, fallback to first 3
-    return featured.length > 0 ? featured : data.projects.slice(0, 3);
+    const nonFeatured = data.projects.filter(p => !p.featured);
+    
+    // Combine them and take the top 3
+    return [...featured, ...nonFeatured].slice(0, 3);
   }, [data]);
 
   const toggleExpand = (id: string) => {
