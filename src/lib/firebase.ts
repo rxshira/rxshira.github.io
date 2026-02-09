@@ -29,6 +29,8 @@ if (!isConfigValid) {
     hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
     envType: typeof import.meta.env
   });
+} else {
+  console.log("✅ Firebase initialized with Project ID:", import.meta.env.VITE_FIREBASE_PROJECT_ID);
 }
 
 try {
