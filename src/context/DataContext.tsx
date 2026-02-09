@@ -92,6 +92,7 @@ interface DataContextType {
   deleteTeaching: (id: string) => Promise<void>;
   updateSettings: (s: SiteSettings) => Promise<void>;
   reorderItem: (type: string, startIndex: number, endIndex: number) => Promise<void>;
+  reorderFeatured: (startIndex: number, endIndex: number) => Promise<void>;
   resetData: () => Promise<void>;
 }
 
@@ -268,6 +269,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await saveToCloud({ [type]: list });
   };
 
+  const reorderFeatured = async (startIndex: number, endIndex: number) => {
+    // 1. Get current featured projects in their current order
+    const featured = projects.filter(p => p.featured);
+    const itemToMove = featured[startIndex];
+    
+    // 2. Remove from current featured list
+    const newFeatured = [...featured];
+    newFeatured.splice(startIndex, 1);
+    
+    // 3. Insert at new featured list position
+    newFeatured.splice(endIndex, 0, itemToMove);
+    
+    // 4. Reconstruct the full project list preserving non-featured positions
+    const nonFeatured = projects.filter(p => !p.featured);
+    
+    // Interleave them: we put all featured projects first for simplicity in ordering,
+    // or we can try to maintain original slots. 
+    // Usually, users want featured projects to be the "priority" ones.
+    const newList = [...newFeatured, ...nonFeatured];
+    
+    setProjects(newList);
+    await saveToCloud({ projects: newList });
+  };
+
   const resetData = async () => {
     setProjects(initialProjects);
     setCourses(initialCourses);
@@ -294,7 +319,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateVolunteering, addVolunteering, deleteVolunteering,
       updateTeaching, addTeaching, deleteTeaching,
       updateSettings,
-      reorderItem, resetData
+      reorderItem, reorderFeatured, resetData
     }}>
       {children}
     </DataContext.Provider>

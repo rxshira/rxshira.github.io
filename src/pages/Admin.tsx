@@ -14,10 +14,11 @@ const Admin = () => {
     volunteering, addVolunteering, updateVolunteering, deleteVolunteering,
     teaching, addTeaching, updateTeaching, deleteTeaching,
     settings, updateSettings,
-    reorderItem
+    reorderItem,
+    reorderFeatured
   } = useData();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'projects' | 'academic' | 'awards' | 'service' | 'settings'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'featured' | 'academic' | 'awards' | 'service' | 'settings'>('projects');
   
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -39,7 +40,7 @@ const Admin = () => {
   const handleSave = () => {
     if (!editingItem) return;
     
-    if (activeTab === 'projects') {
+    if (activeTab === 'projects' || activeTab === 'featured') {
       const p = { 
         ...editingItem, 
         id: editingItem.id || Math.random().toString(36).substr(2, 9),
@@ -62,8 +63,8 @@ const Admin = () => {
 
   const ReorderControls = ({ type, index, total }: { type: any, index: number, total: number }) => (
     <div className="flex flex-col gap-1 mr-4">
-      <button disabled={index === 0} onClick={(e) => { e.stopPropagation(); reorderItem(type, index, index - 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronUp className="w-4 h-4" /></button>
-      <button disabled={index === total - 1} onClick={(e) => { e.stopPropagation(); reorderItem(type, index, index + 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronDown className="w-4 h-4" /></button>
+      <button disabled={index === 0} onClick={(e) => { e.stopPropagation(); type === 'featured' ? reorderFeatured(index, index - 1) : reorderItem(type, index, index - 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronUp className="w-4 h-4" /></button>
+      <button disabled={index === total - 1} onClick={(e) => { e.stopPropagation(); type === 'featured' ? reorderFeatured(index, index + 1) : reorderItem(type, index, index + 1); }} className="p-1 hover:bg-white/10 rounded disabled:opacity-20"><ChevronDown className="w-4 h-4" /></button>
     </div>
   );
 
@@ -77,7 +78,8 @@ const Admin = () => {
           <p className="text-xs text-text-gray truncate">{user.email}</p>
         </div>
         <nav className="space-y-2 flex-1">
-          <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> Projects</button>
+          <button onClick={() => setActiveTab('featured')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'featured' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Star className={`w-5 h-5 ${activeTab === 'featured' ? 'fill-white' : ''}`} /> Featured</button>
+          <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> All Projects</button>
           <button onClick={() => setActiveTab('academic')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'academic' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><BookOpen className="w-5 h-5" /> Academic</button>
           <button onClick={() => setActiveTab('service')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'service' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Heart className="w-5 h-5" /> Service</button>
           <button onClick={() => setActiveTab('awards')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'awards' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Award className="w-5 h-5" /> Awards</button>
@@ -87,6 +89,39 @@ const Admin = () => {
       </div>
 
       <div className="flex-1 p-10 ml-64 overflow-y-auto min-h-screen">
+        {activeTab === 'featured' && (
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-2">Featured Work</h2>
+            <p className="text-text-gray mb-8">Manage what appears on the homepage and their order.</p>
+            
+            <div className="space-y-4">
+              {projects.map((p, i) => {
+                const isFeatured = !!p.featured;
+                const featuredIndex = projects.filter(proj => proj.featured).findIndex(proj => proj.id === p.id);
+                const featuredCount = projects.filter(proj => proj.featured).length;
+
+                return (
+                  <div key={p.id} className={`bg-white/5 border p-4 rounded-xl flex items-center transition-all ${isFeatured ? 'border-pink/50 bg-pink/5' : 'border-white/10 opacity-60'}`}>
+                    {isFeatured && (
+                      <ReorderControls type="featured" index={featuredIndex} total={featuredCount} />
+                    )}
+                    <div className="flex-1">
+                      <h3 className={`font-bold ${isFeatured ? 'text-white' : 'text-text-gray'}`}>{p.title}</h3>
+                      <p className="text-xs text-text-gray">{p.subtitle}</p>
+                    </div>
+                    <button 
+                      onClick={() => updateProject({...p, featured: !isFeatured})}
+                      className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${isFeatured ? 'bg-pink text-white shadow-[0_0_10px_rgba(255,0,110,0.3)]' : 'bg-white/10 text-text-gray hover:bg-white/20'}`}
+                    >
+                      {isFeatured ? 'Featured' : 'Mark Featured'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'settings' && (
           <div className="max-w-4xl mx-auto space-y-8">
             <h2 className="text-3xl font-bold">Site Settings</h2>
