@@ -40,7 +40,11 @@ const Admin = () => {
     if (!editingItem) return;
     
     if (activeTab === 'projects') {
-      const p = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9) } as Project;
+      const p = { 
+        ...editingItem, 
+        id: editingItem.id || Math.random().toString(36).substr(2, 9),
+        featured: !!editingItem.featured 
+      } as Project;
       isNew ? addProject(p) : updateProject(p);
     } else if (activeTab === 'academic' && editingItem.role) {
       const t = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9) } as Teaching;
