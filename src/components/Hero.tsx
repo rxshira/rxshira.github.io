@@ -56,30 +56,6 @@ const Hero = () => {
                 </button>
               </GlowWrapper>
             )}
-            <GlowWrapper>
-              <button 
-                onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
-                className="btn text-base py-3 px-8"
-              >
-                Projects
-              </button>
-            </GlowWrapper>
-            <GlowWrapper>
-              <button 
-                onClick={() => document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })}
-                className="btn text-base py-3 px-8"
-              >
-                Experience
-              </button>
-            </GlowWrapper>
-            <GlowWrapper>
-              <button 
-                onClick={() => document.getElementById('music')?.scrollIntoView({ behavior: 'smooth' })}
-                className="btn text-base py-3 px-8"
-              >
-                Music
-              </button>
-            </GlowWrapper>
           </div>
 
           <AnimatePresence>
