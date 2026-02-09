@@ -22,16 +22,19 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <h1 
-            className="text-clamp-lg font-bold tracking-tighter bg-gradient-to-br from-white from-30% to-pink bg-clip-text text-transparent leading-tight pb-2" 
-            style={{ 
-              fontSize: 'clamp(56px, 10vw, 92px)',
-              fontFamily: '"Space Grotesk", sans-serif',
-              textShadow: '0 10px 40px rgba(var(--pink-rgb) / 0.2)'
-            }}
-          >
-            {name}
-          </h1>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-4">
+            <img src="/images/hero.jpg" alt={name} className="profile-pic-6" />
+            <h1 
+              className="text-clamp-lg font-bold tracking-tighter bg-gradient-to-br from-white from-30% to-pink bg-clip-text text-transparent leading-tight pb-2" 
+              style={{ 
+                fontSize: 'clamp(56px, 10vw, 92px)',
+                fontFamily: '"Space Grotesk", sans-serif',
+                textShadow: '0 10px 40px rgba(var(--pink-rgb) / 0.2)'
+              }}
+            >
+              {name}
+            </h1>
+          </div>
           
           <div className="space-y-4 max-w-3xl mx-auto">
             <p className="text-xl md:text-2xl text-white font-medium">
@@ -43,14 +46,6 @@ const Hero = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 pt-8">
-            <GlowWrapper>
-              <button 
-                onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
-                className="btn text-base py-3 px-8"
-              >
-                View Work
-              </button>
-            </GlowWrapper>
             {about && (
               <GlowWrapper>
                 <button 
@@ -61,6 +56,30 @@ const Hero = () => {
                 </button>
               </GlowWrapper>
             )}
+            <GlowWrapper>
+              <button 
+                onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                className="btn text-base py-3 px-8"
+              >
+                Projects
+              </button>
+            </GlowWrapper>
+            <GlowWrapper>
+              <button 
+                onClick={() => document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })}
+                className="btn text-base py-3 px-8"
+              >
+                Experience
+              </button>
+            </GlowWrapper>
+            <GlowWrapper>
+              <button 
+                onClick={() => document.getElementById('music')?.scrollIntoView({ behavior: 'smooth' })}
+                className="btn text-base py-3 px-8"
+              >
+                Music
+              </button>
+            </GlowWrapper>
           </div>
 
           <AnimatePresence>

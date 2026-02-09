@@ -47,7 +47,7 @@ const Projects = () => {
   return (
     <section id="projects">
       <div className="flex justify-between items-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Featured Work</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Featured Projects</h2>
         <Link 
           to="/projects" 
           className="text-pink hover:opacity-80 transition-all font-bold text-sm md:text-base border-b-2 border-pink/30 hover:border-pink pb-1"

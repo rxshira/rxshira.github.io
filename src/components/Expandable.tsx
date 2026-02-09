@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Minus } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import GlowWrapper from './GlowWrapper';
 
 interface ExpandableProps {
@@ -20,7 +20,7 @@ const Expandable: React.FC<ExpandableProps> = ({ title, children }) => {
         >
           <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">{title}</h3>
           <span className="text-text-gray text-2xl">
-            {isOpen ? <Minus className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+            {isOpen ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
           </span>
         </div>
       </GlowWrapper>

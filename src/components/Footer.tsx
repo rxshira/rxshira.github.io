@@ -41,7 +41,7 @@ const Footer = () => {
             <a 
               key={idx}
               href={`mailto:${email}`} 
-              className="text-pink hover:text-hot-pink transition-colors text-sm font-semibold"
+              className="text-pink hover:opacity-80 transition-opacity text-sm font-semibold"
             >
               {email}
             </a>

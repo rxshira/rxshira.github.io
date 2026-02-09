@@ -33,6 +33,7 @@ export interface SiteSettings {
   lastUpdated: string;
   spotifyLink: string;
   primaryColor: string;
+  colorHistory?: string[];
 }
 
 const initialTeaching: Teaching[] = [
@@ -64,7 +65,8 @@ const initialSettings: SiteSettings = {
   emails: ['shirar@andrew.cmu.edu', 'rxshira@gmail.com'],
   lastUpdated: 'February 2026',
   spotifyLink: 'https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator',
-  primaryColor: '#ff006e'
+  primaryColor: '#ff006e',
+  colorHistory: ['#ff006e', '#7000ff', '#0066ff', '#00ffcc', '#ffcc00']
 };
 
 interface DataContextType {

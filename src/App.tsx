@@ -28,7 +28,7 @@ const MusicSection = () => {
   if (!data || !data.settings) return null;
   
   return (
-    <section className="container mx-auto px-6 py-12 border-t border-white/5 mt-12">
+    <section id="music" className="container mx-auto px-6 py-12 border-t border-white/5 mt-12">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
         <div className="md:w-1/3 text-center md:text-left">
           <p className="text-lg md:text-xl text-pink leading-relaxed font-medium">
@@ -106,13 +106,13 @@ const Home = () => {
         <Projects />
 
         <section id="experience" className="space-y-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Experience & Recognition</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Experience & Awards</h2>
           
           <div className="grid grid-cols-1 gap-6">
             <Expandable title="Academic Experience">
               <div className="space-y-10 py-4">
                 <div>
-                  <h4 className="text-white text-xl font-bold mb-6">Teaching</h4>
+                  <h4 className="text-pink text-xl font-bold mb-6">Teaching</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {teaching && teaching.map(item => (
                       <TeachingCard key={item.id} item={item} />
@@ -120,7 +120,7 @@ const Home = () => {
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-white text-xl font-bold mb-4">Selected Coursework</h4>
+                  <h4 className="text-pink text-xl font-bold mb-4">Selected Coursework</h4>
                   <div className="flex flex-wrap gap-3">
                     {courses && courses.map(course => (
                       <span key={course.code} className="tag text-xs py-2 px-4">
@@ -136,7 +136,7 @@ const Home = () => {
               <div className="space-y-10 py-4">
                 {volunteering && volunteering.map(vol => (
                   <div key={vol.id} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
-                    <h4 className="text-white text-2xl font-bold mb-2">{vol.title}</h4>
+                    <h4 className="text-pink text-2xl font-bold mb-2">{vol.title}</h4>
                     <p className="text-pink text-base font-semibold mb-4">{vol.organization} • {vol.timeline}</p>
                     <p className="text-base md:text-lg mb-6 leading-relaxed text-text-gray">
                       {vol.description}
@@ -160,7 +160,7 @@ const Home = () => {
               <div className="space-y-10 py-4">
                 {awards && awards.map((award, i) => (
                   <div key={i} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
-                    <h4 className="text-white text-2xl font-bold mb-2">{award.title}</h4>
+                    <h4 className="text-pink text-2xl font-bold mb-2">{award.title}</h4>
                     <p className="text-pink text-base font-semibold mb-3">{award.date}</p>
                     <p className="text-base md:text-lg text-text-gray leading-relaxed">
                       {award.description}

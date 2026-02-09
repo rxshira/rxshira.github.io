@@ -78,12 +78,12 @@ const Admin = () => {
           <p className="text-xs text-text-gray truncate">{user.email}</p>
         </div>
         <nav className="space-y-2 flex-1">
-          <button onClick={() => setActiveTab('featured')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'featured' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Star className={`w-5 h-5 ${activeTab === 'featured' ? 'fill-white' : ''}`} /> Featured</button>
-          <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> All Projects</button>
-          <button onClick={() => setActiveTab('academic')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'academic' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><BookOpen className="w-5 h-5" /> Academic</button>
-          <button onClick={() => setActiveTab('service')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'service' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Heart className="w-5 h-5" /> Service</button>
-          <button onClick={() => setActiveTab('awards')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'awards' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Award className="w-5 h-5" /> Awards</button>
-          <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(255,0,110,0.3)]' : 'text-text-gray hover:bg-white/5'}`}><SettingsIcon className="w-5 h-5" /> Settings</button>
+          <button onClick={() => setActiveTab('featured')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'featured' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Star className={`w-5 h-5 ${activeTab === 'featured' ? 'fill-white' : ''}`} /> Featured</button>
+          <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> All Projects</button>
+          <button onClick={() => setActiveTab('academic')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'academic' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><BookOpen className="w-5 h-5" /> Academic</button>
+          <button onClick={() => setActiveTab('service')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'service' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Heart className="w-5 h-5" /> Service</button>
+          <button onClick={() => setActiveTab('awards')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'awards' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Award className="w-5 h-5" /> Awards</button>
+          <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'settings' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><SettingsIcon className="w-5 h-5" /> Settings</button>
         </nav>
         <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-3 text-text-gray hover:text-white transition-colors mt-auto"><LogOut className="w-5 h-5" /> Logout</button>
       </div>
@@ -135,19 +135,35 @@ const Admin = () => {
                   <label className="text-text-gray font-bold uppercase text-[10px] flex items-center gap-2">
                     <Palette className="w-3 h-3" /> Theme Accent Color
                   </label>
-                  <div className="flex gap-3">
-                    <input 
-                      type="color" 
-                      className="h-11 w-20 bg-black/50 border border-white/10 rounded p-1 cursor-pointer" 
-                      value={localSettings.primaryColor || '#ff006e'} 
-                      onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
-                    />
-                    <input 
-                      type="text"
-                      className="flex-1 bg-black/50 border border-white/10 rounded p-3 font-mono uppercase" 
-                      value={localSettings.primaryColor || '#ff006e'} 
-                      onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
-                    />
+                  <div className="flex flex-col gap-3">
+                    <div className="flex gap-3">
+                      <input 
+                        type="color" 
+                        className="h-11 w-20 bg-black/50 border border-white/10 rounded p-1 cursor-pointer" 
+                        value={localSettings.primaryColor || '#ff006e'} 
+                        onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
+                      />
+                      <input 
+                        type="text"
+                        className="flex-1 bg-black/50 border border-white/10 rounded p-3 font-mono uppercase" 
+                        value={localSettings.primaryColor || '#ff006e'} 
+                        onChange={e => setLocalSettings({...localSettings, primaryColor: e.target.value})} 
+                      />
+                    </div>
+                    {localSettings.colorHistory && localSettings.colorHistory.length > 0 && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-text-gray uppercase font-bold mr-1">History:</span>
+                        {localSettings.colorHistory.slice(0, 5).map((color, idx) => (
+                          <button
+                            key={`${color}-${idx}`}
+                            onClick={() => setLocalSettings({...localSettings, primaryColor: color})}
+                            className="w-6 h-6 rounded-full border border-white/20 transition-transform hover:scale-110"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -187,7 +203,18 @@ const Admin = () => {
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.lastUpdated} onChange={e => setLocalSettings({...localSettings, lastUpdated: e.target.value})} />
               </div>
               <div className="pt-6 flex justify-end">
-                <button onClick={() => { updateSettings(localSettings); alert('Settings saved!'); }} className="bg-pink text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-hot-pink transition-colors"><Save className="w-5 h-5" /> Save Global Settings</button>
+                <button 
+                  onClick={() => { 
+                    const newHistory = [localSettings.primaryColor, ...(localSettings.colorHistory || []).filter(c => c !== localSettings.primaryColor)].slice(0, 5);
+                    const updatedSettings = { ...localSettings, colorHistory: newHistory };
+                    updateSettings(updatedSettings); 
+                    setLocalSettings(updatedSettings);
+                    alert('Settings saved!'); 
+                  }} 
+                  className="bg-pink text-white px-8 py-3 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 transition-colors"
+                >
+                  <Save className="w-5 h-5" /> Save Global Settings
+                </button>
               </div>
             </div>
           </div>
