@@ -25,6 +25,16 @@ const isConfigValid = !!(firebaseConfig.apiKey &&
                         firebaseConfig.apiKey !== "placeholder" &&
                         firebaseConfig.apiKey.length > 5);
 
+// DIAGNOSTIC LOGGING
+if (!isConfigValid) {
+  console.log("🔍 Configuration Diagnostic:", {
+    hasApiKey: !!firebaseConfig.apiKey,
+    hasProjectId: !!firebaseConfig.projectId,
+    hasAppId: !!firebaseConfig.appId,
+    env: (import.meta as any).env ? "Defined" : "Undefined"
+  });
+}
+
 try {
   if (isConfigValid) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
