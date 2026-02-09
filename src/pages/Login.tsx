@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   // Check if credentials are even configured in the build
-  const isConfigured = !!(import.meta as any).env?.VITE_ADMIN_PASSWORD;
+  const isConfigured = !!import.meta.env.VITE_ADMIN_PASSWORD;
 
   useEffect(() => {
     if (user && isAdmin) {

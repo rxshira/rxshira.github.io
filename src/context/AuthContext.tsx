@@ -29,8 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (username: string, password: string) => {
-    const targetUser = (import.meta as any).env?.VITE_ADMIN_USERNAME || 'admin';
-    const targetPass = (import.meta as any).env?.VITE_ADMIN_PASSWORD;
+    const targetUser = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
+    const targetPass = import.meta.env.VITE_ADMIN_PASSWORD;
 
     if (!targetPass) {
       console.error("Admin password not found in VITE_ADMIN_PASSWORD");

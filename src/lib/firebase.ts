@@ -2,17 +2,13 @@ import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 
-// Using 'as any' to bypass TypeScript's strict check on import.meta.env 
-// which is causing the build to fail.
-const meta = import.meta as any;
-
 const firebaseConfig = {
-  apiKey: meta.env?.VITE_FIREBASE_API_KEY,
-  authDomain: meta.env?.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: meta.env?.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: meta.env?.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: meta.env?.VITE_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 let app: FirebaseApp;
@@ -28,10 +24,10 @@ const isConfigValid = !!(firebaseConfig.apiKey &&
 // DIAGNOSTIC LOGGING
 if (!isConfigValid) {
   console.log("🔍 Configuration Diagnostic:", {
-    hasApiKey: !!firebaseConfig.apiKey,
-    hasProjectId: !!firebaseConfig.projectId,
-    hasAppId: !!firebaseConfig.appId,
-    env: (import.meta as any).env ? "Defined" : "Undefined"
+    hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
+    hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
+    envType: typeof import.meta.env
   });
 }
 
