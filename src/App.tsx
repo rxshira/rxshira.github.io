@@ -161,7 +161,7 @@ const Home = () => {
                 {awards && awards.map((award, i) => (
                   <div key={i} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
                     <h4 className="text-pink text-2xl font-bold mb-2">{award.title}</h4>
-                    <p className="text-pink text-base font-semibold mb-3">{award.date}</p>
+                    <p className="text-white text-base font-semibold mb-3">{award.date}</p>
                     <p className="text-base md:text-lg text-text-gray leading-relaxed">
                       {award.description}
                     </p>
