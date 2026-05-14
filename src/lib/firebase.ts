@@ -1,6 +1,7 @@
 import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,6 +15,7 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
+let storage: FirebaseStorage;
 
 // Validation: Check if we have the critical keys
 const isConfigValid = !!(firebaseConfig.apiKey && 
@@ -21,34 +23,24 @@ const isConfigValid = !!(firebaseConfig.apiKey &&
                         firebaseConfig.apiKey !== "placeholder" &&
                         firebaseConfig.apiKey.length > 5);
 
-// DIAGNOSTIC LOGGING
-if (!isConfigValid) {
-  console.log("🔍 Configuration Diagnostic:", {
-    hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
-    hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
-    envType: typeof import.meta.env
-  });
-} else {
-  console.log("✅ Firebase initialized with Project ID:", import.meta.env.VITE_FIREBASE_PROJECT_ID);
-}
-
 try {
   if (isConfigValid) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
     console.log("✅ Firebase initialized successfully.");
   } else {
     console.warn("⚠️ Firebase configuration is missing or invalid. Running in local mode.");
-    // Fallbacks to prevent crashes
     auth = { onAuthStateChanged: () => () => {} } as any;
     db = {} as any;
+    storage = {} as any;
   }
 } catch (error) {
   console.error("❌ Firebase initialization failed:", error);
   auth = { onAuthStateChanged: () => () => {} } as any;
   db = {} as any;
+  storage = {} as any;
 }
 
-export { auth, db, isConfigValid };
+export { auth, db, storage, isConfigValid };

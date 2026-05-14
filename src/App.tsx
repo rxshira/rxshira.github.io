@@ -10,6 +10,7 @@ import Expandable from './components/Expandable';
 import AllProjects from './components/AllProjects';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import CarpoolApp from './carpool/CarpoolApp';
 import { useData } from './context/DataContext';
 import GlowWrapper from './components/GlowWrapper';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -178,24 +179,45 @@ const Home = () => {
   );
 };
 
+const AppContent = () => {
+  const location = useLocation();
+  const isCarpool = location.pathname.startsWith('/carpool');
+
+  // Hard isolation for carpool routes to prevent DOM conflicts with main site effects
+  if (isCarpool) {
+    return (
+      <div className="carpool-isolated-root bg-black min-h-screen text-white antialiased">
+        <Routes>
+          <Route path="/carpool/*" element={<CarpoolApp />} />
+        </Routes>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-bg text-white font-body antialiased relative overflow-x-hidden">
+      <TwinklingStars />
+      <MeteorShower />
+      <MeteorCursor />
+      
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/projects" element={<AllProjects />} />
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/carpool/*" element={<CarpoolApp />} />
+      </Routes>
+
+      <Footer />
+    </div>
+  );
+};
+
 function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="min-h-screen bg-bg text-white font-body antialiased relative overflow-x-hidden">
-        <TwinklingStars />
-        <MeteorShower />
-        <MeteorCursor />
-        
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/projects" element={<AllProjects />} />
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
-
-        <Footer />
-      </div>
+      <AppContent />
     </Router>
   );
 }
