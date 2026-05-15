@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -98,8 +98,8 @@ const Dashboard = () => {
           accepted_ids: [driverId, riderId],
           status: 'active',
           created_at: serverTimestamp(),
-          estimated_duration: 30,
-          estimated_distance: 10,
+          estimated_duration: 45, // Initial estimate
+          estimated_distance: 15,
           route_polyline: ''
         });
       }
@@ -110,14 +110,34 @@ const Dashboard = () => {
     }
   };
 
-  const getDepartureTime = (memberIndex: number, totalMembers: number) => {
-    const arrival = 530; // 8:50 AM
-    const offset = (totalMembers - memberIndex) * 12;
-    const timeInMins = arrival - offset;
-    const hours = Math.floor(timeInMins / 60);
-    const mins = timeInMins % 60;
-    return `${hours}:${mins < 10 ? '0'+mins : mins} AM`;
+  const formatTime = (totalMins: number) => {
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
+    const hours = h % 12 || 12;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    return `${hours}:${m < 10 ? '0'+m : m} ${ampm}`;
   };
+
+  const commuteTiming = useMemo(() => {
+    if (!myCarpool) return null;
+    const targetArrival = 540; // 9:00 AM in minutes
+    const duration = myCarpool.estimated_duration || 30;
+    const driverStart = targetArrival - duration;
+    
+    const myIndex = myMembers.findIndex(m => m.id === user?.uid);
+    // Rough estimation of pickup times based on position in sequence
+    // Driver starts at 0, others follow.
+    const pickupInterval = Math.floor(duration / (myMembers.length + 1));
+    const myReadyTime = driverStart + (myIndex * pickupInterval);
+
+    return {
+      arrival: formatTime(targetArrival),
+      duration,
+      driverStart: formatTime(driverStart),
+      myTime: formatTime(myReadyTime),
+      getMemberTime: (idx: number) => formatTime(driverStart + (idx * pickupInterval))
+    };
+  }, [myCarpool, myMembers, user]);
 
   const handleShowRoute = async (targetUser: CarpoolUser) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -417,7 +437,9 @@ const Dashboard = () => {
                               >
                                 {m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}
                               </button>
-                              <span className="text-[8px] text-white/40 font-mono">Ready by {getDepartureTime(i, myMembers.length)}</span>
+                              <span className="text-[8px] text-white/40 font-mono">
+                                {i === 0 ? 'Starts' : 'Ready'} by {commuteTiming?.getMemberTime(i)}
+                              </span>
                             </div>
                             {i < myMembers.length - 1 && <span className="text-white/10 text-xs mx-1">→</span>}
                           </div>
@@ -434,11 +456,11 @@ const Dashboard = () => {
                   <div className="flex items-center gap-10 shrink-0">
                     <div className="flex gap-10">
                       <div className="text-right">
-                        <div className="text-[18px] font-bold text-pink font-mono tracking-tighter">{myCarpool.estimated_duration}m</div>
+                        <div className="text-[18px] font-bold text-pink font-mono tracking-tighter">{commuteTiming?.duration}m</div>
                         <div className="text-[9px] text-white/40 font-mono uppercase mt-0.5">Duration</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[18px] font-bold text-white font-mono tracking-tighter">8:46</div>
+                        <div className="text-[18px] font-bold text-white font-mono tracking-tighter">{commuteTiming?.arrival}</div>
                         <div className="text-[9px] text-white/40 font-mono uppercase mt-0.5">Arrival</div>
                       </div>
                     </div>
@@ -447,7 +469,7 @@ const Dashboard = () => {
                       <button onClick={handleAcceptMatch} className="bg-green-500 text-black px-8 py-2 rounded-sm font-bold text-[10px] hover:bg-green-400 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(34,197,94,0.2)]">Confirm Seat</button>
                     ) : (
                       <div className="bg-pink/10 border border-pink/30 rounded-sm p-2 px-6 text-center shadow-[0_0_15px_rgba(255,45,120,0.1)]">
-                        <div className="text-[17px] font-bold text-pink font-mono leading-none tracking-tighter">7:42 AM</div>
+                        <div className="text-[17px] font-bold text-pink font-mono leading-none tracking-tighter">{commuteTiming?.myTime}</div>
                         <div className="text-[8px] text-white/30 font-mono uppercase mt-1 tracking-widest">Leave by</div>
                       </div>
                     )}
