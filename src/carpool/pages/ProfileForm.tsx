@@ -53,28 +53,32 @@ const ProfileForm = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Security: Only allow specific image mime types
+    // Security: Strictly allow only image formats
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert("Security Alert: Only image files (JPG, PNG, WEBP) are permitted for verification.");
+      alert("Security: Only clear images (JPG, PNG, WEBP) are accepted for the offer letter.");
       return;
     }
 
-    // Security: Limit file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("File too large. Maximum size is 5MB.");
+      alert("File too large. Please upload an image under 5MB.");
       return;
     }
 
     setUploading(true);
     try {
-      const storageRef = ref(storage, `offers/${user.uid}/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      // Create a unique name to avoid overwriting
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const storageRef = ref(storage, `offers/${user.uid}/${fileName}`);
+      
+      const uploadResult = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(uploadResult.ref);
+      
       setFormData(prev => ({ ...prev, offer_letter_url: url }));
-    } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Offer letter upload failed.");
+      console.log("✅ Offer letter uploaded successfully");
+    } catch (error: any) {
+      console.error("❌ Upload failed:", error);
+      alert(`Upload failed: ${error.message}. Please ensure Firebase Storage is enabled in your console.`);
     } finally {
       setUploading(false);
     }
@@ -83,19 +87,37 @@ const ProfileForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
     if (!formData.offer_letter_url) {
-      alert("Please upload your offer letter for verification.");
+      alert("Verification Required: Please upload your offer letter image first.");
       return;
     }
+
+    if (!formData.zip_code) {
+      alert("Zip code is mandatory for matching.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      let coords = { lat: carpoolUser?.latitude || 37.3382, lng: carpoolUser?.longitude || -121.8863 };
       
-      if (apiKey && (formData.address !== carpoolUser?.address || formData.zip_code !== carpoolUser?.zip_code)) {
-        const searchStr = formData.address || formData.zip_code;
-        coords = await GoogleDistanceService.geocode(searchStr, apiKey);
+      // Default to SVL area if geocoding fails or isn't possible
+      let coords = { 
+        lat: carpoolUser?.latitude || 37.3382, 
+        lng: carpoolUser?.longitude || -121.8863 
+      };
+      
+      // Try to geocode whatever location data is provided
+      if (apiKey && (formData.address || formData.zip_code)) {
+        try {
+          const searchStr = formData.address || formData.zip_code;
+          const newCoords = await GoogleDistanceService.geocode(searchStr, apiKey);
+          if (newCoords) coords = newCoords;
+        } catch (geoError) {
+          console.warn("Geocoding failed, using fallback:", geoError);
+        }
       }
 
       const userRef = doc(db, 'carpool_users', user.uid);
@@ -103,13 +125,15 @@ const ProfileForm = () => {
         ...formData,
         latitude: coords.lat,
         longitude: coords.lng,
-        start_date: `2026-${formData.start_month === 'may' ? '05' : '07'}-01`
+        start_date: `2026-${formData.start_month === 'may' ? '05' : '07'}-01`,
+        access_status: carpoolUser?.access_status || 'pending'
       });
+
       await refreshCarpoolUser();
       navigate('/carpool/map');
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+    } catch (error: any) {
+      console.error("❌ Profile save error:", error);
+      alert(`Could not save profile: ${error.message}`);
     } finally {
       setLoading(false);
     }
