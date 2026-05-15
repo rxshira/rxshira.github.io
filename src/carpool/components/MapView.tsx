@@ -57,21 +57,29 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
   });
 
   const center = useMemo(() => {
-    if (markers.length > 0) return { lat: markers[0].lat, lng: markers[0].lng };
+    if (markers.length > 0) {
+      const me = markers.find(m => m.isMe);
+      if (me) return { lat: me.lat, lng: me.lng };
+      return { lat: markers[0].lat, lng: markers[0].lng };
+    }
     return IBM_LOCATION;
   }, [markers]);
 
+  // Decode the polyline points into a path array for the component
   const decodedPath = useMemo(() => {
-    if (!routePolyline) return [];
-    // Note: In a real app, use a polyline decoder library
-    // For now, this is a placeholder for the decoded path
-    return [];
+    if (!routePolyline || !(window as any).google) return [];
+    try {
+      return (window as any).google.maps.geometry.encoding.decodePath(routePolyline);
+    } catch (e) {
+      console.error("Polyline decoding failed", e);
+      return [];
+    }
   }, [routePolyline]);
 
   if (!isLoaded) return (
-    <div className="w-full h-full bg-[#1a1a1a] flex items-center justify-center">
-      <div className="text-pink animate-pulse font-bold text-xs uppercase tracking-widest">
-        Initializing Orbital View...
+    <div className="w-full h-full bg-[#050505] flex items-center justify-center">
+      <div className="text-pink animate-pulse font-bold text-[10px] uppercase tracking-widest font-mono">
+        Establishing Link...
       </div>
     </div>
   );
@@ -86,31 +94,45 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
       {/* IBM Destination */}
       <Marker 
         position={IBM_LOCATION}
+        zIndex={100}
         icon={{
-          path: "M 0,0 m -5,-5 L 5,-5 L 5,5 L -5,5 Z",
-          fillColor: "#1f70c1",
+          path: "M -2,0 L -2,-4 L 2,-4 L 2,0 L 2,4 L -2,4 Z",
+          fillColor: "#1f6abf",
           fillOpacity: 1,
           strokeWeight: 2,
           strokeColor: "#ffffff",
-          scale: 3
+          scale: 4
         }}
-        title="IBM 555 Bailey Ave"
+        title="IBM SVL (555 Bailey Ave)"
       />
 
       {/* Intern Markers */}
       {markers.map((m, i) => {
         const circlePath = (window as any).google?.maps?.SymbolPath?.CIRCLE ?? 0;
+        
+        // Spec Colors: Me=Yellow, Driver=Blue, Rider=Pink
+        let color = m.type === 'driver' ? '#3b82f6' : '#ff006e';
+        if (m.isMe) color = '#facc15';
+
+        // Fill Logic: 
+        // - Me: Always filled
+        // - Matched/Agreed: Filled
+        // - Driver Full: Filled
+        // - Otherwise: Empty (low opacity)
+        const isFilled = m.isMe || m.isMatched || (m.type === 'driver' && m.isFull);
+
         return (
           <Marker
             key={i}
             position={{ lat: m.lat, lng: m.lng }}
+            zIndex={m.isMe ? 50 : 10}
             title={m.name}
             icon={{
               path: circlePath,
-              fillColor: m.type === 'driver' ? '#3b82f6' : '#ff006e',
-              fillOpacity: 1,
-              strokeWeight: m.isSelected ? 4 : 1,
-              strokeColor: "#ffffff",
+              fillColor: color,
+              fillOpacity: isFilled ? 1 : 0.15,
+              strokeWeight: 2,
+              strokeColor: color,
               scale: m.isSelected ? 8 : 6
             }}
           />
@@ -121,9 +143,9 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
         <Polyline
           path={decodedPath}
           options={{
-            strokeColor: "#ff006e",
+            strokeColor: "#FF2D78",
             strokeOpacity: 0.8,
-            strokeWeight: 4,
+            strokeWeight: 3,
           }}
         />
       )}

@@ -77,17 +77,8 @@ const CarpoolAuthGate = () => {
             >
               <UserPlus className="w-4 h-4" /> Create New Profile
             </button>
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-black px-2 text-white/20 font-mono">Or continue with</span></div>
-            </div>
-            <button 
-              onClick={handleGoogleAuth}
-              className="w-full py-3 border border-white/10 text-white rounded-sm text-[10px] uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center justify-center gap-3 font-mono"
-            >
-              <Chrome className="w-4 h-4" /> Continue with Google
-            </button>
-          </div>
+            </motion.div>
+
         ) : (
           <form 
             onSubmit={handleAuthAction}

@@ -37,8 +37,11 @@ export interface Carpool {
   created_at: any;
 }
 
-export interface CarpoolMember {
-  carpool_id: string;
-  user_id: string;
-  pickup_order: number;
+export interface RideRequest {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  type: 'pickup_request' | 'drive_offer';
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: any;
 }
