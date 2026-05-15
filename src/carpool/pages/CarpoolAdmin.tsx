@@ -61,9 +61,15 @@ const CarpoolAdmin = () => {
   }, []);
 
   const handleStatusUpdate = async (userId: string, status: AccessStatus, offerUrl?: string) => {
+    let reason = '';
+    if (status === 'rejected') {
+      reason = window.prompt("Enter reason for rejection:") || 'No reason provided';
+    }
+
     try {
       await updateDoc(doc(db, 'carpool_users', userId), { 
         access_status: status,
+        rejection_reason: status === 'rejected' ? reason : '',
         // If approved, we can clear the URL since the file is being deleted
         ...(status === 'approved' ? { offer_letter_url: '' } : {})
       });
@@ -71,7 +77,6 @@ const CarpoolAdmin = () => {
       // Privacy Cleanup: If approved, delete the sensitive offer letter from Storage
       if (status === 'approved' && offerUrl) {
         try {
-          // Firebase Storage ref can be created directly from a full URL
           const storageRef = ref(storage, offerUrl);
           await deleteObject(storageRef);
           console.log("✅ Privacy Cleanup: Offer letter deleted after approval.");

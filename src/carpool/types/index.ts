@@ -20,6 +20,7 @@ export interface CarpoolUser {
   preferred_arrival_time: string; // e.g., "09:00"
   notes?: string;
   access_status: AccessStatus;
+  rejection_reason?: string;
   is_admin: boolean;
   created_at: any; // Firestore Timestamp
 }

@@ -110,22 +110,16 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
       {markers.map((m, i) => {
         const circlePath = (window as any).google?.maps?.SymbolPath?.CIRCLE ?? 0;
         
-        // Spec Colors: Me=Yellow, Driver=Blue, Rider=Pink
         let color = m.type === 'driver' ? '#3b82f6' : '#ff006e';
         if (m.isMe) color = '#facc15';
 
-        // Fill Logic: 
-        // - Me: Always filled
-        // - Matched/Agreed: Filled
-        // - Driver Full: Filled
-        // - Otherwise: Empty (low opacity)
         const isFilled = m.isMe || m.isMatched || (m.type === 'driver' && m.isFull);
 
         return (
           <Marker
             key={i}
             position={{ lat: m.lat, lng: m.lng }}
-            zIndex={m.isMe ? 50 : 10}
+            zIndex={m.isMe ? 1000 : m.isSelected ? 500 : 10}
             title={m.name}
             icon={{
               path: circlePath,
@@ -133,7 +127,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
               fillOpacity: isFilled ? 1 : 0.15,
               strokeWeight: 2,
               strokeColor: color,
-              scale: m.isSelected ? 8 : 6
+              scale: m.isSelected ? 9 : 7
             }}
           />
         );

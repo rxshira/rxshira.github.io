@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Carpool, CarpoolUser, RideRequest } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -74,6 +74,51 @@ const Dashboard = () => {
     }
   }, [myCarpool]);
 
+  const handleAcceptRequest = async (req: RideRequest) => {
+    try {
+      await updateDoc(doc(db, 'ride_requests', req.id), { status: 'accepted' });
+
+      let targetPool = carpools.find(p => p.member_ids.includes(user?.uid) || p.member_ids.includes(req.sender_id));
+
+      if (targetPool) {
+        await updateDoc(doc(db, 'carpools', targetPool.id), {
+          member_ids: arrayUnion(user?.uid, req.sender_id),
+          accepted_ids: arrayUnion(user?.uid, req.sender_id),
+          status: 'active'
+        });
+      } else {
+        const driverId = carpoolUser?.has_car ? user?.uid : req.sender_id;
+        const riderId = carpoolUser?.has_car ? req.sender_id : user?.uid;
+        const newPoolRef = doc(collection(db, 'carpools'));
+        await setDoc(newPoolRef, {
+          id: newPoolRef.id,
+          driver_id: driverId,
+          member_ids: [driverId, riderId],
+          pickup_order: [riderId],
+          accepted_ids: [driverId, riderId],
+          status: 'active',
+          created_at: serverTimestamp(),
+          estimated_duration: 30,
+          estimated_distance: 10,
+          route_polyline: ''
+        });
+      }
+      alert("Ride confirmed!");
+      setShowNotifications(false);
+    } catch (err) {
+      console.error("Accept failed", err);
+    }
+  };
+
+  const getDepartureTime = (memberIndex: number, totalMembers: number) => {
+    const arrival = 530; // 8:50 AM
+    const offset = (totalMembers - memberIndex) * 12;
+    const timeInMins = arrival - offset;
+    const hours = Math.floor(timeInMins / 60);
+    const mins = timeInMins % 60;
+    return `${hours}:${mins < 10 ? '0'+mins : mins} AM`;
+  };
+
   const handleShowRoute = async (targetUser: CarpoolUser) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) return;
@@ -140,7 +185,7 @@ const Dashboard = () => {
       {/* Navigation */}
       <nav className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] tracking-widest shadow-[0_0_15px_rgba(31,106,191,0.3)]">IBM</div>
+          <div className="w-8 h-8 aspect-square bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] tracking-widest shadow-[0_0_15px_rgba(31,106,191,0.3)] shrink-0">IBM</div>
           <span className="text-sm font-medium tracking-tight">Intern / New Grad Portal</span>
           <span className="bg-[#1f6abf]/20 border border-[#1f6abf]/30 text-[#5ba3e8] text-[9px] font-mono px-2 py-0.5 rounded uppercase">SVL · Summer 2026</span>
         </div>
@@ -154,7 +199,7 @@ const Dashboard = () => {
               <CheckCircle className="w-2.5 h-2.5" /> Matched
             </span>
           )}
-          <button onClick={() => logout()} className="text-[11px] text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded transition-colors uppercase font-bold tracking-widest font-mono">Sign out</button>
+          <button onClick={() => logout()} className="text-[11px] text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded transition-colors uppercase font-bold tracking-widest font-mono text-shadow-glow">Sign out</button>
         </div>
       </nav>
 
@@ -192,7 +237,7 @@ const Dashboard = () => {
                 </button>
               ))}
             </div>
-            <div className="text-[10px] font-mono text-pink uppercase tracking-[0.2em] mb-1 px-1">Intern roster</div>
+            <div className="text-[10px] font-mono text-pink uppercase tracking-widest mb-1 px-1">Intern roster</div>
           </div>
 
           <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-white/[0.03]">
@@ -203,7 +248,14 @@ const Dashboard = () => {
               const isMyGroup = myCarpool?.member_ids.includes(u.id);
 
               return (
-                <div key={u.id} className={`p-4 px-4 flex gap-3 items-start group relative transition-all ${isMyGroup ? 'bg-pink/[0.04] border-l-2 border-pink pl-3.5' : 'hover:bg-white/[0.02]'}`}>
+                <div 
+                  key={u.id} 
+                  className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${
+                    activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : 
+                    isMyGroup ? 'bg-pink/[0.04] border-pink' : 
+                    'hover:bg-white/[0.02] border-transparent'
+                  }`}
+                >
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border ${
                     isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.3)]' :
                     u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#3b82f6]' : 
@@ -218,7 +270,10 @@ const Dashboard = () => {
                       </div>
                       {!isMe && (
                         <div className="relative">
-                          <button onClick={() => setActiveMenuId(activeMenuId === u.id ? null : u.id)} className="p-1 hover:bg-white/10 rounded transition-colors text-white/20 hover:text-white">
+                          <button 
+                            onClick={() => setActiveMenuId(activeMenuId === u.id ? null : u.id)} 
+                            className={`p-1 rounded transition-colors ${activeMenuId === u.id ? 'bg-pink text-white' : 'text-white/20 group-hover:text-white hover:bg-white/10'}`}
+                          >
                             <MoreVertical className="w-3.5 h-3.5" />
                           </button>
                           {activeMenuId === u.id && (
@@ -282,7 +337,7 @@ const Dashboard = () => {
             <h4 className="text-[9px] font-mono text-pink uppercase tracking-widest mb-1.5">Map Legend</h4>
             <div className="space-y-2">
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You (Unique)</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You (Yellow)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" /> <span>Driver (Blue)</span>
@@ -291,13 +346,13 @@ const Dashboard = () => {
                 <div className="w-2.5 h-2.5 rounded-full bg-[#ff006e]" /> <span>Rider (Pink)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2 mt-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-white/60" /> <span>Matched / Full</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-white/60" /> <span>Matched / Full (Filled)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full border border-white/40" /> <span>Unmatched / Open</span>
+                <div className="w-2.5 h-2.5 rounded-full border border-white/40" /> <span>Unmatched (Empty)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2">
-                <div className="w-2.5 h-2.5 rounded-[2px] bg-[#1f6abf] flex items-center justify-center text-[5px] font-bold text-white uppercase shadow-sm">IBM</div> <span>SVL (Precise Rd)</span>
+                <div className="w-2.5 h-2.5 rounded-[2px] bg-[#1f6abf] flex items-center justify-center text-[5px] font-bold text-white uppercase shadow-sm">IBM</div> <span>SVL (Office)</span>
               </div>
             </div>
             {tempRoute && (
@@ -324,7 +379,7 @@ const Dashboard = () => {
                           <span className="text-white font-bold">{sender?.full_name}</span> {req.type === 'drive_offer' ? 'offered you a drive.' : 'requested a pickup.'}
                         </p>
                         <div className="flex gap-2 mt-3">
-                          <button className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400 transition-colors">Accept</button>
+                          <button onClick={() => handleAcceptRequest(req)} className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400 transition-colors">Accept</button>
                           <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm hover:text-white hover:bg-white/5 transition-colors">Ignore</button>
                         </div>
                       </div>
@@ -356,8 +411,13 @@ const Dashboard = () => {
                               {m.id === myCarpool.driver_id ? getInitials(m.full_name) : i}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className="text-[11px] text-white/60 truncate max-w-[80px]">{m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}</span>
-                              <span className="text-[8px] text-white/20 font-mono truncate">{getVisibleAddress(m)}</span>
+                              <button 
+                                onClick={() => m.phone_number && alert(`${m.full_name}: ${m.phone_number}`)}
+                                className="text-[11px] text-white/60 truncate max-w-[80px] hover:text-pink transition-colors text-left"
+                              >
+                                {m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}
+                              </button>
+                              <span className="text-[8px] text-white/40 font-mono">Ready by {getDepartureTime(i, myMembers.length)}</span>
                             </div>
                             {i < myMembers.length - 1 && <span className="text-white/10 text-xs mx-1">→</span>}
                           </div>

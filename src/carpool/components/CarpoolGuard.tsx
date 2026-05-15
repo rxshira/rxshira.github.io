@@ -52,10 +52,18 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
         <div className="min-h-screen flex items-center justify-center bg-black px-6">
           <div className="max-w-md text-center space-y-6 border border-red-500/20 p-12 bg-red-500/5 rounded-sm">
             <h2 className="text-3xl font-bold text-red-500 uppercase tracking-tighter">Access Denied</h2>
-            <p className="text-text-gray font-mono text-xs leading-relaxed">
-              Your access request has been rejected. If you believe this is an error, 
-              please contact the administrator.
-            </p>
+            <div className="space-y-4">
+              <p className="text-text-gray font-mono text-xs leading-relaxed">
+                Your access request has been rejected.
+              </p>
+              <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-sm">
+                <p className="text-[10px] text-red-400 font-bold uppercase mb-1">Reason Provided:</p>
+                <p className="text-white font-mono text-xs italic">"{carpoolUser.rejection_reason || 'No specific reason provided'}"</p>
+              </div>
+              <p className="text-text-gray/50 font-mono text-[9px]">
+                If you believe this is an error, please contact the administrator.
+              </p>
+            </div>
           </div>
         </div>
       );
