@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDoc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Carpool, CarpoolUser, RideRequest } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, Users, Car, Shield, Search, ArrowRight, Activity, CheckCircle, MoreVertical, Send, Bell, X } from 'lucide-react';
+import { MapPin, Clock, Users, Car, Shield, Search, ArrowRight, Activity, CheckCircle, MoreVertical, Send, Bell, X, Calendar } from 'lucide-react';
 import MapView from '../components/MapView';
 import { GoogleDistanceService } from '../lib/googleService';
 
 const Dashboard = () => {
-  const { user, carpoolUser, logout } = useAuth();
+  const { user, carpoolUser, logout, refreshCarpoolUser } = useAuth();
   const [allUsers, setAllUsers] = useState<CarpoolUser[]>([]);
   const [carpools, setCarpools] = useState<Carpool[]>([]);
   const [requests, setRequests] = useState<RideRequest[]>([]);
@@ -22,6 +22,16 @@ const Dashboard = () => {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [tempRoute, setTempRoute] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Dynamic Arrival Time Filtering
+  const [viewArrivalTime, setViewArrivalTime] = useState<string>(carpoolUser?.preferred_arrival_time || '09:00');
+  const [isUpdatingTime, setIsUpdatingTime] = useState(false);
+
+  useEffect(() => {
+    if (carpoolUser?.preferred_arrival_time) {
+      setViewArrivalTime(carpoolUser.preferred_arrival_time);
+    }
+  }, [carpoolUser]);
 
   useEffect(() => {
     const qUsers = query(collection(db, 'carpool_users'), where('access_status', '==', 'approved'));
@@ -74,12 +84,73 @@ const Dashboard = () => {
     }
   }, [myCarpool]);
 
+  const handleSetArrivalTime = async () => {
+    if (!user || !carpoolUser) return;
+    if (viewArrivalTime === carpoolUser.preferred_arrival_time) return;
+
+    setIsUpdatingTime(true);
+    try {
+      // 1. Update user preference
+      const userRef = doc(db, 'carpool_users', user.uid);
+      await updateDoc(userRef, { preferred_arrival_time: viewArrivalTime });
+
+      // 2. If in a carpool, we must cancel/notify
+      if (myCarpool) {
+        const poolRef = doc(db, 'carpools', myCarpool.id);
+        const affectedMembers = myMembers.filter(m => m.id !== user.uid);
+
+        if (myCarpool.driver_id === user.uid) {
+          // Entire pool is dissolved
+          await deleteDoc(poolRef);
+          for (const m of affectedMembers) {
+            await addDoc(collection(db, 'ride_requests'), {
+              sender_id: user.uid,
+              receiver_id: m.id,
+              type: 'pickup_request',
+              status: 'rejected',
+              notes: `Match Reset: Driver changed arrival time to ${viewArrivalTime}`,
+              created_at: serverTimestamp()
+            });
+          }
+        } else {
+          // Just remove me
+          const newMembers = myCarpool.member_ids.filter(id => id !== user.uid);
+          const newAccepted = myCarpool.accepted_ids.filter(id => id !== user.uid);
+          const newOrder = myCarpool.pickup_order.filter(id => id !== user.uid);
+
+          if (newMembers.length <= 1) {
+            await deleteDoc(poolRef);
+          } else {
+            await updateDoc(poolRef, {
+              member_ids: newMembers,
+              accepted_ids: newAccepted,
+              pickup_order: newOrder
+            });
+          }
+
+          await addDoc(collection(db, 'ride_requests'), {
+            sender_id: user.uid,
+            receiver_id: myCarpool.driver_id,
+            type: 'pickup_request',
+            status: 'rejected',
+            notes: `Match Reset: ${carpoolUser.full_name} changed time to ${viewArrivalTime}`,
+            created_at: serverTimestamp()
+          });
+        }
+      }
+      await refreshCarpoolUser();
+      alert(`Schedule Synchronized: Your arrival time is now ${viewArrivalTime}.`);
+    } catch (err) {
+      console.error("Failed to update arrival time:", err);
+    } finally {
+      setIsUpdatingTime(false);
+    }
+  };
+
   const handleAcceptRequest = async (req: RideRequest) => {
     try {
       await updateDoc(doc(db, 'ride_requests', req.id), { status: 'accepted' });
-
       let targetPool = carpools.find(p => p.member_ids.includes(user?.uid) || p.member_ids.includes(req.sender_id));
-
       if (targetPool) {
         await updateDoc(doc(db, 'carpools', targetPool.id), {
           member_ids: arrayUnion(user?.uid, req.sender_id),
@@ -91,23 +162,14 @@ const Dashboard = () => {
         const riderId = carpoolUser?.has_car ? req.sender_id : user?.uid;
         const newPoolRef = doc(collection(db, 'carpools'));
         await setDoc(newPoolRef, {
-          id: newPoolRef.id,
-          driver_id: driverId,
-          member_ids: [driverId, riderId],
-          pickup_order: [riderId],
-          accepted_ids: [driverId, riderId],
-          status: 'active',
-          created_at: serverTimestamp(),
-          estimated_duration: 45, // Initial estimate
-          estimated_distance: 15,
-          route_polyline: ''
+          id: newPoolRef.id, driver_id: driverId, member_ids: [driverId, riderId],
+          pickup_order: [riderId], accepted_ids: [driverId, riderId], status: 'active',
+          created_at: serverTimestamp(), estimated_duration: 45, estimated_distance: 15, route_polyline: ''
         });
       }
       alert("Ride confirmed!");
       setShowNotifications(false);
-    } catch (err) {
-      console.error("Accept failed", err);
-    }
+    } catch (err) { console.error("Accept failed", err); }
   };
 
   const formatTime = (totalMins: number) => {
@@ -119,15 +181,13 @@ const Dashboard = () => {
   };
 
   const commuteTiming = useMemo(() => {
-    if (!myCarpool) return null;
-    const targetArrival = 540; // 9:00 AM in minutes
+    if (!myCarpool || !carpoolUser) return null;
+    const [h, m] = carpoolUser.preferred_arrival_time.split(':').map(Number);
+    const targetArrival = (h * 60) + m; 
     const duration = myCarpool.estimated_duration || 30;
     const driverStart = targetArrival - duration;
-    
     const myIndex = myMembers.findIndex(m => m.id === user?.uid);
-    // Rough estimation of pickup times based on position in sequence
-    // Driver starts at 0, others follow.
-    const pickupInterval = Math.floor(duration / (myMembers.length + 1));
+    const pickupInterval = Math.floor(duration / (myMembers.length + 1 || 1));
     const myReadyTime = driverStart + (myIndex * pickupInterval);
 
     return {
@@ -137,52 +197,29 @@ const Dashboard = () => {
       myTime: formatTime(myReadyTime),
       getMemberTime: (idx: number) => formatTime(driverStart + (idx * pickupInterval))
     };
-  }, [myCarpool, myMembers, user]);
+  }, [myCarpool, myMembers, carpoolUser, user]);
 
   const handleShowRoute = async (targetUser: CarpoolUser) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) return;
-
     try {
       const service = new GoogleDistanceService(apiKey);
-      const route = await service.getRoute(
-        { lat: targetUser.latitude, lng: targetUser.longitude },
-        { lat: 37.194697, lng: -121.745837 }
-      );
+      const route = await service.getRoute({ lat: targetUser.latitude, lng: targetUser.longitude }, { lat: 37.194697, lng: -121.745837 });
       setTempRoute(route.polyline);
       setActiveMenuId(null);
-    } catch (err) {
-      console.error("Route generation failed", err);
-    }
+    } catch (err) { console.error("Route generation failed", err); }
   };
 
   const handleSendRequest = async (targetUser: CarpoolUser) => {
     try {
       await addDoc(collection(db, 'ride_requests'), {
-        sender_id: user?.uid,
-        receiver_id: targetUser.id,
+        sender_id: user?.uid, receiver_id: targetUser.id,
         type: carpoolUser?.has_car ? 'drive_offer' : 'pickup_request',
-        status: 'pending',
-        created_at: serverTimestamp()
+        status: 'pending', created_at: serverTimestamp()
       });
       alert("Request sent successfully!");
       setActiveMenuId(null);
-    } catch (err) {
-      console.error("Request failed", err);
-    }
-  };
-
-  const handleAcceptMatch = async () => {
-    if (!myCarpool || !user) return;
-    try {
-      const poolRef = doc(db, 'carpools', myCarpool.id);
-      await updateDoc(poolRef, { accepted_ids: arrayUnion(user.uid) });
-      if (myCarpool.accepted_ids.length + 1 >= myCarpool.member_ids.length) {
-        await updateDoc(poolRef, { status: 'active' });
-      }
-    } catch (error) {
-      console.error("Error accepting match:", error);
-    }
+    } catch (err) { console.error("Request failed", err); }
   };
 
   const getVisibleAddress = (member: CarpoolUser) => {
@@ -192,6 +229,8 @@ const Dashboard = () => {
   };
 
   const filteredUsers = allUsers.filter(u => {
+    const matchesTime = u.preferred_arrival_time === viewArrivalTime;
+    if (!matchesTime) return false;
     const isMatched = carpools.some(p => p.member_ids.includes(u.id));
     const matchesSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.zip_code?.includes(searchTerm);
     const matchesFilter = filter === 'all' || (filter === 'drivers' && u.has_car) || (filter === 'riders' && !u.has_car) || (filter === 'matched' && isMatched);
@@ -223,38 +262,54 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      {/* Stats Strip */}
+      {/* Stats Strip & Arrival Selector */}
       <div className="flex border-b border-white/10 shrink-0 z-20 bg-[#050505]">
         {[
-          { label: 'Total interns', val: allUsers.length, color: 'text-pink' },
-          { label: 'Drivers', val: allUsers.filter(u=>u.has_car).length, color: '' },
-          { label: 'Riders', val: allUsers.filter(u=>!u.has_car).length, color: '' },
-          { label: 'Matched', val: allUsers.filter(u => carpools.some(p => p.member_ids.includes(u.id))).length, color: 'text-pink' },
-          { label: 'Cars saved', val: carpools.length, color: '' },
-          { label: 'Arrival Target', val: '9:00', color: '' },
+          { label: 'Total interns', val: filteredUsers.length, color: 'text-pink' },
+          { label: 'Drivers', val: filteredUsers.filter(u=>u.has_car).length, color: '' },
+          { label: 'Riders', val: filteredUsers.filter(u=>!u.has_car).length, color: '' },
+          { label: 'Matched', val: filteredUsers.filter(u => carpools.some(p => p.member_ids.includes(u.id))).length, color: 'text-pink' },
+          { label: 'Cars saved', val: carpools.filter(p => allUsers.find(u => u.id === p.driver_id)?.preferred_arrival_time === viewArrivalTime).length, color: '' },
         ].map((s, i) => (
-          <div key={i} className="flex-1 p-3 px-5 border-r border-white/10 last:border-r-0">
+          <div key={i} className="flex-1 p-3 px-5 border-r border-white/10">
             <div className={`text-xl font-semibold tracking-tighter ${s.color}`}>{s.val}</div>
             <div className="text-[9px] text-white/40 font-mono uppercase tracking-wider mt-0.5">{s.label}</div>
           </div>
         ))}
+        
+        {/* Arrival Time Selector */}
+        <div className="flex-1 p-3 px-5 flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <select 
+              value={viewArrivalTime}
+              onChange={(e) => setViewArrivalTime(e.target.value)}
+              className="bg-transparent text-xl font-semibold text-white outline-none cursor-pointer w-full"
+            >
+              <option value="08:00">08:00 AM</option>
+              <option value="08:30">08:30 AM</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="09:30">09:30 AM</option>
+            </select>
+            <div className="text-[9px] text-white/40 font-mono uppercase tracking-wider mt-0.5">Arrival Window</div>
+          </div>
+          {viewArrivalTime !== carpoolUser?.preferred_arrival_time && (
+            <button 
+              onClick={handleSetArrivalTime}
+              disabled={isUpdatingTime}
+              className="bg-pink text-white text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-widest hover:shadow-glow-pink transition-all shrink-0"
+            >
+              {isUpdatingTime ? '...' : 'Set Time'}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden z-10">
-        {/* Sidebar */}
         <aside className="w-[280px] border-r border-white/10 flex flex-col shrink-0 bg-[#0c0c0c]">
           <div className="p-3 px-4 border-b border-white/10 shrink-0">
             <div className="flex gap-1 mb-3">
               {(['all', 'drivers', 'riders', 'matched'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`text-[9px] font-mono flex-1 py-1 rounded border transition-all capitalize ${
-                    filter === f ? 'bg-pink/15 border-pink/40 text-pink' : 'border-white/10 text-white/40 hover:bg-white/5'
-                  }`}
-                >
-                  {f}
-                </button>
+                <button key={f} onClick={() => setFilter(f)} className={`text-[9px] font-mono flex-1 py-1 rounded border transition-all capitalize ${filter === f ? 'bg-pink/15 border-pink/40 text-pink' : 'border-white/10 text-white/40 hover:bg-white/5'}`}>{f}</button>
               ))}
             </div>
             <div className="text-[10px] font-mono text-pink uppercase tracking-widest mb-1 px-1">Intern roster</div>
@@ -263,64 +318,33 @@ const Dashboard = () => {
           <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-white/[0.03]">
             {filteredUsers.map(u => {
               const isMe = u.id === user?.uid;
-              const pool = carpools.find(p => p.member_ids.includes(u.id));
-              const isMatched = !!pool;
               const isMyGroup = myCarpool?.member_ids.includes(u.id);
+              const pool = carpools.find(p => p.member_ids.includes(u.id));
 
               return (
-                <div 
-                  key={u.id} 
-                  className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${
-                    activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : 
-                    isMyGroup ? 'bg-pink/[0.04] border-pink' : 
-                    'hover:bg-white/[0.02] border-transparent'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border ${
-                    isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.3)]' :
-                    u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#3b82f6]' : 
-                    'bg-pink/15 border-pink/35 text-[#ff006e]'
-                  }`}>
+                <div key={u.id} className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : isMyGroup ? 'bg-pink/[0.04] border-pink' : 'hover:bg-white/[0.02] border-transparent'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border ${isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.3)]' : u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#3b82f6]' : 'bg-pink/15 border-pink/35 text-[#ff006e]'}`}>
                     {getInitials(u.full_name)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <div className="text-[12px] font-medium text-white truncate max-w-[120px]">
-                        {u.full_name} {isMe && <span className="text-white/40 font-normal ml-1">(you)</span>}
-                      </div>
+                      <div className="text-[12px] font-medium text-white truncate max-w-[120px]">{u.full_name} {isMe && <span className="text-white/40 font-normal ml-1">(you)</span>}</div>
                       {!isMe && (
                         <div className="relative">
-                          <button 
-                            onClick={() => setActiveMenuId(activeMenuId === u.id ? null : u.id)} 
-                            className={`p-1 rounded transition-colors ${activeMenuId === u.id ? 'bg-pink text-white' : 'text-white/20 group-hover:text-white hover:bg-white/10'}`}
-                          >
-                            <MoreVertical className="w-3.5 h-3.5" />
-                          </button>
+                          <button onClick={() => setActiveMenuId(activeMenuId === u.id ? null : u.id)} className={`p-1 rounded transition-colors ${activeMenuId === u.id ? 'bg-pink text-white' : 'text-white/20 group-hover:text-white hover:bg-white/10'}`}><MoreVertical className="w-3.5 h-3.5" /></button>
                           {activeMenuId === u.id && (
                             <div className="absolute right-0 top-full mt-1 w-36 bg-[#181818] border border-white/10 rounded-sm shadow-2xl z-50 overflow-hidden font-mono">
-                              <button onClick={() => handleShowRoute(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-pink hover:text-white transition-colors flex items-center gap-2 uppercase tracking-tighter">
-                                <Activity className="w-3 h-3" /> Show Route
-                              </button>
-                              <button onClick={() => handleSendRequest(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-blue-500 hover:text-white transition-colors border-t border-white/5 flex items-center gap-2 uppercase tracking-tighter">
-                                <Send className="w-3 h-3" /> {u.has_car ? 'Ask for Ride' : 'Offer Pickup'}
-                              </button>
+                              <button onClick={() => handleShowRoute(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-pink hover:text-white transition-colors flex items-center gap-2 uppercase tracking-tighter"><Activity className="w-3 h-3" /> Show Route</button>
+                              <button onClick={() => handleSendRequest(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-blue-500 hover:text-white transition-colors border-t border-white/5 flex items-center gap-2 uppercase tracking-tighter"><Send className="w-3 h-3" /> {u.has_car ? 'Ask for Ride' : 'Offer Pickup'}</button>
                             </div>
                           )}
                         </div>
                       )}
                     </div>
-                    <div className="text-[10px] text-white/40 font-mono truncate mt-0.5">
-                      {u.zip_code} · {u.has_car ? 'Driver' : 'Rider'}
-                    </div>
+                    <div className="text-[10px] text-white/40 font-mono truncate mt-0.5">{u.zip_code} · {u.has_car ? 'Driver' : 'Rider'}</div>
                     <div className="flex gap-1.5 mt-2.5">
-                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${u.has_car ? 'bg-blue-500/10 text-[#3b82f6]/80 border-blue-500/20' : 'bg-pink/10 text-[#ff006e]/80 border-pink/20'}`}>
-                        {u.has_car ? `Driver · ${u.seats_available}s` : 'Rider'}
-                      </span>
-                      {isMatched && (
-                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded bg-green-500/10 text-green-400/80 border border-green-500/20 uppercase`}>
-                          Matched
-                        </span>
-                      )}
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${u.has_car ? 'bg-blue-500/10 text-[#3b82f6]/80 border-blue-500/20' : 'bg-pink/10 text-[#ff006e]/80 border-pink/20'}`}>{u.has_car ? `Driver · ${u.seats_available}s` : 'Rider'}</span>
+                      {pool && <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded bg-green-500/10 text-green-400/80 border border-green-500/20 uppercase`}>Matched</span>}
                     </div>
                   </div>
                 </div>
@@ -329,65 +353,35 @@ const Dashboard = () => {
           </div>
         </aside>
 
-        {/* Map Area */}
         <main className="flex-1 relative overflow-hidden bg-[#050505]">
           <div className="absolute inset-0 z-0">
             <MapView 
-              markers={allUsers.map(m => {
+              markers={allUsers.filter(u => u.preferred_arrival_time === viewArrivalTime).map(m => {
                 const pool = carpools.find(p => p.member_ids.includes(m.id));
-                const isMatched = !!pool;
                 const isFull = m.has_car && pool && pool.member_ids.length >= (m.seats_available || 1) + 1;
-                return {
-                  lat: m.latitude,
-                  lng: m.longitude,
-                  name: m.full_name,
-                  type: m.has_car ? 'driver' : 'rider',
-                  isMe: m.id === user?.uid,
-                  isMatched,
-                  isFull,
-                  isSelected: myCarpool?.member_ids.includes(m.id) || activeMenuId === m.id
-                };
+                return { lat: m.latitude, lng: m.longitude, name: m.full_name, type: m.has_car ? 'driver' : 'rider', isMe: m.id === user?.uid, isMatched: !!pool, isFull, isSelected: myCarpool?.member_ids.includes(m.id) || activeMenuId === m.id };
               })}
               routePolyline={tempRoute || myCarpool?.route_polyline}
             />
           </div>
 
-          {/* Map Legend */}
           <div className="absolute top-4 right-4 bg-black/85 border border-white/10 backdrop-blur-xl p-3 px-4 rounded-lg z-20 space-y-2.5 shadow-2xl">
             <h4 className="text-[9px] font-mono text-pink uppercase tracking-widest mb-1.5">Map Legend</h4>
             <div className="space-y-2">
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You (Yellow)</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" /> <span>Driver (Blue)</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#ff006e]" /> <span>Rider (Pink)</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2 mt-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-white/60" /> <span>Matched / Full (Filled)</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full border border-white/40" /> <span>Unmatched (Empty)</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2">
-                <div className="w-2.5 h-2.5 rounded-[2px] bg-[#1f6abf] flex items-center justify-center text-[5px] font-bold text-white uppercase shadow-sm">IBM</div> <span>SVL (Office)</span>
-              </div>
+              <div className="flex items-center gap-2.5 text-[10px] text-white/40"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You (Yellow)</span></div>
+              <div className="flex items-center gap-2.5 text-[10px] text-white/40"><div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" /> <span>Driver (Blue)</span></div>
+              <div className="flex items-center gap-2.5 text-[10px] text-white/40"><div className="w-2.5 h-2.5 rounded-full bg-[#ff006e]" /> <span>Rider (Pink)</span></div>
+              <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2 mt-1"><div className="w-2.5 h-2.5 rounded-full bg-white/60" /> <span>Matched / Full (Filled)</span></div>
+              <div className="flex items-center gap-2.5 text-[10px] text-white/40"><div className="w-2.5 h-2.5 rounded-full border border-white/40" /> <span>Unmatched (Empty)</span></div>
             </div>
-            {tempRoute && (
-              <button onClick={() => setTempRoute(null)} className="w-full mt-2 py-1.5 text-[8px] bg-pink/20 text-pink border border-pink/30 uppercase font-bold tracking-tighter rounded-sm hover:bg-pink/30 transition-colors">Clear Path View</button>
-            )}
+            {tempRoute && <button onClick={() => setTempRoute(null)} className="w-full mt-2 py-1.5 text-[8px] bg-pink/20 text-pink border border-pink/30 uppercase font-bold tracking-tighter rounded-sm hover:bg-pink/30 transition-colors">Clear Path View</button>}
           </div>
 
-          {/* Notifications Panel */}
           <AnimatePresence>
             {showNotifications && requests.length > 0 && (
-              <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-4 right-44 w-72 bg-black/90 border border-white/10 backdrop-blur-xl z-[60] p-4 rounded-sm shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border-pink/20">
+              <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-4 right-44 w-72 bg-black/90 border border-white/10 backdrop-blur-xl z-[60] p-4 rounded-sm shadow-2xl border-pink/20">
                 <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2 text-pink text-[10px] font-bold uppercase tracking-widest">
-                    <Bell className="w-3.5 h-3.5" /> Notifications
-                  </div>
+                  <div className="flex items-center gap-2 text-pink text-[10px] font-bold uppercase tracking-widest"><Bell className="w-3.5 h-3.5" /> Notifications</div>
                   <button onClick={() => setShowNotifications(false)} className="text-white/20 hover:text-white"><X className="w-3.5 h-3.5" /></button>
                 </div>
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar">
@@ -395,13 +389,11 @@ const Dashboard = () => {
                     const sender = allUsers.find(u => u.id === req.sender_id);
                     return (
                       <div key={req.id} className="bg-white/5 p-3 border border-white/5 rounded-sm">
-                        <p className="text-[10px] text-white/80 leading-relaxed font-mono">
-                          <span className="text-white font-bold">{sender?.full_name}</span> {req.type === 'drive_offer' ? 'offered you a drive.' : 'requested a pickup.'}
-                        </p>
-                        <div className="flex gap-2 mt-3">
-                          <button onClick={() => handleAcceptRequest(req)} className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400 transition-colors">Accept</button>
-                          <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm hover:text-white hover:bg-white/5 transition-colors">Ignore</button>
-                        </div>
+                        <p className="text-[10px] text-white/80 leading-relaxed font-mono"><span className="text-white font-bold">{sender?.full_name}</span> {req.type === 'drive_offer' ? 'offered you a drive.' : 'requested a pickup.'} {req.notes && <span className="block mt-1 text-[8px] text-pink/60 italic">{req.notes}</span>}</p>
+                        {req.status === 'pending' && <div className="flex gap-2 mt-3">
+                          <button onClick={() => handleAcceptRequest(req)} className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400">Accept</button>
+                          <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm">Ignore</button>
+                        </div>}
                       </div>
                     );
                   })}
@@ -410,36 +402,22 @@ const Dashboard = () => {
             )}
           </AnimatePresence>
 
-          {/* Active Route Panel Overlay */}
           <AnimatePresence>
             {myCarpool && (
               <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="absolute bottom-0 left-0 right-0 bg-black/94 border-t border-white/10 backdrop-blur-2xl p-4 px-6 z-30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[9px] font-mono text-pink uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Activity className="w-3 h-3" /> Optimized Commute Sequence
-                    </div>
+                    <div className="text-[9px] font-mono text-pink uppercase tracking-widest mb-3 flex items-center gap-2"><Activity className="w-3 h-3" /> Optimized Commute Sequence</div>
                     <div className="flex items-center gap-2 flex-wrap">
                       {myMembers.map((m, i) => (
                         <React.Fragment key={m.id}>
                           <div className="flex items-center gap-2 group relative">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border transition-all ${
-                              m.id === user?.uid ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' :
-                              m.has_car ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 
-                              'bg-pink/20 text-pink border-pink/40'
-                            }`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border transition-all ${m.id === user?.uid ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' : m.has_car ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 'bg-pink/20 text-pink border-pink/40'}`}>
                               {m.id === myCarpool.driver_id ? getInitials(m.full_name) : i}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <button 
-                                onClick={() => m.phone_number && alert(`${m.full_name}: ${m.phone_number}`)}
-                                className="text-[11px] text-white/60 truncate max-w-[80px] hover:text-pink transition-colors text-left"
-                              >
-                                {m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}
-                              </button>
-                              <span className="text-[8px] text-white/40 font-mono">
-                                {i === 0 ? 'Starts' : 'Ready'} by {commuteTiming?.getMemberTime(i)}
-                              </span>
+                              <button onClick={() => m.phone_number && alert(`${m.full_name}: ${m.phone_number}`)} className="text-[11px] text-white/60 truncate max-w-[80px] hover:text-pink transition-colors text-left">{m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}</button>
+                              <span className="text-[8px] text-white/40 font-mono">{i === 0 ? 'Starts' : 'Ready'} by {commuteTiming?.getMemberTime(i)}</span>
                             </div>
                             {i < myMembers.length - 1 && <span className="text-white/10 text-xs mx-1">→</span>}
                           </div>
@@ -452,7 +430,6 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex items-center gap-10 shrink-0">
                     <div className="flex gap-10">
                       <div className="text-right">
@@ -464,15 +441,10 @@ const Dashboard = () => {
                         <div className="text-[9px] text-white/40 font-mono uppercase mt-0.5">Arrival</div>
                       </div>
                     </div>
-                    
-                    {!myCarpool.accepted_ids.includes(user?.uid || '') ? (
-                      <button onClick={handleAcceptMatch} className="bg-green-500 text-black px-8 py-2 rounded-sm font-bold text-[10px] hover:bg-green-400 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(34,197,94,0.2)]">Confirm Seat</button>
-                    ) : (
-                      <div className="bg-pink/10 border border-pink/30 rounded-sm p-2 px-6 text-center shadow-[0_0_15px_rgba(255,45,120,0.1)]">
-                        <div className="text-[17px] font-bold text-pink font-mono leading-none tracking-tighter">{commuteTiming?.myTime}</div>
-                        <div className="text-[8px] text-white/30 font-mono uppercase mt-1 tracking-widest">Leave by</div>
-                      </div>
-                    )}
+                    <div className="bg-pink/10 border border-pink/30 rounded-sm p-2 px-6 text-center shadow-[0_0_15px_rgba(255,45,120,0.1)]">
+                      <div className="text-[17px] font-bold text-pink font-mono leading-none tracking-tighter">{commuteTiming?.myTime}</div>
+                      <div className="text-[8px] text-white/30 font-mono uppercase mt-1 tracking-widest">Leave by</div>
+                    </div>
                   </div>
                 </div>
               </motion.div>

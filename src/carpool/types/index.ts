@@ -44,5 +44,6 @@ export interface RideRequest {
   receiver_id: string;
   type: 'pickup_request' | 'drive_offer';
   status: 'pending' | 'accepted' | 'rejected';
+  notes?: string;
   created_at: any;
 }
