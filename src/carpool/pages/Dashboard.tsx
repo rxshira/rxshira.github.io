@@ -299,11 +299,16 @@ const Dashboard = () => {
         
         <div className="flex-1 p-3 px-5 flex items-center justify-between gap-4">
           <div className="flex-1">
-            <select value={viewArrivalTime} onChange={(e) => setViewArrivalTime(e.target.value)} className="bg-transparent text-xl font-semibold text-white outline-none cursor-pointer w-full">
-              <option value="08:00">08:00 AM</option>
-              <option value="08:30">08:30 AM</option>
-              <option value="09:00">09:00 AM</option>
-              <option value="09:30">09:30 AM</option>
+            <select 
+              value={viewArrivalTime} 
+              onChange={(e) => setViewArrivalTime(e.target.value)} 
+              className="bg-transparent text-xl font-semibold text-white outline-none cursor-pointer w-full appearance-none"
+              style={{ backgroundColor: 'black' }}
+            >
+              <option value="08:00" className="bg-black text-white">08:00 AM</option>
+              <option value="08:30" className="bg-black text-white">08:30 AM</option>
+              <option value="09:00" className="bg-black text-white">09:00 AM</option>
+              <option value="09:30" className="bg-black text-white">09:30 AM</option>
             </select>
             <div className="text-[9px] text-white/40 font-mono uppercase tracking-wider mt-0.5">Arrival Window</div>
           </div>
