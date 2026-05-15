@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, UserPlus, LogIn, Chrome } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 
 const CarpoolAuthGate = () => {
-  const { loginWithGoogle, signup, loginWithEmail, authError, clearError } = useAuth();
+  const { signup, loginWithEmail, authError, clearError } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'landing' | 'login' | 'signup'>('landing');
   const [loading, setLoading] = useState(false);
@@ -34,26 +34,16 @@ const CarpoolAuthGate = () => {
         await loginWithEmail(formData.email, formData.password);
         navigate('/carpool/map');
       }
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleAuth = async () => {
-    setLoading(true);
-    try {
-      await loginWithGoogle();
-      navigate('/carpool/map');
-    } catch (error) {
+    } catch (error: any) {
+      alert(`Auth failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[90vh] flex flex-col items-center justify-center bg-black px-6 relative overflow-hidden">
-      <div className="w-full max-w-md text-center space-y-10 mt-12">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center bg-black px-6">
+      <div className="w-full max-w-md text-center space-y-10">
         <header>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2 text-white uppercase">
             IBM <span className="text-pink neon-text">2026</span>
@@ -67,9 +57,9 @@ const CarpoolAuthGate = () => {
           <div className="flex flex-col gap-4">
             <button 
               onClick={() => setMode('login')}
-              className="w-full py-4 bg-white text-black font-bold rounded-sm text-xs uppercase tracking-widest hover:bg-pink hover:text-white transition-all flex items-center justify-center gap-3 font-mono"
+              className="w-full py-4 bg-white text-black font-bold rounded-sm text-xs uppercase tracking-widest hover:bg-pink hover:text-white transition-all flex items-center justify-center gap-3 font-mono shadow-[0_0_20px_rgba(255,255,255,0.05)]"
             >
-              <LogIn className="w-4 h-4" /> Existing Account
+              <LogIn className="w-4 h-4" /> Sign In
             </button>
             <button 
               onClick={() => setMode('signup')}
@@ -77,8 +67,7 @@ const CarpoolAuthGate = () => {
             >
               <UserPlus className="w-4 h-4" /> Create New Profile
             </button>
-            </motion.div>
-
+          </div>
         ) : (
           <form 
             onSubmit={handleAuthAction}

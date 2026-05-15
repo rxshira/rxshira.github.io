@@ -4,7 +4,7 @@ import { collection, query, where, onSnapshot, doc, updateDoc, arrayUnion, addDo
 import { db } from '../../lib/firebase';
 import { Carpool, CarpoolUser, RideRequest } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Clock, Users, Car, Shield, Search, ArrowRight, Activity, CheckCircle, MoreVertical, Send, UserCheck, Bell } from 'lucide-react';
+import { MapPin, Clock, Users, Car, Shield, Search, ArrowRight, Activity, CheckCircle, MoreVertical, Send, Bell, X } from 'lucide-react';
 import MapView from '../components/MapView';
 import { GoogleDistanceService } from '../lib/googleService';
 
@@ -21,6 +21,7 @@ const Dashboard = () => {
   
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [tempRoute, setTempRoute] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const qUsers = query(collection(db, 'carpool_users'), where('access_status', '==', 'approved'));
@@ -119,10 +120,8 @@ const Dashboard = () => {
     }
   };
 
-  const isFullyAccepted = myCarpool?.status === 'active';
-  const hasIAccepted = myCarpool?.accepted_ids.includes(user?.uid || '');
-
   const getVisibleAddress = (member: CarpoolUser) => {
+    const isFullyAccepted = myCarpool?.status === 'active';
     if (isFullyAccepted || member.id === user?.uid) return member.address || member.zip_code;
     return `Area: ${member.zip_code} (Hidden)`;
   };
@@ -134,25 +133,23 @@ const Dashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
   return (
     <div className="flex flex-col h-screen bg-black text-white font-sans overflow-hidden">
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0 z-20">
+      <nav className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0 z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] tracking-widest shadow-[0_0_15px_rgba(31,106,191,0.3)]">IBM</div>
           <span className="text-sm font-medium tracking-tight">Intern / New Grad Portal</span>
           <span className="bg-[#1f6abf]/20 border border-[#1f6abf]/30 text-[#5ba3e8] text-[9px] font-mono px-2 py-0.5 rounded uppercase">SVL · Summer 2026</span>
         </div>
         <div className="flex items-center gap-5">
-          {requests.length > 0 && (
-            <div className="relative group cursor-pointer">
-              <Bell className="w-4 h-4 text-pink animate-bounce" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink rounded-full border border-black" />
-            </div>
-          )}
-          {myCarpool && isFullyAccepted && (
+          <div className="relative group cursor-pointer" onClick={() => setShowNotifications(!showNotifications)}>
+            <Bell className={`w-4 h-4 transition-colors ${requests.length > 0 ? 'text-pink animate-bounce' : 'text-white/20 hover:text-white'}`} />
+            {requests.length > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink rounded-full border border-black shadow-glow-pink" />}
+          </div>
+          {myCarpool?.status === 'active' && (
             <span className="bg-green-500/10 border border-green-500/30 text-green-500 text-[9px] font-mono px-2 py-0.5 rounded flex items-center gap-1 uppercase">
               <CheckCircle className="w-2.5 h-2.5" /> Matched
             </span>
@@ -208,9 +205,9 @@ const Dashboard = () => {
               return (
                 <div key={u.id} className={`p-4 px-4 flex gap-3 items-start group relative transition-all ${isMyGroup ? 'bg-pink/[0.04] border-l-2 border-pink pl-3.5' : 'hover:bg-white/[0.02]'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border ${
-                    isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' :
-                    u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#5ba3e8]' : 
-                    'bg-pink/15 border-pink/35 text-pink'
+                    isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.3)]' :
+                    u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#3b82f6]' : 
+                    'bg-pink/15 border-pink/35 text-[#ff006e]'
                   }`}>
                     {getInitials(u.full_name)}
                   </div>
@@ -241,7 +238,7 @@ const Dashboard = () => {
                       {u.zip_code} · {u.has_car ? 'Driver' : 'Rider'}
                     </div>
                     <div className="flex gap-1.5 mt-2.5">
-                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${u.has_car ? 'bg-blue-500/10 text-[#5ba3e8]/80 border-blue-500/20' : 'bg-pink/10 text-pink/80 border-pink/20'}`}>
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${u.has_car ? 'bg-blue-500/10 text-[#3b82f6]/80 border-blue-500/20' : 'bg-pink/10 text-[#ff006e]/80 border-pink/20'}`}>
                         {u.has_car ? `Driver · ${u.seats_available}s` : 'Rider'}
                       </span>
                       {isMatched && (
@@ -264,7 +261,7 @@ const Dashboard = () => {
               markers={allUsers.map(m => {
                 const pool = carpools.find(p => p.member_ids.includes(m.id));
                 const isMatched = !!pool;
-                const isFull = m.has_car && pool && pool.member_ids.length >= m.seats_available + 1;
+                const isFull = m.has_car && pool && pool.member_ids.length >= (m.seats_available || 1) + 1;
                 return {
                   lat: m.latitude,
                   lng: m.longitude,
@@ -285,47 +282,50 @@ const Dashboard = () => {
             <h4 className="text-[9px] font-mono text-pink uppercase tracking-widest mb-1.5">Map Legend</h4>
             <div className="space-y-2">
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]" /> <span>You (Unique)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" /> <span>Driver</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" /> <span>Driver (Blue)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full bg-pink" /> <span>Rider</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#ff006e]" /> <span>Rider (Pink)</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2 mt-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-white" /> <span>Full / Confirmed</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-white/60" /> <span>Matched / Full</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40">
-                <div className="w-2.5 h-2.5 rounded-full border border-white" /> <span>Unmatched / Open</span>
+                <div className="w-2.5 h-2.5 rounded-full border border-white/40" /> <span>Unmatched / Open</span>
               </div>
               <div className="flex items-center gap-2.5 text-[10px] text-white/40 border-t border-white/5 pt-2">
-                <div className="w-2.5 h-2.5 rounded-[2px] bg-[#1f6abf] flex items-center justify-center text-[5px] font-bold text-white uppercase">IBM</div> <span>SVL (555 Bailey Ave)</span>
+                <div className="w-2.5 h-2.5 rounded-[2px] bg-[#1f6abf] flex items-center justify-center text-[5px] font-bold text-white uppercase shadow-sm">IBM</div> <span>SVL (Precise Rd)</span>
               </div>
             </div>
             {tempRoute && (
-              <button onClick={() => setTempRoute(null)} className="w-full mt-2 py-1 text-[8px] bg-pink/20 text-pink border border-pink/30 uppercase font-bold tracking-tighter rounded-sm">Clear Active Path</button>
+              <button onClick={() => setTempRoute(null)} className="w-full mt-2 py-1.5 text-[8px] bg-pink/20 text-pink border border-pink/30 uppercase font-bold tracking-tighter rounded-sm hover:bg-pink/30 transition-colors">Clear Path View</button>
             )}
           </div>
 
-          {/* Notifications / Requests Panel Overlay */}
+          {/* Notifications Panel */}
           <AnimatePresence>
-            {requests.length > 0 && (
-              <motion.div initial={{ x: 300 }} animate={{ x: 0 }} exit={{ x: 300 }} className="absolute top-20 right-4 w-64 bg-black/90 border border-white/10 backdrop-blur-xl z-40 p-4 rounded-sm shadow-2xl">
-                <div className="flex items-center gap-2 text-pink text-[10px] font-bold uppercase tracking-widest mb-4">
-                  <Bell className="w-3.5 h-3.5" /> Notifications
+            {showNotifications && requests.length > 0 && (
+              <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-4 right-44 w-72 bg-black/90 border border-white/10 backdrop-blur-xl z-[60] p-4 rounded-sm shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] border-pink/20">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2 text-pink text-[10px] font-bold uppercase tracking-widest">
+                    <Bell className="w-3.5 h-3.5" /> Notifications
+                  </div>
+                  <button onClick={() => setShowNotifications(false)} className="text-white/20 hover:text-white"><X className="w-3.5 h-3.5" /></button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto no-scrollbar">
                   {requests.map(req => {
                     const sender = allUsers.find(u => u.id === req.sender_id);
                     return (
                       <div key={req.id} className="bg-white/5 p-3 border border-white/5 rounded-sm">
-                        <p className="text-[10px] text-white/80 leading-relaxed">
+                        <p className="text-[10px] text-white/80 leading-relaxed font-mono">
                           <span className="text-white font-bold">{sender?.full_name}</span> {req.type === 'drive_offer' ? 'offered you a drive.' : 'requested a pickup.'}
                         </p>
                         <div className="flex gap-2 mt-3">
-                          <button className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm">Accept</button>
-                          <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm hover:text-white">Ignore</button>
+                          <button className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400 transition-colors">Accept</button>
+                          <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm hover:text-white hover:bg-white/5 transition-colors">Ignore</button>
                         </div>
                       </div>
                     );
@@ -356,7 +356,7 @@ const Dashboard = () => {
                               {m.id === myCarpool.driver_id ? getInitials(m.full_name) : i}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className="text-[11px] text-white/60 truncate max-w-[80px]">{m.full_name.split(' ')[0]} {m.id === user?.uid && '(You)'}</span>
+                              <span className="text-[11px] text-white/60 truncate max-w-[80px]">{m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}</span>
                               <span className="text-[8px] text-white/20 font-mono truncate">{getVisibleAddress(m)}</span>
                             </div>
                             {i < myMembers.length - 1 && <span className="text-white/10 text-xs mx-1">→</span>}
@@ -383,7 +383,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     
-                    {!hasIAccepted ? (
+                    {!myCarpool.accepted_ids.includes(user?.uid || '') ? (
                       <button onClick={handleAcceptMatch} className="bg-green-500 text-black px-8 py-2 rounded-sm font-bold text-[10px] hover:bg-green-400 transition-all uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(34,197,94,0.2)]">Confirm Seat</button>
                     ) : (
                       <div className="bg-pink/10 border border-pink/30 rounded-sm p-2 px-6 text-center shadow-[0_0_15px_rgba(255,45,120,0.1)]">

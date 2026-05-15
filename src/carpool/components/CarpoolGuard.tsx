@@ -21,22 +21,23 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
     );
   }
 
+  // Not logged in -> go to auth gate
   if (!user) {
     return <Navigate to="/carpool" state={{ from: location }} replace />;
   }
 
-  // ADMIN BYPASS: If you are the site admin, you can see everything
+  // MASTER ADMIN BYPASS
   if (isAdmin) {
     return <>{children}</>;
   }
 
-  // If we require approval but user is pending or rejected
+  // Approval Check
   if (requireApproval) {
     if (!carpoolUser || carpoolUser.access_status === 'pending') {
       return (
         <div className="min-h-screen flex items-center justify-center bg-black px-6">
           <div className="max-w-md text-center space-y-6 border border-white/10 p-12 bg-white/5 rounded-sm">
-            <h2 className="text-3xl font-bold text-white uppercase tracking-tighter">Access Pending</h2>
+            <h2 className="text-3xl font-bold text-white uppercase tracking-tighter text-shadow-glow">Access Pending</h2>
             <p className="text-text-gray font-mono text-xs leading-relaxed">
               Your account is currently waiting for admin verification. 
               Our team is reviewing your offer letter credentials.
@@ -61,8 +62,8 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
     }
   }
 
-  // Check if profile is complete (basic check for zip)
-  // FIX: Approved users should NOT be redirected if they have at least a zip code
+  // Profile Completion Check
+  // Only redirect if they don't even have a ZIP code and aren't already on the profile page
   if (!carpoolUser?.zip_code && location.pathname !== '/carpool/profile') {
     return <Navigate to="/carpool/profile" replace />;
   }
