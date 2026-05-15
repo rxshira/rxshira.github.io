@@ -117,6 +117,14 @@ const Dashboard = () => {
     if (!user || !carpoolUser) return;
     if (viewArrivalTime === carpoolUser.preferred_arrival_time) return;
 
+    if (myCarpool) {
+      const confirmChange = window.confirm("WARNING: Changing your arrival time will automatically CANCEL your current carpool plan. Do you want to proceed?");
+      if (!confirmChange) {
+        setViewArrivalTime(carpoolUser.preferred_arrival_time);
+        return;
+      }
+    }
+
     setIsUpdatingTime(true);
     try {
       const userRef = doc(db, 'carpool_users', user.uid);
@@ -125,6 +133,7 @@ const Dashboard = () => {
       if (myCarpool) {
         const poolRef = doc(db, 'carpools', myCarpool.id);
         const affectedMembers = myMembers.filter(m => m.id !== user.uid);
+
         if (myCarpool.driver_id === user.uid) {
           await deleteDoc(poolRef);
           for (const m of affectedMembers) {
@@ -138,10 +147,22 @@ const Dashboard = () => {
           const newMembers = myCarpool.member_ids.filter(id => id !== user.uid);
           const newAccepted = myCarpool.accepted_ids.filter(id => id !== user.uid);
           const newOrder = myCarpool.pickup_order.filter(id => id !== user.uid);
-          if (newMembers.length <= 1) { await deleteDoc(poolRef); }
-          else { await updateDoc(poolRef, { member_ids: newMembers, accepted_ids: newAccepted, pickup_order: newOrder }); }
+
+          if (newMembers.length <= 1) {
+            await deleteDoc(poolRef);
+          } else {
+            await updateDoc(poolRef, {
+              member_ids: newMembers,
+              accepted_ids: newAccepted,
+              pickup_order: newOrder
+            });
+          }
+
           await addDoc(collection(db, 'ride_requests'), {
-            sender_id: user.uid, receiver_id: myCarpool.driver_id, type: 'pickup_request', status: 'rejected',
+            sender_id: user.uid,
+            receiver_id: myCarpool.driver_id,
+            type: 'pickup_request',
+            status: 'rejected',
             notes: `Match Reset: ${carpoolUser.full_name} changed time to ${viewArrivalTime}`,
             created_at: serverTimestamp()
           });
@@ -149,8 +170,11 @@ const Dashboard = () => {
       }
       await refreshCarpoolUser();
       alert(`Schedule Synchronized: Your arrival time is now ${viewArrivalTime}.`);
-    } catch (err) { console.error("Failed to update arrival time:", err); }
-    finally { setIsUpdatingTime(false); }
+    } catch (err) {
+      console.error("Failed to update arrival time:", err);
+    } finally {
+      setIsUpdatingTime(false);
+    }
   };
 
   const handleAcceptRequest = async (req: RideRequest) => {
@@ -193,12 +217,9 @@ const Dashboard = () => {
     const [h, m] = carpoolUser.preferred_arrival_time.split(':').map(Number);
     const targetArrivalMins = (h * 60) + m; 
     
-    // Google returns duration in seconds.
     const totalDurationMins = Math.round(totalDurationSeconds / 60);
     const driverStartMins = targetArrivalMins - totalDurationMins;
 
-    // Calculate time for each member in sequence
-    // Member 0 = Driver. Member i = Rider i-1
     const memberTimes = [driverStartMins];
     let cumulativeMins = driverStartMins;
     
@@ -240,6 +261,47 @@ const Dashboard = () => {
       alert("Request sent successfully!");
       setActiveMenuId(null);
     } catch (err) { console.error("Request failed", err); }
+  };
+
+  const handleLeaveCarpool = async (targetUserId: string) => {
+    if (!myCarpool || !user) return;
+    
+    const isTargetMe = targetUserId === user.uid;
+    const targetUser = allUsers.find(u => u.id === targetUserId);
+    const msg = isTargetMe 
+      ? "Are you sure you want to leave this carpool? This will reset the route for everyone."
+      : `Are you sure you want to remove ${targetUser?.full_name} from the carpool?`;
+
+    if (!window.confirm(msg)) return;
+
+    try {
+      const poolRef = doc(db, 'carpools', myCarpool.id);
+      const newMembers = myCarpool.member_ids.filter(id => id !== targetUserId);
+      const newAccepted = myCarpool.accepted_ids.filter(id => id !== targetUserId);
+      const newOrder = myCarpool.pickup_order.filter(id => id !== targetUserId);
+
+      if (newMembers.length <= 1) {
+        await deleteDoc(poolRef);
+      } else {
+        await updateDoc(poolRef, {
+          member_ids: newMembers,
+          accepted_ids: newAccepted,
+          pickup_order: newOrder
+        });
+      }
+      
+      await addDoc(collection(db, 'ride_requests'), {
+        sender_id: user.uid,
+        receiver_id: targetUserId,
+        type: 'pickup_request',
+        status: 'rejected',
+        notes: isTargetMe ? "User left carpool." : "You were removed from the carpool.",
+        created_at: serverTimestamp()
+      });
+
+      alert("Carpool updated.");
+      setActiveMenuId(null);
+    } catch (err) { console.error("Failed to leave carpool:", err); }
   };
 
   const getVisibleAddress = (member: CarpoolUser) => {
@@ -336,7 +398,7 @@ const Dashboard = () => {
               const pool = carpools.find(p => p.member_ids.includes(u.id));
 
               return (
-                <div key={u.id} className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : isMyGroup ? 'bg-pink/[0.04] border-pink' : 'hover:bg-white/[0.02] border-transparent'}`}>
+                <div key={u.id} className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : isMyGroup ? 'bg-pink/[0.04] border-pink shadow-[inset_0_0_15px_rgba(255,45,120,0.05)]' : 'hover:bg-white/[0.02] border-transparent'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border ${isMe ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.3)]' : u.has_car ? 'bg-blue-500/15 border-blue-500/35 text-[#3b82f6]' : 'bg-pink/15 border-pink/35 text-[#ff006e]'}`}>
                     {getInitials(u.full_name)}
                   </div>
@@ -349,7 +411,16 @@ const Dashboard = () => {
                           {activeMenuId === u.id && (
                             <div className="absolute right-0 top-full mt-1 w-36 bg-[#181818] border border-white/10 rounded-sm shadow-2xl z-50 overflow-hidden font-mono">
                               <button onClick={() => handleShowRoute(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-pink hover:text-white transition-colors flex items-center gap-2 uppercase tracking-tighter"><Activity className="w-3 h-3" /> Show Route</button>
-                              <button onClick={() => handleSendRequest(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-blue-500 hover:text-white transition-colors border-t border-white/5 flex items-center gap-2 uppercase tracking-tighter"><Send className="w-3 h-3" /> {u.has_car ? 'Ask for Ride' : 'Offer Pickup'}</button>
+                              
+                              {isMyGroup ? (
+                                <button onClick={() => handleLeaveCarpool(u.id)} className="w-full text-left px-3 py-2 text-[9px] text-red-400 hover:bg-red-500 hover:text-white transition-colors border-t border-white/5 flex items-center gap-2 uppercase tracking-tighter">
+                                  <X className="w-3 h-3" /> Leave Ride
+                                </button>
+                              ) : (
+                                <button onClick={() => handleSendRequest(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-blue-500 hover:text-white transition-colors border-t border-white/5 flex items-center gap-2 uppercase tracking-tighter">
+                                  <Send className="w-3 h-3" /> {u.has_car ? 'Ask for Ride' : 'Offer Pickup'}
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -426,7 +497,7 @@ const Dashboard = () => {
                       {myMembers.map((m, i) => (
                         <React.Fragment key={m.id}>
                           <div className="flex items-center gap-2 group relative">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border transition-all ${m.id === user?.uid ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' : m.has_car ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 'bg-pink/20 text-pink border-pink/40'}`}>
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold border transition-all ${m.id === user?.uid ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400 shadow-glow-pink' : m.has_car ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 'bg-pink/20 text-pink border-pink/40'}`}>
                               {m.id === myCarpool.driver_id ? getInitials(m.full_name) : i}
                             </div>
                             <div className="flex flex-col min-w-0">
