@@ -101,7 +101,8 @@ const CarpoolAdmin = () => {
     try {
       let coords = { lat: 37.3382, lng: -121.8863 };
       if (apiKey) {
-        coords = await GoogleDistanceService.geocode(newUser.address || newUser.zip_code, apiKey);
+        const result = await GoogleDistanceService.geocode(newUser.address || newUser.zip_code, apiKey);
+        if (result) coords = result;
       }
 
       const tempId = `dummy_${Date.now()}`;
