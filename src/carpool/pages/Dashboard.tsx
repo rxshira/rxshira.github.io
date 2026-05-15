@@ -23,6 +23,10 @@ const Dashboard = () => {
   const [tempRoute, setTempRoute] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // REAL API TIMING STATE
+  const [routeLegs, setRouteLegs] = useState<any[]>([]);
+  const [totalDurationSeconds, setTotalDurationSeconds] = useState(0);
+
   // Dynamic Arrival Time Filtering
   const [viewArrivalTime, setViewArrivalTime] = useState<string>(carpoolUser?.preferred_arrival_time || '09:00');
   const [isUpdatingTime, setIsUpdatingTime] = useState(false);
@@ -64,25 +68,50 @@ const Dashboard = () => {
     };
   }, [user]);
 
+  // Sync my members AND fetch real Google Route details
   useEffect(() => {
     if (myCarpool) {
       const qMembers = query(collection(db, 'carpool_users'), where('id', 'in', myCarpool.member_ids));
-      const unsub = onSnapshot(qMembers, (snap) => {
+      const unsub = onSnapshot(qMembers, async (snap) => {
         const members: CarpoolUser[] = [];
         snap.forEach(doc => members.push(doc.data() as CarpoolUser));
+        
         const sorted = [...members].sort((a, b) => {
           if (a.id === myCarpool.driver_id) return -1;
           if (b.id === myCarpool.driver_id) return 1;
           return myCarpool.pickup_order.indexOf(a.id) - myCarpool.pickup_order.indexOf(b.id);
         });
         setMyMembers(sorted);
+
+        // FETCH REAL GOOGLE DATA FOR TIMING
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (apiKey && sorted.length > 1) {
+          try {
+            const service = new GoogleDistanceService(apiKey);
+            const driver = sorted[0];
+            const riders = sorted.slice(1);
+            const route = await service.getRoute(
+              { lat: driver.latitude, lng: driver.longitude },
+              { lat: 37.194697, lng: -121.745837 },
+              riders.map(r => ({ lat: r.latitude, lng: r.longitude }))
+            );
+            if (route.legs) {
+              setRouteLegs(route.legs);
+              setTotalDurationSeconds(route.duration);
+            }
+          } catch (err) {
+            console.error("Failed to fetch precise commute route", err);
+          }
+        }
         setLoading(false);
       });
       return unsub;
     } else {
       setLoading(false);
+      setRouteLegs([]);
+      setTotalDurationSeconds(0);
     }
-  }, [myCarpool]);
+  }, [myCarpool, user]);
 
   const handleSetArrivalTime = async () => {
     if (!user || !carpoolUser) return;
@@ -90,49 +119,29 @@ const Dashboard = () => {
 
     setIsUpdatingTime(true);
     try {
-      // 1. Update user preference
       const userRef = doc(db, 'carpool_users', user.uid);
       await updateDoc(userRef, { preferred_arrival_time: viewArrivalTime });
 
-      // 2. If in a carpool, we must cancel/notify
       if (myCarpool) {
         const poolRef = doc(db, 'carpools', myCarpool.id);
         const affectedMembers = myMembers.filter(m => m.id !== user.uid);
-
         if (myCarpool.driver_id === user.uid) {
-          // Entire pool is dissolved
           await deleteDoc(poolRef);
           for (const m of affectedMembers) {
             await addDoc(collection(db, 'ride_requests'), {
-              sender_id: user.uid,
-              receiver_id: m.id,
-              type: 'pickup_request',
-              status: 'rejected',
+              sender_id: user.uid, receiver_id: m.id, type: 'pickup_request', status: 'rejected',
               notes: `Match Reset: Driver changed arrival time to ${viewArrivalTime}`,
               created_at: serverTimestamp()
             });
           }
         } else {
-          // Just remove me
           const newMembers = myCarpool.member_ids.filter(id => id !== user.uid);
           const newAccepted = myCarpool.accepted_ids.filter(id => id !== user.uid);
           const newOrder = myCarpool.pickup_order.filter(id => id !== user.uid);
-
-          if (newMembers.length <= 1) {
-            await deleteDoc(poolRef);
-          } else {
-            await updateDoc(poolRef, {
-              member_ids: newMembers,
-              accepted_ids: newAccepted,
-              pickup_order: newOrder
-            });
-          }
-
+          if (newMembers.length <= 1) { await deleteDoc(poolRef); }
+          else { await updateDoc(poolRef, { member_ids: newMembers, accepted_ids: newAccepted, pickup_order: newOrder }); }
           await addDoc(collection(db, 'ride_requests'), {
-            sender_id: user.uid,
-            receiver_id: myCarpool.driver_id,
-            type: 'pickup_request',
-            status: 'rejected',
+            sender_id: user.uid, receiver_id: myCarpool.driver_id, type: 'pickup_request', status: 'rejected',
             notes: `Match Reset: ${carpoolUser.full_name} changed time to ${viewArrivalTime}`,
             created_at: serverTimestamp()
           });
@@ -140,11 +149,8 @@ const Dashboard = () => {
       }
       await refreshCarpoolUser();
       alert(`Schedule Synchronized: Your arrival time is now ${viewArrivalTime}.`);
-    } catch (err) {
-      console.error("Failed to update arrival time:", err);
-    } finally {
-      setIsUpdatingTime(false);
-    }
+    } catch (err) { console.error("Failed to update arrival time:", err); }
+    finally { setIsUpdatingTime(false); }
   };
 
   const handleAcceptRequest = async (req: RideRequest) => {
@@ -180,24 +186,38 @@ const Dashboard = () => {
     return `${hours}:${m < 10 ? '0'+m : m} ${ampm}`;
   };
 
+  // PRECISION COMMUTE TIMING ENGINE
   const commuteTiming = useMemo(() => {
-    if (!myCarpool || !carpoolUser) return null;
+    if (!myCarpool || !carpoolUser || !routeLegs.length) return null;
+    
     const [h, m] = carpoolUser.preferred_arrival_time.split(':').map(Number);
-    const targetArrival = (h * 60) + m; 
-    const duration = myCarpool.estimated_duration || 30;
-    const driverStart = targetArrival - duration;
+    const targetArrivalMins = (h * 60) + m; 
+    
+    // Google returns duration in seconds.
+    const totalDurationMins = Math.round(totalDurationSeconds / 60);
+    const driverStartMins = targetArrivalMins - totalDurationMins;
+
+    // Calculate time for each member in sequence
+    // Member 0 = Driver. Member i = Rider i-1
+    const memberTimes = [driverStartMins];
+    let cumulativeMins = driverStartMins;
+    
+    for (let i = 0; i < routeLegs.length - 1; i++) {
+      const legDurationMins = Math.round((routeLegs[i].duration_in_traffic?.value || routeLegs[i].duration.value) / 60);
+      cumulativeMins += legDurationMins;
+      memberTimes.push(cumulativeMins);
+    }
+
     const myIndex = myMembers.findIndex(m => m.id === user?.uid);
-    const pickupInterval = Math.floor(duration / (myMembers.length + 1 || 1));
-    const myReadyTime = driverStart + (myIndex * pickupInterval);
 
     return {
-      arrival: formatTime(targetArrival),
-      duration,
-      driverStart: formatTime(driverStart),
-      myTime: formatTime(myReadyTime),
-      getMemberTime: (idx: number) => formatTime(driverStart + (idx * pickupInterval))
+      arrival: formatTime(targetArrivalMins),
+      duration: totalDurationMins,
+      driverStart: formatTime(driverStartMins),
+      myTime: formatTime(memberTimes[myIndex] || driverStartMins),
+      getMemberTime: (idx: number) => formatTime(memberTimes[idx] || driverStartMins)
     };
-  }, [myCarpool, myMembers, carpoolUser, user]);
+  }, [myCarpool, myMembers, carpoolUser, routeLegs, totalDurationSeconds, user]);
 
   const handleShowRoute = async (targetUser: CarpoolUser) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -277,14 +297,9 @@ const Dashboard = () => {
           </div>
         ))}
         
-        {/* Arrival Time Selector */}
         <div className="flex-1 p-3 px-5 flex items-center justify-between gap-4">
           <div className="flex-1">
-            <select 
-              value={viewArrivalTime}
-              onChange={(e) => setViewArrivalTime(e.target.value)}
-              className="bg-transparent text-xl font-semibold text-white outline-none cursor-pointer w-full"
-            >
+            <select value={viewArrivalTime} onChange={(e) => setViewArrivalTime(e.target.value)} className="bg-transparent text-xl font-semibold text-white outline-none cursor-pointer w-full">
               <option value="08:00">08:00 AM</option>
               <option value="08:30">08:30 AM</option>
               <option value="09:00">09:00 AM</option>
@@ -293,13 +308,7 @@ const Dashboard = () => {
             <div className="text-[9px] text-white/40 font-mono uppercase tracking-wider mt-0.5">Arrival Window</div>
           </div>
           {viewArrivalTime !== carpoolUser?.preferred_arrival_time && (
-            <button 
-              onClick={handleSetArrivalTime}
-              disabled={isUpdatingTime}
-              className="bg-pink text-white text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-widest hover:shadow-glow-pink transition-all shrink-0"
-            >
-              {isUpdatingTime ? '...' : 'Set Time'}
-            </button>
+            <button onClick={handleSetArrivalTime} disabled={isUpdatingTime} className="bg-pink text-white text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-widest hover:shadow-glow-pink transition-all shrink-0">{isUpdatingTime ? '...' : 'Set Time'}</button>
           )}
         </div>
       </div>
@@ -417,7 +426,9 @@ const Dashboard = () => {
                             </div>
                             <div className="flex flex-col min-w-0">
                               <button onClick={() => m.phone_number && alert(`${m.full_name}: ${m.phone_number}`)} className="text-[11px] text-white/60 truncate max-w-[80px] hover:text-pink transition-colors text-left">{m.full_name?.split(' ')[0]} {m.id === user?.uid && '(You)'}</button>
-                              <span className="text-[8px] text-white/40 font-mono">{i === 0 ? 'Starts' : 'Ready'} by {commuteTiming?.getMemberTime(i)}</span>
+                              <span className="text-[8px] text-white/40 font-mono">
+                                {i === 0 ? 'Starts' : 'Ready'} by {commuteTiming?.getMemberTime(i)}
+                              </span>
                             </div>
                             {i < myMembers.length - 1 && <span className="text-white/10 text-xs mx-1">→</span>}
                           </div>
