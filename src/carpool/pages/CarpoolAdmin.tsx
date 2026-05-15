@@ -4,7 +4,7 @@ import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, s
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
 import { CarpoolUser, AccessStatus, Carpool } from '../types';
-import { CheckCircle, XCircle, Trash2, Mail, Phone, Car, MapPin, Search, Play, RefreshCw, FileText, Plus, X } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Mail, Phone, Car, MapPin, Search, Play, RefreshCw, FileText, Plus, X, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CsvImport from '../components/CsvImport';
 import { runMatchingAlgorithm } from '../lib/matching';
