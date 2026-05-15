@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
@@ -121,13 +121,19 @@ const ProfileForm = () => {
       }
 
       const userRef = doc(db, 'carpool_users', user.uid);
-      await updateDoc(userRef, {
+      
+      // Use setDoc instead of updateDoc to allow creating profiles that don't exist
+      await setDoc(userRef, {
         ...formData,
+        id: user.uid,
+        email: user.email,
         latitude: coords.lat,
         longitude: coords.lng,
         start_date: `2026-${formData.start_month === 'may' ? '05' : '07'}-01`,
-        access_status: carpoolUser?.access_status || 'pending'
-      });
+        access_status: carpoolUser?.access_status || 'pending',
+        is_admin: carpoolUser?.is_admin || false,
+        created_at: carpoolUser?.created_at || serverTimestamp()
+      }, { merge: true });
 
       await refreshCarpoolUser();
       navigate('/carpool/map');
