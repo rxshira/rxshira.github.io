@@ -534,6 +534,9 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
+                <div className="mt-3 pt-3 border-t border-white/5 text-[9px] text-white/40 font-mono italic text-center">
+                  <span className="text-pink font-bold not-italic">⚠️ ESTIMATES ONLY:</span> Commute times are approximate. SVL weekday traffic is heavy. Drivers should always verify the route and departure time on their own GPS to ensure timely arrival.
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
