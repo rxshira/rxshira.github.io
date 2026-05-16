@@ -161,13 +161,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (username === targetUser && password === targetPass) {
-      const adminUser = { username, email: username };
+      const adminUser = { 
+        uid: 'site_admin', 
+        username, 
+        email: username.includes('@') ? username : `${username}@internal.site` 
+      };
       setUser(adminUser);
       setIsAdmin(true);
       setAuthError(null);
       localStorage.setItem('admin_session', 'active');
       return true;
-    } else {
+    }
+ else {
       setAuthError("Invalid username or password.");
       return false;
     }

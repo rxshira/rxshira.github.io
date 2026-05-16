@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 
 const CarpoolAuthGate = () => {
-  const { signup, loginWithEmail, authError, clearError } = useAuth();
+  const { login, signup, loginWithEmail, authError, clearError } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'landing' | 'login' | 'signup'>('landing');
   const [loading, setLoading] = useState(false);
@@ -31,8 +30,21 @@ const CarpoolAuthGate = () => {
         await signup(formData.email, formData.password);
         navigate('/carpool/profile');
       } else {
-        await loginWithEmail(formData.email, formData.password);
-        navigate('/carpool/map');
+        // Try Site Admin login first if it looks like a username
+        const isAdminCreds = !formData.email.includes('@');
+        let loggedInAsAdmin = false;
+        
+        if (isAdminCreds) {
+          loggedInAsAdmin = await login(formData.email, formData.password);
+        }
+
+        if (loggedInAsAdmin) {
+          navigate('/carpool/map');
+        } else {
+          // Standard Firebase login
+          await loginWithEmail(formData.email, formData.password);
+          navigate('/carpool/map');
+        }
       }
     } catch (error: any) {
       alert(`Auth failed: ${error.message}`);
@@ -79,9 +91,9 @@ const CarpoolAuthGate = () => {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                 <input 
                   required
-                  type="email"
+                  type="text"
                   className="w-full bg-white/5 border border-white/10 p-3 pl-10 rounded-sm text-sm focus:border-pink outline-none transition-all text-white font-mono"
-                  placeholder="name@gmail.com"
+                  placeholder="name@gmail.com or admin"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
                 />

@@ -50,16 +50,20 @@ const Dashboard = () => {
       const pools: Carpool[] = [];
       snap.forEach(doc => pools.push(doc.data() as Carpool));
       setCarpools(pools);
-      const myPool = pools.find(p => p.member_ids.includes(user?.uid));
+      const myPool = pools.find(p => p.member_ids.includes(user?.uid || ''));
       setMyCarpool(myPool || null);
     });
 
-    const qReqs = query(collection(db, 'ride_requests'), where('receiver_id', '==', user?.uid));
-    const unsubReqs = onSnapshot(qReqs, (snap) => {
-      const reqs: RideRequest[] = [];
-      snap.forEach(doc => reqs.push({ id: doc.id, ...doc.data() } as RideRequest));
-      setRequests(reqs.filter(r => r.status === 'pending'));
-    });
+    // GUARD: Only query requests if we have a real UID
+    let unsubReqs = () => {};
+    if (user?.uid) {
+      const qReqs = query(collection(db, 'ride_requests'), where('receiver_id', '==', user.uid));
+      unsubReqs = onSnapshot(qReqs, (snap) => {
+        const reqs: RideRequest[] = [];
+        snap.forEach(doc => reqs.push({ id: doc.id, ...doc.data() } as RideRequest));
+        setRequests(reqs.filter(r => r.status === 'pending'));
+      });
+    }
 
     return () => {
       unsubUsers();
@@ -340,7 +344,7 @@ const Dashboard = () => {
               <CheckCircle className="w-2.5 h-2.5" /> Matched
             </span>
           )}
-          <button onClick={() => logout()} className="text-[11px] text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded transition-colors uppercase font-bold tracking-widest font-mono text-shadow-glow">Sign out</button>
+          <button onClick={() => logout()} className="text-[11px] text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded transition-colors uppercase font-bold tracking-widest font-mono text-shadow-glow text-white">Sign out</button>
         </div>
       </nav>
 
@@ -516,6 +520,11 @@ const Dashboard = () => {
                         <span className="text-[10px] text-white/60 font-mono tracking-tighter">SVL Lab</span>
                       </div>
                     </div>
+                    <div className="mt-4 pt-3 border-t border-white/5">
+                      <p className="text-[8px] text-white/30 font-mono italic leading-relaxed max-w-xl">
+                        <span className="text-pink">⚠️ Disclaimer:</span> These times are rough estimates based on typical traffic patterns. Due to heavy weekday traffic on the I-880/680 corridors, we strongly urge you to double-check these routes yourself, especially if you are the driver.
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-10 shrink-0">
                     <div className="flex gap-10">
@@ -533,9 +542,6 @@ const Dashboard = () => {
                       <div className="text-[8px] text-white/30 font-mono uppercase mt-1 tracking-widest">Leave by</div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-white/5 text-[9px] text-white/40 font-mono italic text-center">
-                  <span className="text-pink font-bold not-italic">⚠️ ESTIMATES ONLY:</span> Commute times are approximate. SVL weekday traffic is heavy. Drivers should always verify the route and departure time on their own GPS to ensure timely arrival.
                 </div>
               </motion.div>
             )}
