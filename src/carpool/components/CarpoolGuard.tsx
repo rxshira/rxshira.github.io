@@ -35,13 +35,47 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
   if (requireApproval) {
     if (!carpoolUser || carpoolUser.access_status === 'pending') {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-black px-6">
-          <div className="max-w-md text-center space-y-6 border border-white/10 p-12 bg-white/5 rounded-sm">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-black px-6 py-12 overflow-y-auto">
+          <div className="max-w-md w-full text-center space-y-6 border border-white/10 p-10 bg-white/5 rounded-sm">
             <h2 className="text-3xl font-bold text-white uppercase tracking-tighter text-shadow-glow">Access Pending</h2>
             <p className="text-text-gray font-mono text-xs leading-relaxed">
               Your account is currently waiting for admin verification. 
               Our team is reviewing your offer letter credentials.
             </p>
+          </div>
+
+          <div className="max-w-md w-full mt-6 bg-pink/5 border border-pink/20 p-6 rounded-sm space-y-4">
+            <h3 className="text-[10px] font-bold text-pink uppercase tracking-[0.2em] font-mono">How it works</h3>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold text-white uppercase font-mono">Route-Aware Matching</p>
+                <p className="text-[10px] text-white/50 font-mono leading-relaxed">
+                  We don't just find people near you—we find people whose commute naturally passes your location on the way to 555 Bailey Ave.
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold text-white uppercase font-mono">Privacy Protocol</p>
+                <p className="text-[10px] text-white/50 font-mono leading-relaxed">
+                  Your exact address is encrypted. Others only see your general Zip code area until a match is mutually accepted by both parties.
+                </p>
+              </div>
+            </div>
+            
+            <div className="pt-2 border-t border-pink/10">
+              <h3 className="text-[10px] font-bold text-pink uppercase tracking-[0.2em] font-mono mb-3">Once Approved, You can:</h3>
+              <ul className="space-y-2">
+                {[
+                  'Browse the intern roster for your arrival window',
+                  'Visualize potential paths on the interactive map',
+                  'Send and receive pickup requests or drive offers',
+                  'Get real-time traffic-adjusted pickup sequences'
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-2 items-start text-[10px] text-white/70 font-mono italic">
+                    <span className="text-pink font-bold">»</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       );
