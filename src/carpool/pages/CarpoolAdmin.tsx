@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
@@ -21,6 +21,9 @@ const CarpoolAdmin = () => {
   const [filter, setFilter] = useState<AccessStatus | 'all'>('all');
   const [showImport, setShowImport] = useState(false);
   const [showAddManual, setShowAddAddManual] = useState(false);
+
+  // Bulk Selection State
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const [newUser, setNewUser] = useState({
     full_name: '',
@@ -60,18 +63,18 @@ const CarpoolAdmin = () => {
     };
   }, []);
 
-  const handleStatusUpdate = async (userId: string, status: AccessStatus, offerUrl?: string) => {
-    let reason = '';
-    if (status === 'rejected') {
+  const handleStatusUpdate = async (userId: string, status: AccessStatus, offerUrl?: string, bulkReason?: string) => {
+    let reason = bulkReason;
+    if (status === 'rejected' && !bulkReason) {
       reason = window.prompt("Enter reason for rejection:") || 'No reason provided';
     }
 
     try {
       await updateDoc(doc(db, 'carpool_users', userId), { 
         access_status: status,
-        rejection_reason: status === 'rejected' ? reason : '',
+        rejection_reason: status === 'rejected' ? (reason || '') : '',
         // If approved, we can clear the URL since the file is being deleted
-        ...(status === 'approved' ? { offer_letter_url: '' } : {})
+        ...(status === 'approved' ? { offer_letter_url: '', rejection_reason: '' } : {})
       });
 
       // Privacy Cleanup: If approved, delete the sensitive offer letter from Storage
@@ -87,6 +90,25 @@ const CarpoolAdmin = () => {
     } catch (error) {
       console.error("Error updating user status:", error);
     }
+  };
+
+  const handleBulkAction = async (status: AccessStatus) => {
+    let reason = '';
+    if (status === 'rejected') {
+      reason = window.prompt(`Enter rejection reason for ${selectedIds.length} users:`) || 'No reason provided';
+    }
+
+    const confirmMsg = `Are you sure you want to ${status} ${selectedIds.length} users?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setLoading(true);
+    for (const id of selectedIds) {
+      const u = users.find(u => u.id === id);
+      await handleStatusUpdate(id, status, u?.offer_letter_url, reason);
+    }
+    setSelectedIds([]);
+    setLoading(false);
+    alert(`Bulk ${status} complete.`);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -175,12 +197,26 @@ const CarpoolAdmin = () => {
     return matchesSearch && matchesFilter;
   });
 
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredUsers.length && filteredUsers.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredUsers.map(u => u.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-12 px-6 bg-black text-white font-sans overflow-x-hidden">
       <div className="container mx-auto max-w-6xl">
         <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <h1 className="text-4xl font-bold tracking-tighter mb-2 uppercase">
+            <h1 className="text-4xl font-bold tracking-tighter mb-2 uppercase text-white">
               Carpool <span className="text-pink neon-text">Control Center</span>
             </h1>
             <p className="text-white font-mono text-[10px] uppercase tracking-[0.4em] font-bold">
@@ -248,11 +284,84 @@ const CarpoolAdmin = () => {
           )}
         </AnimatePresence>
 
+        {/* Bulk Actions Bar */}
+        <AnimatePresence>
+          {selectedIds.length > 0 && (
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-6 py-4 rounded-sm flex items-center gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/20"
+            >
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest leading-none">Bulk Actions</span>
+                <span className="text-xs font-mono font-bold text-pink">{selectedIds.length} Users Selected</span>
+              </div>
+              <div className="h-8 w-px bg-black/10" />
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => handleBulkAction('approved')}
+                  className="bg-green-600 text-white px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-green-700 transition-all"
+                >
+                  Approve All
+                </button>
+                <button 
+                  onClick={() => handleBulkAction('rejected')}
+                  className="bg-red-600 text-white px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest hover:bg-red-700 transition-all"
+                >
+                  Reject All
+                </button>
+                <button 
+                  onClick={() => setSelectedIds([])}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-black/5 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search & Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-gray" />
+            <input 
+              type="text"
+              placeholder="Search by name or email..."
+              className="w-full bg-white/5 border border-white/10 p-3 pl-10 focus:border-pink outline-none text-white font-mono text-xs"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => { setFilter(f); setSelectedIds([]); }}
+                className={`px-4 py-2 text-[10px] font-bold uppercase border transition-all font-mono ${
+                  filter === f ? 'bg-pink border-pink text-white' : 'border-white/10 text-text-gray hover:bg-white/5'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Users Table */}
         <div className="bg-white/5 border border-white/10 overflow-x-auto rounded-sm">
           <table className="w-full text-left">
             <thead className="border-b border-white/10 bg-white/5">
               <tr className="text-[9px] font-bold uppercase text-white/40 font-mono tracking-widest">
+                <th className="p-4 w-12">
+                  <input 
+                    type="checkbox" 
+                    className="accent-pink cursor-pointer"
+                    checked={selectedIds.length > 0 && selectedIds.length === filteredUsers.length}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="p-4">Intern / Hire Identity</th>
                 <th className="p-4">Communication</th>
                 <th className="p-4">Commute Root</th>
@@ -260,33 +369,41 @@ const CarpoolAdmin = () => {
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-white/5 font-mono">
               {filteredUsers.map(u => (
-                <motion.tr layout key={u.id} className="hover:bg-white/[0.02] transition-colors group">
+                <motion.tr layout key={u.id} className={`transition-colors group ${selectedIds.includes(u.id) ? 'bg-pink/10' : 'hover:bg-white/[0.02]'}`}>
+                  <td className="p-4">
+                    <input 
+                      type="checkbox" 
+                      className="accent-pink cursor-pointer"
+                      checked={selectedIds.includes(u.id)}
+                      onChange={() => toggleSelect(u.id)}
+                    />
+                  </td>
                   <td className="p-4">
                     <div className="font-bold text-white text-xs">{u.full_name}</div>
-                    <div className="text-[9px] text-white/30 flex items-center gap-2 mt-1 uppercase font-mono">
+                    <div className="text-[9px] text-white/30 flex items-center gap-2 mt-1 uppercase">
                       {u.has_car ? (
                         <span className="text-pink font-bold flex items-center gap-1"><Car className="w-3 h-3" /> Driver ({u.seats_available})</span>
                       ) : (
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Rider</span>
                       )}
                       {u.offer_letter_url && (
-                        <a href={u.offer_letter_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold">
+                        <a href={u.offer_letter_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold uppercase">
                           <FileText className="w-3 h-3" /> Credentials
                         </a>
                       )}
                     </div>
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-2 text-[11px] text-white/60 mb-1 font-mono">{u.email}</div>
-                    <div className="flex items-center gap-2 text-[9px] text-white/30 font-mono tracking-tighter">{u.phone_number || 'No Phone'}</div>
+                    <div className="flex items-center gap-2 text-[11px] text-white/60 mb-1">{u.email}</div>
+                    <div className="flex items-center gap-2 text-[9px] text-white/30 tracking-tighter">{u.phone_number || 'No Phone'}</div>
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-2 text-[10px] text-white/40 font-mono truncate max-w-[180px]">{u.address || u.zip_code}</div>
+                    <div className="flex items-center gap-2 text-[10px] text-white/40 truncate max-w-[180px]">{u.address || u.zip_code}</div>
                   </td>
                   <td className="p-4">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 uppercase border rounded-sm font-mono ${
+                    <span className={`text-[9px] font-bold px-2 py-0.5 uppercase border rounded-sm ${
                       u.access_status === 'approved' ? 'border-green-500/40 text-green-500 bg-green-500/5' :
                       u.access_status === 'rejected' ? 'border-red-500/40 text-red-500 bg-red-500/5' :
                       'border-yellow-500/40 text-yellow-500 bg-yellow-500/5'

@@ -50,7 +50,7 @@ const mapOptions = {
   ],
 };
 
-const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
+const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
@@ -121,6 +121,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline }) => {
             position={{ lat: m.lat, lng: m.lng }}
             zIndex={m.isMe ? 1000 : m.isSelected ? 500 : 10}
             title={m.name}
+            onClick={() => onMarkerClick?.(m.id)}
             icon={{
               path: circlePath,
               fillColor: color,
