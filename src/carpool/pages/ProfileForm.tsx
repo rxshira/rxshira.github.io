@@ -82,15 +82,17 @@ const ProfileForm = () => {
     e.preventDefault();
     if (!user) return;
 
-    // STRICT VALIDATION
-    if (!formData.full_name.trim()) {
+    // STRICT MANDATORY FIELD VALIDATION
+    if (!formData.full_name || formData.full_name.trim().length < 2) {
       alert("MANDATORY: Please enter your full name.");
       return;
     }
-    if (!formData.zip_code.trim()) {
-      alert("MANDATORY: Please enter your zip code for matching.");
+
+    if (!formData.zip_code || formData.zip_code.trim().length < 5) {
+      alert("MANDATORY: Please enter a valid 5-digit zip code for matching.");
       return;
     }
+
     if (!formData.offer_letter_url) {
       alert("Verification Required: Please upload your offer letter image first.");
       return;

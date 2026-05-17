@@ -362,10 +362,11 @@ const CarpoolAdmin = () => {
                     onChange={toggleSelectAll}
                   />
                 </th>
-                <th className="p-4">Intern / Hire Identity</th>
-                <th className="p-4">Communication</th>
-                <th className="p-4">Commute Root</th>
-                <th className="p-4">Status</th>
+                <th className="p-4 text-[9px]">Identity</th>
+                <th className="p-4 text-[9px]">Profile</th>
+                <th className="p-4 text-[9px]">Contact</th>
+                <th className="p-4 text-[9px]">Origin</th>
+                <th className="p-4 text-[9px]">Access</th>
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -381,7 +382,7 @@ const CarpoolAdmin = () => {
                     />
                   </td>
                   <td className="p-4">
-                    <div className="font-bold text-white text-xs">{u.full_name}</div>
+                    <div className="font-bold text-white text-xs">{u.full_name || 'NO NAME'}</div>
                     <div className="text-[9px] text-white/30 flex items-center gap-2 mt-1 uppercase">
                       {u.has_car ? (
                         <span className="text-pink font-bold flex items-center gap-1"><Car className="w-3 h-3" /> Driver ({u.seats_available})</span>
@@ -389,11 +390,24 @@ const CarpoolAdmin = () => {
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> Rider</span>
                       )}
                       {u.offer_letter_url && (
-                        <a href={u.offer_letter_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold uppercase">
-                          <FileText className="w-3 h-3" /> Credentials
+                        <a href={u.offer_letter_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 flex items-center gap-1 font-bold uppercase text-[8px]">
+                          <FileText className="w-3 h-3" /> Creds
                         </a>
                       )}
                     </div>
+                  </td>
+                  <td className="p-4">
+                    {u.full_name && u.zip_code ? (
+                      <div className="flex items-center gap-2 text-green-500">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                        <span className="text-[8px] font-bold uppercase tracking-tighter">Ready</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-white/20">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                        <span className="text-[8px] font-bold uppercase tracking-tighter">Incomplete</span>
+                      </div>
+                    )}
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2 text-[11px] text-white/60 mb-1">{u.email}</div>
