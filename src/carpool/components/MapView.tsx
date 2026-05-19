@@ -5,6 +5,7 @@ interface MapViewProps {
   markers?: any[];
   routePolyline?: string;
   onMarkerClick?: (id: string) => void;
+  center?: { lat: number, lng: number } | null;
 }
 
 const mapContainerStyle = {
@@ -50,20 +51,21 @@ const mapOptions = {
   ],
 };
 
-const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick }) => {
+const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick, center: centerOverride }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
   });
 
   const center = useMemo(() => {
+    if (centerOverride) return centerOverride;
     if (markers.length > 0) {
       const me = markers.find(m => m.isMe);
       if (me) return { lat: me.lat, lng: me.lng };
       return { lat: markers[0].lat, lng: markers[0].lng };
     }
     return IBM_LOCATION;
-  }, [markers]);
+  }, [markers, centerOverride]);
 
   // Decode the polyline points into a path array for the component
   const decodedPath = useMemo(() => {

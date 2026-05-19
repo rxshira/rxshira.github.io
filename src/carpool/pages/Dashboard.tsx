@@ -24,6 +24,14 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [focusedUserId, setFocusedUserId] = useState<string | null>(null);
 
+  const mapCenter = useMemo(() => {
+    if (focusedUserId) {
+      const target = allUsers.find(u => u.id === focusedUserId);
+      if (target) return { lat: target.latitude, lng: target.longitude };
+    }
+    return null;
+  }, [focusedUserId, allUsers]);
+
   // REAL API TIMING STATE
   const [routeLegs, setRouteLegs] = useState<any[]>([]);
   const [totalDurationSeconds, setTotalDurationSeconds] = useState(0);
@@ -407,7 +415,8 @@ const Dashboard = () => {
                 <div 
                   key={u.id} 
                   id={`roster-item-${u.id}`}
-                  className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 ${
+                  onClick={() => setFocusedUserId(u.id)}
+                  className={`p-4 px-4 flex gap-3 items-start group relative transition-all border-l-2 cursor-pointer ${
                     isFocused ? 'ring-1 ring-white/30 bg-white/5 shadow-[0_0_20px_rgba(255,255,255,0.05)] border-white' :
                     activeMenuId === u.id ? 'bg-pink/10 border-pink shadow-[inset_0_0_20px_rgba(255,45,120,0.1)]' : 
                     isMyGroup ? 'bg-pink/[0.04] border-pink shadow-[inset_0_0_15px_rgba(255,45,120,0.05)]' : 
@@ -422,9 +431,14 @@ const Dashboard = () => {
                       <div className="text-[12px] font-medium text-white truncate max-w-[120px]">{u.full_name} {isMe && <span className="text-white/40 font-normal ml-1">(you)</span>}</div>
                       {!isMe && (
                         <div className="relative">
-                          <button onClick={() => setActiveMenuId(activeMenuId === u.id ? null : u.id)} className={`p-1 rounded transition-colors ${activeMenuId === u.id ? 'bg-pink text-white' : 'text-white/20 group-hover:text-white hover:bg-white/10'}`}><MoreVertical className="w-3.5 h-3.5" /></button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === u.id ? null : u.id); }} 
+                            className={`p-1 rounded transition-colors ${activeMenuId === u.id ? 'bg-pink text-white' : 'text-white/20 group-hover:text-white hover:bg-white/10'}`}
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
                           {activeMenuId === u.id && (
-                            <div className="absolute right-0 top-full mt-1 w-36 bg-[#181818] border border-white/10 rounded-sm shadow-2xl z-50 overflow-hidden font-mono">
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-[#181818] border border-white/10 rounded-sm shadow-2xl z-50 overflow-hidden font-mono" onClick={(e) => e.stopPropagation()}>
                               <button onClick={() => handleShowRoute(u)} className="w-full text-left px-3 py-2 text-[9px] text-white/70 hover:bg-pink hover:text-white transition-colors flex items-center gap-2 uppercase tracking-tighter"><Activity className="w-3 h-3" /> Show Route</button>
                               
                               {isMyGroup ? (
@@ -472,6 +486,7 @@ const Dashboard = () => {
                 };
               })}
               routePolyline={tempRoute || myCarpool?.route_polyline}
+              center={mapCenter}
               onMarkerClick={(id) => {
                 setFocusedUserId(id);
                 document.getElementById(`roster-item-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
