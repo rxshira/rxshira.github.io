@@ -22,6 +22,9 @@ export interface CarpoolUser {
   notes?: string;
   access_status: AccessStatus;
   rejection_reason?: string;
+  rejection_reasons?: string[]; // Array of structured reasons
+  rejection_action?: 'fix' | 'contact';
+  submission_count?: number;
   is_admin: boolean;
   created_at: any; // Firestore Timestamp
 }

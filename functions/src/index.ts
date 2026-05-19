@@ -1,32 +1,45 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
+import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+import * as admin from "firebase-admin";
+import { Resend } from 'resend';
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+admin.initializeApp();
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+setGlobalOptions({ 
+  maxInstances: 10,
+  region: "us-central1"
+});
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+/**
+ * Callable function to send emails securely from the backend.
+ * Uses process.env.RESEND_API_KEY for security.
+ */
+export const sendEmailNotification = onCall(async (request) => {
+  // Security: Ensure the user is authenticated
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authenticated access required.');
+  }
+
+  const { to, subject, html } = request.data;
+  
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new HttpsError('failed-precondition', 'Server configuration missing: API Key.');
+  }
+
+  const resend = new Resend(apiKey);
+
+  try {
+    const result = await resend.emails.send({
+      from: 'IBM Carpool <onboarding@resend.dev>',
+      to: to || 'shiraxrubin@gmail.com',
+      subject: subject || 'Carpool Portal Update',
+      html: html || '<p>A new update is available in your intern dashboard.</p>'
+    });
+
+    return { success: true, id: result.data?.id };
+  } catch (error: any) {
+    console.error("Email Error:", error);
+    throw new HttpsError('internal', error.message);
+  }
+});
