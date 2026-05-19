@@ -12,19 +12,23 @@ setGlobalOptions({
 
 /**
  * Callable function to send emails securely from the backend.
- * Uses process.env.RESEND_API_KEY for security.
+ * Explicitly requests access to the RESEND_API_KEY secret.
  */
-export const sendEmailNotification = onCall(async (request) => {
+export const sendEmailNotification = onCall({ 
+  secrets: ["RESEND_API_KEY"],
+  maxInstances: 10 
+}, async (request) => {
   // Security: Ensure the user is authenticated
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Authenticated access required.');
   }
 
   const { to, subject, html } = request.data;
-  
+
+  // Retrieve the secret from the environment
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    throw new HttpsError('failed-precondition', 'Server configuration missing: API Key.');
+    throw new HttpsError('failed-precondition', 'Internal server error: Email service not configured.');
   }
 
   const resend = new Resend(apiKey);
