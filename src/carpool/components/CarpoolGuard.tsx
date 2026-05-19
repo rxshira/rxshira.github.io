@@ -24,15 +24,22 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
     );
   }
 
+  // 1. If not logged into Firebase Auth -> go to landing
   if (!user) {
     return <Navigate to="/carpool" state={{ from: location }} replace />;
   }
 
+  // MASTER ADMIN BYPASS
   if (isAdmin) return <>{children}</>;
 
   if (requireApproval) {
-    // BLOCKED: 3 Rejections
-    const isStrikeOut = carpoolUser?.submission_count && carpoolUser.submission_count >= 3 && carpoolUser.access_status === 'rejected';
+    // 2. If admin wiped the profile (no Firestore doc) -> send to landing for clean slate
+    if (!carpoolUser) {
+      return <Navigate to="/carpool" replace />;
+    }
+
+    // 3. BLOCKED: 3 Rejections
+    const isStrikeOut = carpoolUser.submission_count && carpoolUser.submission_count >= 3 && carpoolUser.access_status === 'rejected';
 
     if (isStrikeOut) {
       return (
@@ -57,14 +64,14 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
       );
     }
 
-    // PENDING
-    if (!carpoolUser || carpoolUser.access_status === 'pending') {
+    // 4. PENDING (Profile exists but not approved yet)
+    if (carpoolUser.access_status === 'pending') {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-black px-6 py-12 overflow-y-auto">
           <div className="max-w-md w-full text-center space-y-6 border border-white/10 p-10 bg-white/5 rounded-sm shadow-2xl">
             <h2 className="text-3xl font-bold text-white uppercase tracking-tighter text-shadow-glow">Access Pending</h2>
             <p className="text-text-gray font-mono text-[10px] leading-relaxed uppercase tracking-widest">
-              Reviewing Credentials ({carpoolUser?.submission_count || 0}/3)
+              Reviewing Credentials ({carpoolUser.submission_count || 0}/3)
             </p>
           </div>
 
@@ -89,7 +96,7 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
       );
     }
 
-    // REJECTED (BUT CAN FIX)
+    // 5. REJECTED (BUT CAN FIX)
     if (carpoolUser.access_status === 'rejected') {
       const canFix = carpoolUser.rejection_action === 'fix';
       
@@ -128,6 +135,7 @@ const CarpoolGuard: React.FC<CarpoolGuardProps> = ({ children, requireApproval =
     }
   }
 
+  // 6. Final check: ensure they have a profile before seeing the map
   if (!carpoolUser?.zip_code && location.pathname !== '/carpool/profile') {
     return <Navigate to="/carpool/profile" replace />;
   }

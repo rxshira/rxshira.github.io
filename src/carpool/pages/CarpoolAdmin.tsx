@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { collection, query, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, setDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
@@ -29,6 +29,10 @@ const CarpoolAdmin = () => {
   const [otherReason, setOtherReason] = useState('');
   const [rejectionAction, setRejectionAction] = useState<'fix' | 'contact'>('fix');
 
+  const [newUser, setNewUser] = useState({
+    full_name: '', email: '', address: '', zip_code: '', has_car: false, seats_available: 3, phone_number: '', role: 'intern' as 'intern' | 'new_grad', start_month: 'may' as 'may' | 'july'
+  });
+
   const REJECTION_OPTIONS = [
     { id: 'name', label: 'Missing Name' },
     { id: 'address', label: 'Missing Address' },
@@ -44,14 +48,12 @@ const CarpoolAdmin = () => {
       setUsers(usersData.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0)));
       setLoading(false);
     });
-
     const qPools = query(collection(db, 'carpools'));
     const unsubPools = onSnapshot(qPools, (snap) => {
       const poolsData: Carpool[] = [];
       snap.forEach(doc => poolsData.push({ id: doc.id, ...doc.data() } as Carpool));
       setCarpools(poolsData);
     });
-
     return () => { unsubUsers(); unsubPools(); };
   }, []);
 
@@ -61,16 +63,18 @@ const CarpoolAdmin = () => {
     try { await sendFn({ to, subject, html }); } catch (e) { console.error("Email failed", e); }
   };
 
+  const handleTestEmail = async () => {
+    if (!user?.email) return;
+    await sendEmail(user.email, "Admin Verification: Resend Live", `<h1>Control Center Online</h1><p>Resend integration is verified and active.</p>`);
+    alert("Diagnostic email triggered!");
+  };
+
   const handleApprove = async (userId: string, email: string, name: string, offerUrl?: string) => {
     try {
-      await updateDoc(doc(db, 'carpool_users', userId), { 
-        access_status: 'approved', rejection_reasons: [], rejection_reason: '', offer_letter_url: '' 
-      });
-
+      await updateDoc(doc(db, 'carpool_users', userId), { access_status: 'approved', rejection_reasons: [], rejection_reason: '', offer_letter_url: '' });
       if (offerUrl) { try { await deleteObject(ref(storage, offerUrl)); } catch (e) {} }
-
-      await sendEmail(email, "Access Approved: IBM Carpool Portal", `<h1>Welcome ${name}!</h1><p>Your IBM Carpool account has been verified. You can now log in and find your ride.</p>`);
-    } catch (error) { console.error("Approval failed", error); }
+      await sendEmail(email, "Access Approved: IBM Carpool Portal", `<h1>Welcome ${name}!</h1><p>Your account has been verified.</p>`);
+    } catch (error) { console.error(error); }
   };
 
   const handleRejectConfirm = async () => {
@@ -80,19 +84,12 @@ const CarpoolAdmin = () => {
       for (const id of rejectingIds) {
         const u = users.find(u => u.id === id);
         if (!u) continue;
-
-        await updateDoc(doc(db, 'carpool_users', id), {
-          access_status: 'rejected',
-          rejection_reasons: rejectionReasons,
-          rejection_reason: otherReason,
-          rejection_action: rejectionAction
-        });
-
+        await updateDoc(doc(db, 'carpool_users', id), { access_status: 'rejected', rejection_reasons: rejectionReasons, rejection_reason: otherReason, rejection_action: rejectionAction });
         const reasonList = rejectionReasons.map(r => `<li>Missing ${r}</li>`).join('');
-        await sendEmail(u.email, "Action Required: Carpool Verification", `<h1>Verification Update</h1><p>Hello ${u.full_name || 'Intern'},</p><p>We need some changes to your profile:</p><ul>${reasonList}</ul><p>${otherReason}</p><p>Please log in to fix these issues.</p>`);
+        await sendEmail(u.email, "Action Required: Carpool Verification", `<h1>Verification Update</h1><ul>${reasonList}</ul><p>${otherReason}</p>`);
       }
       setRejectingIds([]); setSelectedIds([]); setRejectionReasons([]); setOtherReason('');
-    } catch (err) { console.error(err); } finally { setLoading(true); }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
   const handleBulkApprove = async () => {
@@ -105,13 +102,62 @@ const CarpoolAdmin = () => {
     setSelectedIds([]); setLoading(false);
   };
 
+  const handleRunMatching = async () => {
+    setMatching(true);
+    try {
+      const approvedUsers = users.filter(u => u.access_status === 'approved');
+      const drivers = approvedUsers.filter(u => u.has_car);
+      const riders = approvedUsers.filter(u => !u.has_car);
+      if (drivers.length === 0) return alert("No approved drivers.");
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      const service = apiKey ? new GoogleDistanceService(apiKey) : mockDistanceService;
+      const results = await runMatchingAlgorithm(drivers, riders, service);
+      const batch = writeBatch(db);
+      carpools.forEach(pool => batch.delete(doc(db, 'carpools', pool.id)));
+      results.forEach(pool => {
+        const newPoolRef = doc(collection(db, 'carpools'));
+        batch.set(newPoolRef, { ...pool, id: newPoolRef.id, created_at: new Date() });
+      });
+      await batch.commit();
+      alert(`Generated ${results.length} carpools.`);
+    } catch (error) { console.error(error); } finally { setMatching(false); }
+  };
+
+  const handleAddManualUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const tempId = `dummy_${Date.now()}`;
+      await setDoc(doc(db, 'carpool_users', tempId), { ...newUser, id: tempId, latitude: 37.3382, longitude: -121.8863, access_status: 'approved', is_admin: false, created_at: serverTimestamp(), willing_to_detour: true, max_detour_minutes: 15, start_date: `2026-${newUser.start_month === 'may' ? '05' : '07'}-01` });
+      setShowAddAddManual(false);
+      setNewUser({ full_name: '', email: '', address: '', zip_code: '', has_car: false, seats_available: 3, phone_number: '', role: 'intern', start_month: 'may' });
+    } catch (err) { alert("Failed to add."); }
+  };
+
   const handleDeleteUser = async (userId: string) => {
-    if (window.confirm("Completely wipe this user's profile? This cannot be undone.")) {
-      try {
-        await deleteDoc(doc(db, 'carpool_users', userId));
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
+    if (!window.confirm("Completely wipe this user's profile and data? This provides a clean slate for them.")) return;
+    
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, 'carpool_users', userId));
+
+      const q1 = query(collection(db, 'ride_requests'), where('sender_id', '==', userId));
+      const q2 = query(collection(db, 'ride_requests'), where('receiver_id', '==', userId));
+      const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+      
+      const batch = writeBatch(db);
+      snap1.forEach(d => batch.delete(d.ref));
+      snap2.forEach(d => batch.delete(d.ref));
+
+      const q3 = query(collection(db, 'carpools'), where('member_ids', 'array-contains', userId));
+      const snap3 = await getDocs(q3);
+      snap3.forEach(d => batch.delete(d.ref));
+
+      await batch.commit();
+      alert("User data completely purged.");
+    } catch (error) {
+      console.error("Wipe failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,12 +175,41 @@ const CarpoolAdmin = () => {
   return (
     <div className="min-h-screen pt-24 pb-12 px-6 bg-black text-white font-sans overflow-x-hidden">
       <div className="container mx-auto max-w-6xl">
-        <header className="mb-12 flex justify-between items-end">
-          <div><h1 className="text-4xl font-bold tracking-tighter mb-2 uppercase">Carpool <span className="text-pink neon-text">Control</span></h1><p className="text-white font-mono text-[10px] uppercase tracking-widest font-bold">Admin Management</p></div>
-          <div className="flex gap-3"><button onClick={() => setShowImport(!showImport)} className="border border-white/10 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest font-mono text-white">Import CSV</button></div>
+        <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div><h1 className="text-4xl font-bold tracking-tighter mb-2 uppercase">Carpool <span className="text-pink neon-text">Control Center</span></h1><p className="text-white font-mono text-[10px] uppercase tracking-widest font-bold">Access Management</p></div>
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={handleRunMatching} disabled={matching} className="bg-white text-black px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-pink hover:text-white transition-all flex items-center gap-2 font-mono">{matching ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />} Generate Matches</button>
+            <button onClick={() => setShowAddAddManual(!showAddManual)} className="border border-white/10 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 font-mono text-white"><Plus className="w-3 h-3" /> Add Dummy</button>
+            <button onClick={() => setShowImport(!showImport)} className="border border-white/10 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest font-mono text-white">Import CSV</button>
+            <button onClick={handleTestEmail} className="bg-white/5 border border-white/10 text-white/40 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all font-mono">[ Trigger Test Email ]</button>
+          </div>
         </header>
 
-        <AnimatePresence>{showImport && <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-12"><CsvImport /></motion.div>}</AnimatePresence>
+        <AnimatePresence>
+          {showImport && <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-12"><CsvImport /></motion.div>}
+          {showAddManual && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-12 bg-white/5 border border-white/10 p-8 rounded-sm overflow-hidden">
+              <div className="flex justify-between items-center mb-6"><h3 className="text-xs font-mono font-bold uppercase text-pink">Manual Entry</h3><button onClick={() => setShowAddAddManual(false)} className="text-white/20 hover:text-white"><X className="w-4 h-4" /></button></div>
+              <form onSubmit={handleAddManualUser} className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
+                <input required className="w-full bg-black/50 border border-white/10 p-2 text-xs text-white" placeholder="Full Name" value={newUser.full_name} onChange={e => setNewUser({...newUser, full_name: e.target.value})} />
+                <input required className="w-full bg-black/50 border border-white/10 p-2 text-xs text-white" placeholder="Email" value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})} />
+                <button type="submit" className="bg-white text-black px-8 py-2 font-bold text-[10px] uppercase tracking-widest hover:bg-pink hover:text-white transition-all col-span-3">Create Intern</button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+            <input type="text" placeholder="Search by name or email..." className="w-full bg-white/5 border border-white/10 p-3 pl-10 focus:border-pink outline-none text-white font-mono text-xs" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            {(['all', 'pending', 'approved', 'rejected'] as const).map(f => (
+              <button key={f} onClick={() => { setFilter(f); setSelectedIds([]); }} className={`px-4 py-2 text-[10px] font-bold uppercase border transition-all font-mono ${filter === f ? 'bg-pink border-pink text-white' : 'border-white/10 text-white/40 hover:bg-white/5'}`}>{f}</button>
+            ))}
+          </div>
+        </div>
 
         <AnimatePresence>
           {selectedIds.length > 0 && (
