@@ -22,6 +22,7 @@ const ProfileForm = () => {
     zip_code: '',
     has_car: false,
     seats_available: 2,
+    car_description: '',
     willing_to_detour: true,
     max_detour_minutes: 10,
     preferred_arrival_time: '09:00',
@@ -40,6 +41,7 @@ const ProfileForm = () => {
         zip_code: carpoolUser.zip_code || '',
         has_car: carpoolUser.has_car || false,
         seats_available: carpoolUser.seats_available || 2,
+        car_description: carpoolUser.car_description || '',
         willing_to_detour: carpoolUser.willing_to_detour ?? true,
         max_detour_minutes: carpoolUser.max_detour_minutes || 10,
         preferred_arrival_time: carpoolUser.preferred_arrival_time || '09:00',
@@ -191,9 +193,17 @@ const ProfileForm = () => {
           {/* Vehicle Info */}
           <div className="space-y-4 pt-4 border-t border-white/5">
             <h3 className="text-white font-bold uppercase text-xs tracking-widest flex items-center gap-2 font-mono"><Car className="w-4 h-4 text-pink" /> Commute</h3>
-            <div className="flex items-center gap-6 p-4 bg-white/5 border border-white/5">
+            <div className="flex flex-col gap-4 p-4 bg-white/5 border border-white/5">
               <label className="flex items-center gap-3 cursor-pointer group"><input type="checkbox" className="w-5 h-5 accent-pink cursor-pointer" checked={formData.has_car} onChange={e => setFormData({...formData, has_car: e.target.checked})} /><span className="text-xs font-bold text-white group-hover:text-pink font-mono uppercase">I have a vehicle</span></label>
-              {formData.has_car && <div className="flex items-center gap-3"><span className="text-[10px] text-text-gray uppercase font-mono">Seats:</span><select className="bg-black/50 border border-white/10 p-1 text-xs outline-none font-mono text-white" value={formData.seats_available} onChange={e => setFormData({...formData, seats_available: parseInt(e.target.value)})}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}</select></div>}
+              {formData.has_car && (
+                <div className="flex items-center gap-6 border-t border-white/5 pt-4">
+                  <div className="flex items-center gap-3"><span className="text-[10px] text-text-gray uppercase font-mono">Seats:</span><select className="bg-black/50 border border-white/10 p-1 text-xs outline-none font-mono text-white" value={formData.seats_available} onChange={e => setFormData({...formData, seats_available: parseInt(e.target.value)})}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n}</option>)}</select></div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[9px] text-white/40 uppercase font-mono">Vehicle Description</label>
+                    <input className="w-full bg-black/50 border border-white/10 p-2 text-[10px] focus:border-pink outline-none font-mono text-white" placeholder="e.g. Silver Honda Civic" value={formData.car_description} onChange={e => setFormData({...formData, car_description: e.target.value})} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

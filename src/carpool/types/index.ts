@@ -13,6 +13,7 @@ export interface CarpoolUser {
   longitude: number;
   has_car: boolean;
   seats_available: number;
+  car_description?: string;
   phone_number: string;
   willing_to_detour: boolean;
   max_detour_minutes: number; // For both drivers and riders
