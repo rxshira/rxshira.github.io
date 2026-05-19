@@ -176,12 +176,7 @@ const Admin = () => {
                 <label className="text-text-gray font-bold uppercase text-[10px]">Headline 2</label>
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.headline2} onChange={e => setLocalSettings({...localSettings, headline2: e.target.value})} />
               </div>
-              <div className="space-y-2">
-                <label className="text-text-gray font-bold uppercase text-[10px]">More About Me</label>
-                <textarea className="w-full bg-black/50 border border-white/10 rounded p-3 h-48 focus:border-pink outline-none leading-relaxed" value={localSettings.aboutMe} onChange={e => setLocalSettings({...localSettings, aboutMe: e.target.value})} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">                <div className="space-y-2">
                   <label className="text-text-gray font-bold uppercase text-[10px]">LinkedIn URL</label>
                   <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.linkedin} onChange={e => setLocalSettings({...localSettings, linkedin: e.target.value})} />
                 </div>

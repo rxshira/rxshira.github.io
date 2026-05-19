@@ -1,17 +1,13 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import GlowWrapper from './GlowWrapper';
+import { motion } from 'framer-motion';
 import { useData } from '../context/DataContext';
 
 const Hero = () => {
-  const [showMoreAboutMe, setShowMoreAboutMe] = useState(false);
   const data = useData();
   
   // Fallback values if context is still loading or partially missing
   const name = data?.settings?.name || "Shira Rubin";
   const h1 = data?.settings?.headline1 || "Computer Science @ Carnegie Mellon University";
   const h2 = data?.settings?.headline2 || "Programming Languages · Space · People";
-  const about = data?.settings?.aboutMe || "";
 
   return (
     <section id="hero" className="relative pt-32 pb-16 px-6 min-h-[60vh] flex flex-col items-center justify-center text-center">
@@ -44,36 +40,6 @@ const Hero = () => {
               {h2}
             </p>
           </div>
-
-          <div className="flex flex-wrap justify-center gap-6 pt-8">
-            {about && (
-              <GlowWrapper>
-                <button 
-                  onClick={() => setShowMoreAboutMe(!showMoreAboutMe)}
-                  className="btn text-base py-3 px-8"
-                >
-                  {showMoreAboutMe ? 'Less about me' : 'More about me'}
-                </button>
-              </GlowWrapper>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {showMoreAboutMe && about && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-8 text-left max-w-3xl mx-auto px-6 border-l-2 border-pink/30">
-                  <p className="text-lg md:text-xl text-text-gray/90 leading-relaxed font-light whitespace-pre-wrap">
-                    {about}
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       </div>
     </section>
