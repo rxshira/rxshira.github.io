@@ -4,8 +4,8 @@ import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeB
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { CarpoolUser, AccessStatus, Carpool } from '../types';
-import { CheckCircle, XCircle, Trash2, Mail, Phone, Car, MapPin, Search, Play, RefreshCw, FileText, Plus, X, Users, AlertTriangle } from 'lucide-react';
+import { CarpoolUser, AccessStatus, Carpool, RideRequest } from '../types';
+import { CheckCircle, XCircle, Trash2, Mail, Phone, Car, MapPin, Search, Play, RefreshCw, FileText, Plus, X, Users, AlertTriangle, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CsvImport from '../components/CsvImport';
 import { runMatchingAlgorithm } from '../lib/matching';
@@ -16,12 +16,14 @@ const CarpoolAdmin = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<CarpoolUser[]>([]);
   const [carpools, setCarpools] = useState<Carpool[]>([]);
+  const [allRequests, setAllRequests] = useState<RideRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [matching, setMatching] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<AccessStatus | 'all'>('all');
   const [showImport, setShowImport] = useState(false);
   const [showAddManual, setShowAddAddManual] = useState(false);
+  const [showTraffic, setShowTraffic] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [rejectingIds, setRejectingIds] = useState<string[]>([]);
@@ -48,13 +50,20 @@ const CarpoolAdmin = () => {
       setUsers(usersData.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0)));
       setLoading(false);
     });
-    const qPools = query(collection(db, 'carpools'));
-    const unsubPools = onSnapshot(qPools, (snap) => {
+    
+    const unsubPools = onSnapshot(query(collection(db, 'carpools')), (snap) => {
       const poolsData: Carpool[] = [];
       snap.forEach(doc => poolsData.push({ id: doc.id, ...doc.data() } as Carpool));
       setCarpools(poolsData);
     });
-    return () => { unsubUsers(); unsubPools(); };
+
+    const unsubReqs = onSnapshot(query(collection(db, 'ride_requests')), (snap) => {
+      const reqs: RideRequest[] = [];
+      snap.forEach(doc => reqs.push({ id: doc.id, ...doc.data() } as RideRequest));
+      setAllRequests(reqs.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0)));
+    });
+
+    return () => { unsubUsers(); unsubPools(); unsubReqs(); };
   }, []);
 
   const sendEmail = async (to: string, subject: string, html: string) => {
@@ -102,25 +111,9 @@ const CarpoolAdmin = () => {
     setSelectedIds([]); setLoading(false);
   };
 
-  const handleRunMatching = async () => {
-    setMatching(true);
-    try {
-      const approvedUsers = users.filter(u => u.access_status === 'approved');
-      const drivers = approvedUsers.filter(u => u.has_car);
-      const riders = approvedUsers.filter(u => !u.has_car);
-      if (drivers.length === 0) return alert("No approved drivers.");
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      const service = apiKey ? new GoogleDistanceService(apiKey) : mockDistanceService;
-      const results = await runMatchingAlgorithm(drivers, riders, service);
-      const batch = writeBatch(db);
-      carpools.forEach(pool => batch.delete(doc(db, 'carpools', pool.id)));
-      results.forEach(pool => {
-        const newPoolRef = doc(collection(db, 'carpools'));
-        batch.set(newPoolRef, { ...pool, id: newPoolRef.id, created_at: new Date() });
-      });
-      await batch.commit();
-      alert(`Generated ${results.length} carpools.`);
-    } catch (error) { console.error(error); } finally { setMatching(false); }
+  const handleRevokeRequest = async (id: string) => {
+    if (!window.confirm("Revoke this request?")) return;
+    await deleteDoc(doc(db, 'ride_requests', id));
   };
 
   const handleAddManualUser = async (e: React.FormEvent) => {
@@ -134,7 +127,7 @@ const CarpoolAdmin = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm("Completely wipe this user's profile and data? This provides a clean slate for them.")) return;
+    if (!window.confirm("Completely wipe this user?")) return;
     setLoading(true);
     try {
       await deleteDoc(doc(db, 'carpool_users', userId));
@@ -148,8 +141,8 @@ const CarpoolAdmin = () => {
       const snap3 = await getDocs(q3);
       snap3.forEach(d => batch.delete(d.ref));
       await batch.commit();
-      alert("User data completely purged.");
-    } catch (error) { console.error("Wipe failed:", error); } finally { setLoading(false); }
+      alert("Purged.");
+    } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   const filteredUsers = users.filter(u => {
@@ -169,7 +162,7 @@ const CarpoolAdmin = () => {
         <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div><h1 className="text-4xl font-bold tracking-tighter mb-2 uppercase text-white">Carpool <span className="text-pink neon-text">Control Center</span></h1><p className="text-white font-mono text-[10px] uppercase tracking-[0.4em] font-bold">Access Management</p></div>
           <div className="flex gap-3 flex-wrap">
-            <button onClick={handleRunMatching} disabled={matching} className="bg-white text-black px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-pink hover:text-white transition-all flex items-center gap-2 font-mono">{matching ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />} Generate Matches</button>
+            <button onClick={() => setShowTraffic(!showTraffic)} className={`border px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 font-mono ${showTraffic ? 'bg-blue-500 text-white border-blue-500' : 'text-white/40 hover:bg-white/5 border-white/10'}`}><Activity className="w-3 h-3" /> Traffic Monitor</button>
             <button onClick={() => setShowAddAddManual(!showAddManual)} className="border border-white/10 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all flex items-center gap-2 font-mono text-white"><Plus className="w-3 h-3" /> Add Dummy</button>
             <button onClick={() => setShowImport(!showImport)} className="border border-white/10 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest font-mono text-white">Import CSV</button>
             <button onClick={handleTestEmail} className="bg-white/5 border border-white/10 text-white/40 px-5 py-2 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all font-mono">[ Trigger Test Email ]</button>
@@ -177,6 +170,31 @@ const CarpoolAdmin = () => {
         </header>
 
         <AnimatePresence>
+          {showTraffic && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-12 bg-blue-500/5 border border-blue-500/20 p-8 rounded-sm overflow-hidden">
+              <div className="flex justify-between items-center mb-6"><h3 className="text-xs font-mono font-bold uppercase tracking-widest text-blue-400 flex items-center gap-2"><Activity className="w-4 h-4" /> Network Traffic</h3><button onClick={() => setShowTraffic(false)} className="text-white/20 hover:text-white"><X className="w-4 h-4" /></button></div>
+              <div className="max-h-96 overflow-y-auto no-scrollbar border border-white/5 rounded-sm">
+                <table className="w-full text-left font-mono">
+                  <thead className="bg-white/5 text-[9px] uppercase text-white/40"><tr><th className="p-4">Sender</th><th className="p-4">Recipient</th><th className="p-4">Type</th><th className="p-4">Status</th><th className="p-4 text-right">Admin</th></tr></thead>
+                  <tbody className="divide-y divide-white/5 text-[11px]">
+                    {allRequests.map(r => {
+                      const s = users.find(u => u.id === r.sender_id);
+                      const rc = users.find(u => u.id === r.receiver_id);
+                      return (
+                        <tr key={r.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="p-4 text-white">{s?.full_name || 'Deleted'}</td>
+                          <td className="p-4 text-white">{rc?.full_name || 'Deleted'}</td>
+                          <td className="p-4 uppercase text-[9px] text-white/40">{r.type.replace('_', ' ')}</td>
+                          <td className="p-4"><span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase ${r.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-500'}`}>{r.status}</span></td>
+                          <td className="p-4 text-right"><button onClick={() => handleRevokeRequest(r.id)} className="text-red-500 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
           {showImport && <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-12"><CsvImport /></motion.div>}
           {showAddManual && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-12 bg-white/5 border border-white/10 p-8 rounded-sm overflow-hidden">

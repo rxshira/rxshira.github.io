@@ -12,11 +12,12 @@ setGlobalOptions({
 
 /**
  * Callable function to send emails securely from the backend.
- * Explicitly requests access to the RESEND_API_KEY secret.
+ * Configured with explicit CORS for the live site domain.
  */
 export const sendEmailNotification = onCall({ 
   secrets: ["RESEND_API_KEY"],
-  maxInstances: 10 
+  maxInstances: 10,
+  cors: ["https://rxshira.github.io"] // Allow requests from your live site
 }, async (request) => {
   // Security: Ensure the user is authenticated
   if (!request.auth) {
