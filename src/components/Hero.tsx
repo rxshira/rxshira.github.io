@@ -39,16 +39,23 @@ const Hero = () => {
           transition={{ duration: 1, ease: 'easeOut' }}
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-2">
-            <h1
-              className="text-clamp-lg font-bold tracking-tighter bg-gradient-to-br from-white from-30% to-pink bg-clip-text text-transparent leading-tight pb-2 text-center md:text-left"
-              style={{
-                fontSize: 'clamp(56px, 10vw, 92px)',
-                fontFamily: '"Space Grotesk", sans-serif',
-                textShadow: '0 10px 40px rgba(var(--pink-rgb) / 0.2)',
-              }}
-            >
-              {name}
-            </h1>
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <h1
+                className="text-clamp-lg font-bold tracking-tighter bg-gradient-to-br from-white from-30% to-pink bg-clip-text text-transparent leading-tight pb-2 text-center md:text-left"
+                style={{
+                  fontSize: 'clamp(56px, 10vw, 92px)',
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  textShadow: '0 10px 40px rgba(var(--pink-rgb) / 0.2)',
+                }}
+              >
+                {name}
+              </h1>
+
+              <div className="space-y-3 max-w-xl text-center md:text-left">
+                <p className="text-xl md:text-2xl text-white font-medium">{h1}</p>
+                <p className="text-base md:text-lg text-text-gray tracking-wide">{h2}</p>
+              </div>
+            </div>
 
             <div className="relative md:top-6">
               <HeroPhoto image={heroImage} alt={name} />
@@ -66,11 +73,6 @@ const Hero = () => {
                 </button>
               ))}
             </nav>
-          </div>
-
-          <div className="space-y-4 max-w-3xl text-center md:text-left">
-            <p className="text-xl md:text-2xl text-white font-medium">{h1}</p>
-            <p className="text-base md:text-lg text-text-gray tracking-wide">{h2}</p>
           </div>
         </motion.div>
       </div>

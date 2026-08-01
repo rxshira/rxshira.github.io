@@ -122,7 +122,7 @@ const About = () => {
             </nav>
 
             <div className="relative md:top-6">
-              <HeroPhoto image={aboutImage} alt={name} width={260} height={350} />
+              <HeroPhoto image={aboutImage} alt={name} width={260} height={350} variant="classic" />
             </div>
           </div>
         </div>

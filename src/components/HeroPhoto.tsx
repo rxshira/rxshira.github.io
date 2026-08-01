@@ -11,9 +11,12 @@ interface HeroPhotoProps {
   alt: string;
   width?: number;
   height?: number;
+  /** 'planet' = homepage hero (circular sphere + Saturn ring);
+      'classic' = original rounded-square treatment (used on the About page). */
+  variant?: 'planet' | 'classic';
 }
 
-const HeroPhoto = ({ image, alt, width, height }: HeroPhotoProps) => {
+const HeroPhoto = ({ image, alt, width, height, variant = 'planet' }: HeroPhotoProps) => {
   const skyRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const [bursting, setBursting] = useState(false);
@@ -96,7 +99,7 @@ const HeroPhoto = ({ image, alt, width, height }: HeroPhotoProps) => {
 
   return (
     <div
-      className={`hero-photo${bursting ? ' bursting' : ''}`}
+      className={`hero-photo ${variant}${bursting ? ' bursting' : ''}`}
       style={width && height ? { width, height } : undefined}
       onMouseEnter={pushStars}
       onMouseLeave={resetStars}
@@ -112,6 +115,7 @@ const HeroPhoto = ({ image, alt, width, height }: HeroPhotoProps) => {
       aria-label={alt}
     >
       <div className="hero-nebula" />
+      {variant === 'planet' && <div className="hero-atmosphere" />}
       <div className="hero-core" />
       <div className="hero-ring" />
       <div className="hero-ring-2" />
@@ -130,7 +134,14 @@ const HeroPhoto = ({ image, alt, width, height }: HeroPhotoProps) => {
           />
         ))}
       </div>
+      {variant === 'planet' && <div className="hero-orbit-back" />}
       <div className="hero-img" style={{ backgroundImage: `url(${image})` }} />
+      {variant === 'planet' && (
+        <>
+          <div className="hero-orbit-front" />
+          <div className="hero-orbit-moon" />
+        </>
+      )}
     </div>
   );
 };

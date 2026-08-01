@@ -222,18 +222,36 @@ const Home = () => {
           
           <div className="grid grid-cols-1 gap-4">
             <Expandable title="Academic Experience">
-              <div className="space-y-10 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8 py-4">
                 <div>
                   <h4 className="text-pink text-xl font-bold mb-6">Teaching</h4>
-                  <CardColumns items={teaching || []} render={(item) => <TeachingCard key={item.id} item={item} />} />
+                  <div className="flex flex-col gap-4">
+                    {(teaching || []).map((item: any) => (
+                      <TeachingCard key={item.id} item={item} />
+                    ))}
+                  </div>
                 </div>
                 <div>
-                  <h4 className="text-pink text-xl font-bold mb-4">Selected Coursework</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {courses && courses.map(course => (
-                      <span key={course.code} className="tag text-xs py-2 px-4">
-                        {course.code}: {course.name} {course.code === '16-865' && '[GRADUATE]'}
-                      </span>
+                  <h4 className="text-pink text-xl font-bold mb-6">Selected Coursework</h4>
+                  <div className="divide-y divide-white/10 border-t border-white/10">
+                    {courses && courses.map((course) => (
+                      <div
+                        key={course.code}
+                        className="grid grid-cols-[auto_1fr_auto] items-baseline gap-3 py-1.5"
+                      >
+                        <span className="text-text-gray/60 text-xs tabular-nums">{course.code}</span>
+                        <span className="text-white text-sm font-medium leading-tight">
+                          {course.name}
+                          {course.code === '16-865' && (
+                            <span className="text-text-gray/60"> [GRADUATE]</span>
+                          )}
+                        </span>
+                        {course.department && (
+                          <span className="text-text-gray/50 text-[10px] uppercase tracking-wider text-right whitespace-nowrap">
+                            {course.department}
+                          </span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

@@ -10,7 +10,7 @@ const Admin = () => {
   const {
     projects, work, research,
     addItem, updateItem, deleteItem, moveItem,
-    courses, addCourse, deleteCourse,
+    courses, addCourse, updateCourse, deleteCourse,
     awards, addAward, updateAward, deleteAward,
     volunteering, addVolunteering, updateVolunteering, deleteVolunteering,
     teaching, addTeaching, updateTeaching, deleteTeaching,
@@ -507,18 +507,31 @@ const Admin = () => {
                 <div className="flex gap-2 mb-6">
                   <input id="new-c-code" className="flex-1 bg-black/50 border border-white/10 rounded p-2" placeholder="Code" />
                   <input id="new-c-name" className="flex-[2] bg-black/50 border border-white/10 rounded p-2" placeholder="Name" />
+                  <input id="new-c-cat" className="flex-1 bg-black/50 border border-white/10 rounded p-2" placeholder="Category (optional)" />
                   <button onClick={() => {
                     const c = (document.getElementById('new-c-code') as HTMLInputElement).value;
                     const n = (document.getElementById('new-c-name') as HTMLInputElement).value;
-                    if(c && n) { addCourse({code:c, name:n, department:'CS'}); (document.getElementById('new-c-code') as HTMLInputElement).value=''; (document.getElementById('new-c-name') as HTMLInputElement).value=''; }
+                    const cat = (document.getElementById('new-c-cat') as HTMLInputElement).value;
+                    if(c && n) { addCourse({code:c, name:n, department:cat.trim()}); (document.getElementById('new-c-code') as HTMLInputElement).value=''; (document.getElementById('new-c-name') as HTMLInputElement).value=''; (document.getElementById('new-c-cat') as HTMLInputElement).value=''; }
                   }} className="bg-white text-black px-4 py-2 rounded font-bold">Add</button>
                 </div>
                 <div className="space-y-2">
                   {courses.map((c, i) => (
-                    <div key={c.code} className="flex items-center p-2 hover:bg-white/5 rounded">
+                    <div key={c.code} className="flex items-center gap-2 p-2 hover:bg-white/5 rounded">
                       <ReorderControls type="courses" index={i} total={courses.length} />
-                      <span className="font-bold text-pink w-20">{c.code}</span><span className="flex-1">{c.name}</span>
-                      <button onClick={() => deleteCourse(c.code)} className="text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+                      <span className="font-bold text-pink w-20 shrink-0">{c.code}</span>
+                      <input
+                        className="flex-[2] bg-black/50 border border-white/10 rounded p-1.5"
+                        defaultValue={c.name}
+                        onBlur={e => { if (e.target.value !== c.name) updateCourse({ ...c, name: e.target.value }); }}
+                      />
+                      <input
+                        className="flex-1 bg-black/50 border border-white/10 rounded p-1.5"
+                        defaultValue={c.department || ''}
+                        placeholder="Category"
+                        onBlur={e => { if (e.target.value !== (c.department || '')) updateCourse({ ...c, department: e.target.value }); }}
+                      />
+                      <button onClick={() => deleteCourse(c.code)} className="text-red-400 p-1 shrink-0"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   ))}
                 </div>
