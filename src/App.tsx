@@ -214,8 +214,8 @@ const Home = () => {
 
       <main className="container mx-auto px-6 space-y-12 pb-12">
         <ItemSection id="work" title="Experience" items={work} />
-        <ItemSection id="research" title="Research" items={research} />
-        <ItemSection id="projects" title="Projects" items={projects} seeAllLink="/projects" />
+        <ItemSection id="research" title="Research" items={research} seeAllLink="/research" maxVisible={3} />
+        <ItemSection id="projects" title="Projects" items={projects} seeAllLink="/projects" maxVisible={3} />
 
         <section id="experience" className="space-y-6">
           <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Involvement &amp; Honors</h2>
@@ -283,6 +283,8 @@ const AppContent = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/projects" element={<AllProjects />} />
+        <Route path="/research" element={<AllProjects category="research" />} />
+        <Route path="/work" element={<AllProjects category="work" />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/carpool/*" element={<CarpoolApp />} />

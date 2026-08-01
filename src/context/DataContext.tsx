@@ -136,6 +136,17 @@ const hexToRgb = (hex: string) => {
   return result ? `${parseInt(result[1], 16)} ${parseInt(result[2], 16)} ${parseInt(result[3], 16)}` : '255 0 110';
 };
 
+// Drop any items that share an id (guards against duplicates created by earlier bugs).
+const dedupeById = (arr: Project[]): Project[] => {
+  const seen = new Set<string>();
+  return (arr || []).filter((x) => {
+    if (!x?.id) return true;
+    if (seen.has(x.id)) return false;
+    seen.add(x.id);
+    return true;
+  });
+};
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [work, setWork] = useState<Project[]>(initialWork);
@@ -157,9 +168,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsub = onSnapshot(doc(db, 'site', 'content'), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        if (data.projects) setProjects(data.projects);
-        if (data.work) setWork(data.work);
-        if (data.research) setResearch(data.research);
+        if (data.projects) setProjects(dedupeById(data.projects));
+        // On the live site, Work/Research come only from the DB — never fall back to
+        // the sample data (that would duplicate items that live in Projects).
+        setWork(dedupeById(data.work || []));
+        setResearch(dedupeById(data.research || []));
         if (data.courses) setCourses(data.courses);
         if (data.awards) setAwards(data.awards);
         if (data.volunteering) setVolunteering(data.volunteering);
@@ -242,7 +255,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const item = listData[from].find(p => p.id === id);
     if (!item) return;
     const newFrom = listData[from].filter(p => p.id !== id);
-    const newTo = [item, ...listData[to]];
+    // Remove any existing copy in the target first so a re-move can't duplicate it.
+    const newTo = [item, ...listData[to].filter(p => p.id !== id)];
     listSetters[from](newFrom);
     listSetters[to](newTo);
     await saveToCloud({ [from]: newFrom, [to]: newTo });

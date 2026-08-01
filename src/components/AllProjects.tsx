@@ -5,8 +5,15 @@ import { useData } from '../context/DataContext';
 import GlowWrapper from './GlowWrapper';
 import { Link } from 'react-router-dom';
 
-const AllProjects = () => {
-  const { projects } = useData();
+const TITLES: Record<string, string> = {
+  projects: 'All Projects',
+  research: 'All Research',
+  work: 'All Experience',
+};
+
+const AllProjects = ({ category = 'projects' }: { category?: 'projects' | 'work' | 'research' }) => {
+  const data = useData();
+  const projects = data[category];
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -56,7 +63,7 @@ const AllProjects = () => {
             <Link to="/" className="text-pink hover:opacity-80 transition-colors text-base font-bold flex items-center gap-2">
               <span className="text-2xl">←</span> Back to Home
             </Link>
-            <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight">All Projects</h1>
+            <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight">{TITLES[category]}</h1>
           </div>
           
           <div className="flex flex-wrap gap-3 max-w-2xl justify-end">

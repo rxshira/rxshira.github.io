@@ -10,9 +10,10 @@ interface ItemSectionProps {
   title: string;
   items: Project[];
   seeAllLink?: string;
+  maxVisible?: number;
 }
 
-const ItemSection = ({ id, title, items, seeAllLink }: ItemSectionProps) => {
+const ItemSection = ({ id, title, items, seeAllLink, maxVisible }: ItemSectionProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const toggleExpand = (itemId: string) => {
@@ -21,13 +22,17 @@ const ItemSection = ({ id, title, items, seeAllLink }: ItemSectionProps) => {
     setExpandedIds(next);
   };
 
+  // Show only the first `maxVisible` items (if set); the rest live on the "See all" page.
+  const hasMore = maxVisible !== undefined && items.length > maxVisible;
+  const visibleItems = maxVisible !== undefined ? items.slice(0, maxVisible) : items;
+
   // Distribute into 3 columns so an expanding card pushes the ones below it in
   // its own column, never stretching its row neighbour.
   const columns = useMemo(() => {
     const cols: Project[][] = [[], [], []];
-    items.forEach((item, i) => cols[i % 3].push(item));
+    visibleItems.forEach((item, i) => cols[i % 3].push(item));
     return cols;
-  }, [items]);
+  }, [visibleItems]);
 
   if (!items || items.length === 0) return null;
 
@@ -35,7 +40,7 @@ const ItemSection = ({ id, title, items, seeAllLink }: ItemSectionProps) => {
     <section id={id}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">{title}</h2>
-        {seeAllLink && (
+        {seeAllLink && hasMore && (
           <Link
             to={seeAllLink}
             className="text-pink hover:opacity-80 transition-all font-bold text-sm md:text-base border-b-2 border-pink/30 hover:border-pink pb-1"
