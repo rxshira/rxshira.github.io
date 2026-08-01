@@ -98,7 +98,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
         position={IBM_LOCATION}
         zIndex={100}
         icon={{
-          path: "M -2,0 L -2,-4 L 2,-4 L 2,0 L 2,4 L -2,4 Z",
+          path: "M -3,-3 L 3,-3 L 3,3 L -3,3 Z",
           fillColor: "#1f6abf",
           fillOpacity: 1,
           strokeWeight: 2,

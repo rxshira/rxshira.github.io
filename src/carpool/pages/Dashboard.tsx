@@ -163,7 +163,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col h-screen bg-black text-white font-sans overflow-hidden">
       <nav className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0 z-50">
-        <div className="flex items-center gap-3"><div className="w-8 h-8 aspect-square bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] text-white tracking-widest shadow-2xl">IBM</div><span className="text-sm font-medium text-white tracking-tighter uppercase font-mono">Intern / New Grad Portal</span></div>
+        <div className="flex items-center gap-3"><div className="w-8 h-8 shrink-0 aspect-square bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] text-white tracking-widest shadow-2xl">IBM</div><span className="text-sm font-medium text-white tracking-tighter uppercase font-mono">Intern / New Grad Portal</span></div>
         <div className="flex items-center gap-5">
           <div className="relative cursor-pointer" onClick={() => setShowNotifications(!showNotifications)}>
             <Bell className={`w-4 h-4 ${(incomingRequests.length + sentRequests.length) > 0 ? 'text-pink animate-bounce' : 'text-white/20'}`} />
@@ -192,10 +192,10 @@ const Dashboard = () => {
               const hasSentRequest = sentRequests.some(r => r.receiver_id === u.id);
               return (
                 <div key={u.id} id={`roster-item-${u.id}`} onClick={() => setFocusedUserId(u.id)} className={`p-4 flex gap-3 transition-all border-l-2 cursor-pointer ${isFocused ? 'bg-white/5 border-white shadow-2xl ring-1 ring-white/10' : activeMenuId === u.id ? 'bg-pink/10 border-pink' : 'hover:bg-white/[0.02] border-transparent'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border shrink-0 ${u.id === user?.uid ? 'border-yellow-400 text-yellow-400' : u.has_car ? 'border-blue-500 text-blue-400' : 'border-pink text-pink'}`}>{getInitials(u.full_name)}</div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border shrink-0 ${u.id === user?.uid ? 'border-yellow-400 text-yellow-400' : u.has_car ? 'border-blue-500 text-blue-400' : 'border-pink text-pink'}`}><span className="bg-current text-current rounded-sm select-none">{getInitials(u.full_name)}</span></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between text-white">
-                      <div className="text-[12px] font-medium truncate">{u.full_name}</div>
+                      <div className="text-[12px] font-medium truncate"><span className="bg-current text-current rounded-sm select-none">{u.full_name}</span></div>
                       {u.id !== user?.uid && (
                         <div className="relative">
                           <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === u.id ? null : u.id); }} className="p-1 rounded text-white/20 hover:text-white transition-colors"><MoreVertical className="w-3.5 h-3.5" /></button>
@@ -216,7 +216,7 @@ const Dashboard = () => {
                         </div>
                       )}
                     </div>
-                    <div className="text-[10px] text-white/40 font-mono mt-0.5">{u.zip_code} · {u.has_car ? 'Driver' : 'Rider'}</div>
+                    <div className="text-[10px] text-white/40 font-mono mt-0.5"><span className="bg-current text-current rounded-sm select-none">{u.zip_code}</span> · {u.has_car ? 'Driver' : 'Rider'}</div>
                     {hasSentRequest && <div className="mt-1 text-[8px] text-pink font-bold uppercase tracking-widest flex items-center gap-1"><Clock className="w-2 h-2" /> Pending</div>}
                   </div>
                 </div>

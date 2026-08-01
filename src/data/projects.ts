@@ -43,6 +43,21 @@ export const projects: Project[] = [
     collaborator: 'with Prof. Robert Harper + Runming Li'
   },
   {
+    id: 'carpool',
+    title: 'IBM Intern Carpool Matcher',
+    subtitle: 'Route-aware carpool matching for IBM interns',
+    timeline: 'May 2026',
+    description: `A full-stack carpool platform for IBM interns and new grads commuting to the San Jose campus. A route-aware algorithm pairs drivers with riders whose pickups add minimal detour—respecting each person's detour tolerance and seat count—using traffic-aware Google Directions routing plus a proximity pre-filter to cut API cost. Built around a real-time map dashboard with bidirectional map/roster sync, an offer-letter verification workflow with admin approvals and a 3-strike lockout, auto-forming carpools from ride requests, and secure email notifications via an authenticated Firebase Cloud Function.`,
+    techStack: ['React', 'TypeScript', 'Firebase', 'Google Maps API', 'Firestore', 'Cloud Functions'],
+    links: {
+      website: 'https://rxshira.github.io/carpool'
+    },
+    bgColor: 'yellow',
+    textColor: 'magenta',
+    hasImage: false,
+    role: 'Solo full-stack build'
+  },
+  {
     id: 'specml',
     title: 'SpecML',
     subtitle: 'Type-safe OCaml pipeline for NASA VIMS data',
