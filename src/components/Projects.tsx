@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useMemo } from 'react';
-import { Github, Play, ChevronDown, ChevronUp } from 'lucide-react';
+import { Github, Play, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import GlowWrapper from './GlowWrapper';
 import { Link } from 'react-router-dom';
@@ -114,8 +114,8 @@ const Projects = () => {
                           )}
 
                           {project.imagePath && (
-                            <img 
-                              src={project.imagePath.startsWith('http') ? project.imagePath : `/images/${project.imagePath}`} 
+                            <img
+                              src={project.imagePath.startsWith('http') || project.imagePath.startsWith('data:') ? project.imagePath : `/images/${project.imagePath}`}
                               alt={project.title}
                               className="w-full border border-white/10 shadow-lg object-cover"
                               onError={(e) => (e.currentTarget.style.display = 'none')}
@@ -141,10 +141,20 @@ const Projects = () => {
                                 <Github className="w-5 h-5" /> GitHub
                               </a>
                             )}
+                            {project.links?.website && (
+                              <a
+                                href={project.links.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-pink hover:opacity-80 transition-colors inline-flex items-center gap-2 text-base font-semibold"
+                              >
+                                <ExternalLink className="w-5 h-5" /> Website
+                              </a>
+                            )}
                             {project.links?.video && (
-                              <a 
-                                href={project.links.video} 
-                                target="_blank" 
+                              <a
+                                href={project.links.video}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-pink hover:opacity-80 transition-colors inline-flex items-center gap-2 text-base font-semibold"
                               >

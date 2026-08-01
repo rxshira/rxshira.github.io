@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ChangeEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,8 +7,9 @@ import { Project, Award as AwardType, Volunteering, Teaching } from '../context/
 
 const Admin = () => {
   const { user, logout, isAdmin } = useAuth();
-  const { 
-    projects, addProject, updateProject, deleteProject,
+  const {
+    projects, work, research,
+    addItem, updateItem, deleteItem, moveItem,
     courses, addCourse, deleteCourse,
     awards, addAward, updateAward, deleteAward,
     volunteering, addVolunteering, updateVolunteering, deleteVolunteering,
@@ -18,7 +19,14 @@ const Admin = () => {
     reorderFeatured
   } = useData();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'projects' | 'featured' | 'academic' | 'awards' | 'service' | 'settings'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'work' | 'research' | 'featured' | 'academic' | 'awards' | 'service' | 'settings'>('projects');
+
+  // Which of the three project-like lists the current tab manages.
+  const listLabels = { projects: 'Projects', work: 'Experience', research: 'Research' } as const;
+  const currentListKey: 'projects' | 'work' | 'research' =
+    activeTab === 'work' ? 'work' : activeTab === 'research' ? 'research' : 'projects';
+  const currentItems = activeTab === 'work' ? work : activeTab === 'research' ? research : projects;
+  const isListTab = activeTab === 'projects' || activeTab === 'work' || activeTab === 'research';
   
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -37,16 +45,63 @@ const Admin = () => {
     navigate('/');
   };
 
+  // Resize a chosen image client-side and hand back a compact JPEG data URL, so
+  // it fits comfortably in the single Firestore content doc (no Storage rules needed).
+  const resizeImage = (file: File, maxSize: number, quality: number, cb: (dataUrl: string) => void) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxSize) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else if (height > maxSize) {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, width, height);
+        cb(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleHeroUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    resizeImage(file, 500, 0.85, (dataUrl) => setLocalSettings({ ...localSettings, heroImage: dataUrl }));
+  };
+
+  const handleAboutUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    resizeImage(file, 500, 0.85, (dataUrl) => setLocalSettings({ ...localSettings, aboutImage: dataUrl }));
+  };
+
+  const handleItemImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    resizeImage(file, 600, 0.8, (dataUrl) => setEditingItem((prev: any) => ({ ...prev, imagePath: dataUrl })));
+  };
+
   const handleSave = () => {
     if (!editingItem) return;
     
-    if (activeTab === 'projects' || activeTab === 'featured') {
-      const p = { 
-        ...editingItem, 
+    if (isListTab || activeTab === 'featured') {
+      const listKey = activeTab === 'featured' ? 'projects' : currentListKey;
+      const p = {
+        ...editingItem,
         id: editingItem.id || Math.random().toString(36).substr(2, 9),
-        featured: !!editingItem.featured 
+        featured: !!editingItem.featured
       } as Project;
-      isNew ? addProject(p) : updateProject(p);
+      isNew ? addItem(listKey, p) : updateItem(listKey, p);
     } else if (activeTab === 'academic' && editingItem.role) {
       const t = { ...editingItem, id: editingItem.id || Math.random().toString(36).substr(2, 9) } as Teaching;
       isNew ? addTeaching(t) : updateTeaching(t);
@@ -79,7 +134,9 @@ const Admin = () => {
         </div>
         <nav className="space-y-2 flex-1">
           <button onClick={() => setActiveTab('featured')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'featured' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Star className={`w-5 h-5 ${activeTab === 'featured' ? 'fill-white' : ''}`} /> Featured</button>
-          <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> All Projects</button>
+          <button onClick={() => { setActiveTab('work'); setEditingItem(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'work' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> Experience</button>
+          <button onClick={() => { setActiveTab('research'); setEditingItem(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'research' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> Research</button>
+          <button onClick={() => { setActiveTab('projects'); setEditingItem(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><LayoutGrid className="w-5 h-5" /> Projects</button>
           <button onClick={() => setActiveTab('academic')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'academic' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><BookOpen className="w-5 h-5" /> Academic</button>
           <button onClick={() => setActiveTab('service')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'service' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Heart className="w-5 h-5" /> Service</button>
           <button onClick={() => setActiveTab('awards')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'awards' ? 'bg-pink text-white font-bold shadow-[0_0_15px_rgba(var(--pink-rgb)/0.3)]' : 'text-text-gray hover:bg-white/5'}`}><Award className="w-5 h-5" /> Awards</button>
@@ -110,7 +167,7 @@ const Admin = () => {
                       <p className="text-xs text-text-gray">{p.subtitle}</p>
                     </div>
                     <button 
-                      onClick={() => updateProject({...p, featured: !isFeatured})}
+                      onClick={() => updateItem('projects', {...p, featured: !isFeatured})}
                       className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${isFeatured ? 'bg-pink text-white shadow-[0_0_10px_rgba(255,0,110,0.3)]' : 'bg-white/10 text-text-gray hover:bg-white/20'}`}
                     >
                       {isFeatured ? 'Featured' : 'Mark Featured'}
@@ -168,6 +225,55 @@ const Admin = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-text-gray font-bold uppercase text-[10px] flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Main Page Photo
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-20 h-20 rounded-lg border border-white/10 bg-black/50 bg-cover bg-center flex-shrink-0 flex items-center justify-center"
+                      style={localSettings.heroImage ? { backgroundImage: `url(${localSettings.heroImage})` } : {}}
+                    >
+                      {!localSettings.heroImage && <ImageIcon className="w-6 h-6 text-text-gray" />}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 cursor-pointer px-4 py-2 rounded-lg transition-colors text-xs font-bold">
+                        <ImageIcon className="w-4 h-4" /> Upload
+                        <input type="file" accept="image/*" className="hidden" onChange={handleHeroUpload} />
+                      </label>
+                      {localSettings.heroImage && (
+                        <button type="button" onClick={() => setLocalSettings({ ...localSettings, heroImage: '' })} className="block text-[10px] text-text-gray hover:text-pink transition-colors">Remove</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-text-gray font-bold uppercase text-[10px] flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> About Me Photo
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-20 h-20 rounded-lg border border-white/10 bg-black/50 bg-cover bg-center flex-shrink-0 flex items-center justify-center"
+                      style={localSettings.aboutImage ? { backgroundImage: `url(${localSettings.aboutImage})` } : {}}
+                    >
+                      {!localSettings.aboutImage && <ImageIcon className="w-6 h-6 text-text-gray" />}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <label className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 cursor-pointer px-4 py-2 rounded-lg transition-colors text-xs font-bold">
+                        <ImageIcon className="w-4 h-4" /> Upload
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAboutUpload} />
+                      </label>
+                      {localSettings.aboutImage && (
+                        <button type="button" onClick={() => setLocalSettings({ ...localSettings, aboutImage: '' })} className="block text-[10px] text-text-gray hover:text-pink transition-colors">Remove (use main photo)</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] text-text-gray/70 -mt-2">Photos auto-resized to 500px. If no About photo is set, the main photo is used. Remember to Save below.</p>
+
               <div className="space-y-2">
                 <label className="text-text-gray font-bold uppercase text-[10px]">Headline 1</label>
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.headline1} onChange={e => setLocalSettings({...localSettings, headline1: e.target.value})} />
@@ -190,8 +296,47 @@ const Admin = () => {
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3 focus:border-pink outline-none" value={localSettings.spotifyLink} onChange={e => setLocalSettings({...localSettings, spotifyLink: e.target.value})} />
               </div>
               <div className="space-y-2">
+                <label className="text-text-gray font-bold uppercase text-[10px]">Playlist Caption (About page)</label>
+                <input className="w-full bg-black/50 border border-white/10 rounded p-3 focus:border-pink outline-none" value={localSettings.musicCaption || ''} placeholder="I really like music... here is my current playlist." onChange={e => setLocalSettings({...localSettings, musicCaption: e.target.value})} />
+              </div>
+              <div className="space-y-2">
                 <label className="text-text-gray font-bold uppercase text-[10px]">Emails (comma separated)</label>
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={localSettings.emails.join(', ')} onChange={e => setLocalSettings({...localSettings, emails: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-text-gray font-bold uppercase text-[10px]">About Me page (Markdown)</label>
+                <textarea
+                  className="w-full bg-black/50 border border-white/10 rounded p-3 h-56 font-mono text-xs leading-relaxed"
+                  value={localSettings.aboutMarkdown || ''}
+                  onChange={e => setLocalSettings({...localSettings, aboutMarkdown: e.target.value})}
+                  placeholder={"## Hi, I'm ...\n\nWrite your bio here. Supports **bold**, *italic*, [links](https://…), ## headings, and - bullet lists."}
+                />
+                <p className="text-[10px] text-text-gray/70">Shown on the <span className="text-pink">/about</span> page. Supports **bold**, *italic*, [links](url), ## headings, and - bullets.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-text-gray font-bold uppercase text-[10px]">About Me — Link Boxes</label>
+                <div className="space-y-2">
+                  {(localSettings.aboutLinks || []).map((lnk, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input
+                        className="w-40 bg-black/50 border border-white/10 rounded p-2"
+                        value={lnk.label}
+                        placeholder="Label (e.g. Resume)"
+                        onChange={e => { const arr = [...(localSettings.aboutLinks || [])]; arr[i] = { ...arr[i], label: e.target.value }; setLocalSettings({ ...localSettings, aboutLinks: arr }); }}
+                      />
+                      <input
+                        className="flex-1 bg-black/50 border border-white/10 rounded p-2"
+                        value={lnk.url}
+                        placeholder="https://…"
+                        onChange={e => { const arr = [...(localSettings.aboutLinks || [])]; arr[i] = { ...arr[i], url: e.target.value }; setLocalSettings({ ...localSettings, aboutLinks: arr }); }}
+                      />
+                      <button type="button" onClick={() => setLocalSettings({ ...localSettings, aboutLinks: (localSettings.aboutLinks || []).filter((_, idx) => idx !== i) })} className="p-2 hover:bg-red-500/20 rounded text-red-400"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setLocalSettings({ ...localSettings, aboutLinks: [...(localSettings.aboutLinks || []), { label: '', url: '' }] })} className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-bold transition-colors"><Plus className="w-4 h-4" /> Add link</button>
+                </div>
+                <p className="text-[10px] text-text-gray/70">Little hover-glow boxes on the /about page. Remember to Save below.</p>
               </div>
               <div className="space-y-2">
                 <label className="text-text-gray font-bold uppercase text-[10px]">Last Updated Text</label>
@@ -215,17 +360,22 @@ const Admin = () => {
           </div>
         )}
 
-        {activeTab === 'projects' && (
+        {isListTab && (
           <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold">Projects</h2>
-              {!editingItem && <button onClick={() => { setIsNew(true); setEditingItem({ techStack: [], links: {}, featured: false }); }} className="bg-white text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Add Project</button>}
+              <h2 className="text-3xl font-bold">{listLabels[currentListKey]}</h2>
+              {!editingItem && <button onClick={() => { setIsNew(true); setEditingItem({ techStack: [], links: {}, featured: false }); }} className="bg-white text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Add Item</button>}
             </div>
             {!editingItem ? (
+              currentItems.length === 0 ? (
+                <div className="text-center text-text-gray py-16 border border-dashed border-white/10 rounded-xl">
+                  Nothing here yet. Click <span className="text-pink font-bold">Add Item</span>, or open an item in another section and use <span className="text-pink font-bold">Move to section</span>.
+                </div>
+              ) : (
               <div className="grid gap-4">
-                {projects.map((p, i) => (
+                {currentItems.map((p, i) => (
                   <div key={p.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center group hover:border-pink/50 transition-colors">
-                    <ReorderControls type="projects" index={i} total={projects.length} />
+                    <ReorderControls type={currentListKey} index={i} total={currentItems.length} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg">{p.title}</h3>
@@ -239,24 +389,45 @@ const Admin = () => {
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => { setIsNew(false); setEditingItem(p); }} className="p-2 hover:bg-white/10 rounded-lg">Edit</button>
-                      <button onClick={() => { if(confirm('Delete?')) deleteProject(p.id); }} className="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => { if(confirm('Delete?')) deleteItem(currentListKey, p.id); }} className="p-2 hover:bg-red-500/20 rounded-lg text-red-400"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
                 ))}
               </div>
+              )
             ) : (
               <div className="bg-dark-gray border border-white/10 rounded-2xl p-8 space-y-6 text-sm">
                 <div className="flex justify-between items-center border-b border-white/10 pb-4">
-                  <h3 className="text-xl font-bold">{isNew ? 'New Project' : 'Edit Project'}</h3>
+                  <h3 className="text-xl font-bold">{isNew ? `New ${listLabels[currentListKey]} Item` : `Edit ${listLabels[currentListKey]} Item`}</h3>
                   <div className="flex items-center gap-4">
+                    {!isNew && (
+                      <label className="flex items-center gap-2">
+                        <span className="font-bold uppercase text-[10px] text-text-gray">Move to</span>
+                        <select
+                          value={currentListKey}
+                          onChange={e => {
+                            const target = e.target.value as 'projects' | 'work' | 'research';
+                            if (target !== currentListKey && editingItem.id) {
+                              moveItem(currentListKey, target, editingItem.id);
+                              setEditingItem(null);
+                            }
+                          }}
+                          className="bg-black/50 border border-white/10 rounded p-2 text-xs"
+                        >
+                          <option value="projects">Projects</option>
+                          <option value="work">Work Experience</option>
+                          <option value="research">Research</option>
+                        </select>
+                      </label>
+                    )}
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={editingItem.featured || false} 
+                      <input
+                        type="checkbox"
+                        checked={editingItem.featured || false}
                         onChange={e => setEditingItem({...editingItem, featured: e.target.checked})}
                         className="accent-pink"
                       />
-                      <span className="font-bold uppercase text-[10px] text-text-gray">Featured Work</span>
+                      <span className="font-bold uppercase text-[10px] text-text-gray">Highlight</span>
                     </label>
                     <button onClick={() => setEditingItem(null)}><X className="w-6 h-6" /></button>
                   </div>
@@ -267,9 +438,16 @@ const Admin = () => {
                     <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.subtitle || ''} onChange={e => setEditingItem({...editingItem, subtitle: e.target.value})} placeholder="Subtitle" />
                     <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.timeline || ''} onChange={e => setEditingItem({...editingItem, timeline: e.target.value})} placeholder="Timeline" />
                   </div>
-                  <div className="bg-black/30 border border-white/5 rounded p-4 flex flex-col items-center justify-center">
-                    {editingItem.imagePath ? <img src={editingItem.imagePath.startsWith('http') ? editingItem.imagePath : `/images/${editingItem.imagePath}`} className="max-h-24 rounded mb-2" alt="Preview" /> : <ImageIcon className="w-8 h-8 text-text-gray" />}
-                    <input className="w-full bg-black/50 border border-white/10 rounded p-2 text-[10px]" value={editingItem.imagePath || ''} onChange={e => setEditingItem({...editingItem, imagePath: e.target.value})} placeholder="Image filename/URL" />
+                  <div className="bg-black/30 border border-white/5 rounded p-4 flex flex-col items-center justify-center gap-2">
+                    {editingItem.imagePath ? <img src={editingItem.imagePath.startsWith('http') || editingItem.imagePath.startsWith('data:') ? editingItem.imagePath : `/images/${editingItem.imagePath}`} className="max-h-24 rounded" alt="Preview" /> : <ImageIcon className="w-8 h-8 text-text-gray" />}
+                    <label className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 cursor-pointer px-3 py-1.5 rounded text-[11px] font-bold transition-colors">
+                      <ImageIcon className="w-3.5 h-3.5" /> Upload Photo
+                      <input type="file" accept="image/*" className="hidden" onChange={handleItemImageUpload} />
+                    </label>
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-2 text-[10px]" value={editingItem.imagePath?.startsWith('data:') ? '(uploaded image)' : (editingItem.imagePath || '')} readOnly={editingItem.imagePath?.startsWith('data:')} onChange={e => setEditingItem({...editingItem, imagePath: e.target.value})} placeholder="…or image filename/URL" />
+                    {editingItem.imagePath && (
+                      <button type="button" onClick={() => setEditingItem({...editingItem, imagePath: ''})} className="text-[10px] text-text-gray hover:text-pink transition-colors">Remove image</button>
+                    )}
                   </div>
                 </div>
                 <textarea className="w-full bg-black/50 border border-white/10 rounded p-3 h-32" value={editingItem.description || ''} onChange={e => setEditingItem({...editingItem, description: e.target.value})} placeholder="Description" />
@@ -280,8 +458,16 @@ const Admin = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.collaborator || ''} onChange={e => setEditingItem({...editingItem, collaborator: e.target.value})} placeholder="Collaborator" />
                 </div>
+                <div className="space-y-2">
+                  <label className="text-text-gray font-bold uppercase text-[10px]">Links</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.links?.github || ''} onChange={e => setEditingItem({...editingItem, links: {...(editingItem.links || {}), github: e.target.value}})} placeholder="GitHub URL" />
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.links?.website || ''} onChange={e => setEditingItem({...editingItem, links: {...(editingItem.links || {}), website: e.target.value}})} placeholder="Website URL" />
+                    <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.links?.video || ''} onChange={e => setEditingItem({...editingItem, links: {...(editingItem.links || {}), video: e.target.value}})} placeholder="Video URL" />
+                  </div>
+                </div>
                 <input className="w-full bg-black/50 border border-white/10 rounded p-3" value={editingItem.techStack?.join(', ') || ''} onChange={e => setEditingItem({...editingItem, techStack: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} placeholder="Tags (comma separated)" />
-                <div className="flex justify-end gap-3 pt-4"><button onClick={() => setEditingItem(null)} className="px-6 py-2">Cancel</button><button onClick={handleSave} className="bg-pink px-6 py-2 rounded-lg font-bold">Save Project</button></div>
+                <div className="flex justify-end gap-3 pt-4"><button onClick={() => setEditingItem(null)} className="px-6 py-2">Cancel</button><button onClick={handleSave} className="bg-pink px-6 py-2 rounded-lg font-bold">Save Item</button></div>
               </div>
             )}
           </div>

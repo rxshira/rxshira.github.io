@@ -14,8 +14,8 @@ const Expandable: React.FC<ExpandableProps> = ({ title, children }) => {
   return (
     <div className="expandable rounded-none">
       <GlowWrapper className="w-full">
-        <div 
-          className="flex justify-between items-center px-10 py-8 cursor-pointer"
+        <div
+          className="flex justify-between items-center px-6 py-5 cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
         >
           <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">{title}</h3>
@@ -34,7 +34,7 @@ const Expandable: React.FC<ExpandableProps> = ({ title, children }) => {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="px-10 pb-10 pt-8 border-t border-white/10 text-lg text-text-gray leading-relaxed rounded-none">
+            <div className="px-6 pb-6 pt-5 border-t border-white/10 text-lg text-text-gray leading-relaxed rounded-none">
               {children}
             </div>
           </motion.div>

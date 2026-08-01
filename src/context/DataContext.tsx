@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { projects as initialProjects, Project } from '../data/projects';
+import { projects as sampleItems, Project } from '../data/projects';
 import { courses as initialCourses, Course } from '../data/courses';
 import { awards as initialAwards, Award } from '../data/awards';
 import { volunteering as initialVolunteering, Volunteering } from '../data/volunteering';
@@ -33,7 +33,19 @@ export interface SiteSettings {
   spotifyLink: string;
   primaryColor: string;
   colorHistory?: string[];
+  heroImage?: string;
+  aboutImage?: string;
+  aboutMarkdown?: string;
+  aboutLinks?: { label: string; url: string }[];
+  musicCaption?: string;
 }
+
+// Sample data is pre-sorted so all three sections are visible. You can re-sort any
+// item from the Admin panel using its "Move to" dropdown (a section hides itself
+// automatically when it has no items).
+const initialWork = sampleItems.filter(p => ['ligo'].includes(p.id));
+const initialResearch = sampleItems.filter(p => ['avltrees', 'specml'].includes(p.id));
+const initialProjects = sampleItems.filter(p => ['robograder', 'asteria1'].includes(p.id));
 
 const initialTeaching: Teaching[] = [
   {
@@ -64,11 +76,28 @@ const initialSettings: SiteSettings = {
   lastUpdated: 'February 2026',
   spotifyLink: 'https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator',
   primaryColor: '#ff006e',
-  colorHistory: ['#ff006e', '#7000ff', '#0066ff', '#00ffcc', '#ffcc00']
+  colorHistory: ['#ff006e', '#7000ff', '#0066ff', '#00ffcc', '#ffcc00'],
+  aboutMarkdown: `## Hi, I'm Shira 👋
+
+I'm a Computer Science student at **Carnegie Mellon University**, drawn to the places where *programming languages*, *space*, and *people* meet.
+
+I like building things that are provably correct, teaching what I learn, and reaching for the stars — sometimes literally.
+
+- 🧠 **Interests:** type theory, formal verification, rocketry
+- 🚀 **Currently:** mechanizing AVL trees & building type-safe pipelines
+- 💌 Say hi anytime — I love meeting new people.`,
+  aboutLinks: [
+    { label: 'GitHub', url: 'https://github.com/rxshira' },
+    { label: 'LinkedIn', url: 'https://linkedin.com/in/rxshira' },
+    { label: 'Resume', url: '#' },
+  ],
+  musicCaption: 'I really like music... here is my current playlist.'
 };
 
 interface DataContextType {
   projects: Project[];
+  work: Project[];
+  research: Project[];
   courses: Course[];
   awards: Award[];
   volunteering: Volunteering[];
@@ -78,6 +107,10 @@ interface DataContextType {
   updateProject: (project: Project) => Promise<void>;
   addProject: (project: Project) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
+  addItem: (list: 'projects' | 'work' | 'research', item: Project) => Promise<void>;
+  updateItem: (list: 'projects' | 'work' | 'research', item: Project) => Promise<void>;
+  deleteItem: (list: 'projects' | 'work' | 'research', id: string) => Promise<void>;
+  moveItem: (from: 'projects' | 'work' | 'research', to: 'projects' | 'work' | 'research', id: string) => Promise<void>;
   updateCourse: (course: Course) => Promise<void>;
   addCourse: (course: Course) => Promise<void>;
   deleteCourse: (code: string) => Promise<void>;
@@ -105,6 +138,8 @@ const hexToRgb = (hex: string) => {
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [work, setWork] = useState<Project[]>(initialWork);
+  const [research, setResearch] = useState<Project[]>(initialResearch);
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [awards, setAwards] = useState<Award[]>(initialAwards);
   const [volunteering, setVolunteering] = useState<Volunteering[]>(initialVolunteering);
@@ -123,6 +158,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (snap.exists()) {
         const data = snap.data();
         if (data.projects) setProjects(data.projects);
+        if (data.work) setWork(data.work);
+        if (data.research) setResearch(data.research);
         if (data.courses) setCourses(data.courses);
         if (data.awards) setAwards(data.awards);
         if (data.volunteering) setVolunteering(data.volunteering);
@@ -173,6 +210,42 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newList = projects.filter(p => p.id !== id);
     setProjects(newList);
     await saveToCloud({ projects: newList });
+  };
+
+  // Generic helpers for the three "project-like" lists: projects / work / research.
+  type ListKey = 'projects' | 'work' | 'research';
+  const listData: Record<ListKey, Project[]> = { projects, work, research };
+  const listSetters: Record<ListKey, React.Dispatch<React.SetStateAction<Project[]>>> = {
+    projects: setProjects, work: setWork, research: setResearch,
+  };
+
+  const addItem = async (list: ListKey, item: Project) => {
+    const newList = [item, ...listData[list]];
+    listSetters[list](newList);
+    await saveToCloud({ [list]: newList });
+  };
+
+  const updateItem = async (list: ListKey, item: Project) => {
+    const newList = listData[list].map(p => p.id === item.id ? item : p);
+    listSetters[list](newList);
+    await saveToCloud({ [list]: newList });
+  };
+
+  const deleteItem = async (list: ListKey, id: string) => {
+    const newList = listData[list].filter(p => p.id !== id);
+    listSetters[list](newList);
+    await saveToCloud({ [list]: newList });
+  };
+
+  const moveItem = async (from: ListKey, to: ListKey, id: string) => {
+    if (from === to) return;
+    const item = listData[from].find(p => p.id === id);
+    if (!item) return;
+    const newFrom = listData[from].filter(p => p.id !== id);
+    const newTo = [item, ...listData[to]];
+    listSetters[from](newFrom);
+    listSetters[to](newTo);
+    await saveToCloud({ [from]: newFrom, [to]: newTo });
   };
 
   const updateCourse = async (upd: Course) => {
@@ -253,17 +326,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const reorderItem = async (type: string, startIndex: number, endIndex: number) => {
-    const listMap: any = { projects, courses, awards, volunteering, teaching };
+    const listMap: any = { projects, work, research, courses, awards, volunteering, teaching };
     const list = Array.from(listMap[type]);
     const [removed] = list.splice(startIndex, 1);
     list.splice(endIndex, 0, removed);
-    
-    const setters: any = { 
-      projects: setProjects, 
-      courses: setCourses, 
-      awards: setAwards, 
-      volunteering: setVolunteering, 
-      teaching: setTeaching 
+
+    const setters: any = {
+      projects: setProjects,
+      work: setWork,
+      research: setResearch,
+      courses: setCourses,
+      awards: setAwards,
+      volunteering: setVolunteering,
+      teaching: setTeaching
     };
     setters[type](list);
     await saveToCloud({ [type]: list });
@@ -295,6 +370,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetData = async () => {
     setProjects(initialProjects);
+    setWork(initialWork);
+    setResearch(initialResearch);
     setCourses(initialCourses);
     setAwards(initialAwards);
     setVolunteering(initialVolunteering);
@@ -302,6 +379,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSettings(initialSettings);
     await saveToCloud({
       projects: initialProjects,
+      work: initialWork,
+      research: initialResearch,
       courses: initialCourses,
       awards: initialAwards,
       volunteering: initialVolunteering,
@@ -312,8 +391,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <DataContext.Provider value={{
-      projects, courses, awards, volunteering, teaching, settings, loading,
+      projects, work, research, courses, awards, volunteering, teaching, settings, loading,
       updateProject, addProject, deleteProject,
+      addItem, updateItem, deleteItem, moveItem,
       updateCourse, addCourse, deleteCourse,
       updateAward, addAward, deleteAward,
       updateVolunteering, addVolunteering, deleteVolunteering,

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Hero from './components/Hero';
-import Projects from './components/Projects';
+import ItemSection from './components/ItemSection';
+import About from './components/About';
 import Footer from './components/Footer';
 import TwinklingStars from './components/TwinklingStars';
 import MeteorShower from './components/MeteorShower';
@@ -89,6 +90,114 @@ const TeachingCard = ({ item }: { item: any }) => {
   );
 };
 
+const VolunteeringCard = ({ item }: { item: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  if (!item) return null;
+  return (
+    <GlowWrapper className="bg-white/5 border border-white/10 rounded-none overflow-hidden">
+      <div
+        className="p-6 cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="text-xl font-bold text-white leading-tight">{item.title}</h4>
+          {isOpen ? <ChevronUp className="text-pink flex-shrink-0 ml-2" /> : <ChevronDown className="text-text-gray flex-shrink-0 ml-2" />}
+        </div>
+        <p className="text-pink font-semibold">{item.organization}</p>
+        <p className="text-xs text-text-gray mt-1 italic">{item.timeline}</p>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-4 mt-4 border-t border-white/10 space-y-4">
+                <p className="text-text-gray leading-relaxed">{item.description}</p>
+                {item.achievements && item.achievements.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-white text-xs font-bold uppercase tracking-wider">Key Impact:</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-text-gray/80">
+                      {item.achievements.map((a: string, i: number) => (
+                        <li key={i}>{a}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {item.link && (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-pink hover:opacity-80 transition-opacity text-sm font-semibold inline-block"
+                  >
+                    Visit →
+                  </a>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </GlowWrapper>
+  );
+};
+
+const AwardCard = ({ item }: { item: any }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  if (!item) return null;
+  return (
+    <GlowWrapper className="bg-white/5 border border-white/10 rounded-none overflow-hidden">
+      <div
+        className="p-6 cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="text-xl font-bold text-white leading-tight">{item.title}</h4>
+          {isOpen ? <ChevronUp className="text-pink flex-shrink-0 ml-2" /> : <ChevronDown className="text-text-gray flex-shrink-0 ml-2" />}
+        </div>
+        <p className="text-pink font-semibold">{item.date}</p>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <p className="pt-4 mt-4 border-t border-white/10 text-text-gray leading-relaxed">
+                {item.description}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </GlowWrapper>
+  );
+};
+
+// Distribute items round-robin into `n` columns so an expanding card pushes the
+// cards below it in its own column instead of stretching its row neighbour.
+const splitColumns = (arr: any[], n: number) => {
+  const cols: any[][] = Array.from({ length: n }, () => []);
+  arr.forEach((item, i) => cols[i % n].push(item));
+  return cols;
+};
+
+const CardColumns = ({ items, render }: { items: any[]; render: (item: any) => JSX.Element }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+    {splitColumns(items, 2).map((col, ci) => (
+      <div key={ci} className="flex flex-col gap-4">
+        {col.map(render)}
+      </div>
+    ))}
+  </div>
+);
+
 const Home = () => {
   const data = useData();
   
@@ -97,28 +206,26 @@ const Home = () => {
     return <div className="p-20 text-white text-center">Loading data...</div>;
   }
 
-  const { courses, awards, volunteering, teaching } = data;
+  const { projects, work, research, courses, awards, volunteering, teaching } = data;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-2">
       <Hero />
-      
-      <main className="container mx-auto px-6 space-y-24 pb-12">
-        <Projects />
 
-        <section id="experience" className="space-y-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Experience & Awards</h2>
+      <main className="container mx-auto px-6 space-y-12 pb-12">
+        <ItemSection id="work" title="Experience" items={work} />
+        <ItemSection id="research" title="Research" items={research} />
+        <ItemSection id="projects" title="Projects" items={projects} seeAllLink="/projects" />
+
+        <section id="experience" className="space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-pink tracking-tight">Involvement &amp; Honors</h2>
           
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4">
             <Expandable title="Academic Experience">
               <div className="space-y-10 py-4">
                 <div>
                   <h4 className="text-pink text-xl font-bold mb-6">Teaching</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {teaching && teaching.map(item => (
-                      <TeachingCard key={item.id} item={item} />
-                    ))}
-                  </div>
+                  <CardColumns items={teaching || []} render={(item) => <TeachingCard key={item.id} item={item} />} />
                 </div>
                 <div>
                   <h4 className="text-pink text-xl font-bold mb-4">Selected Coursework</h4>
@@ -134,46 +241,18 @@ const Home = () => {
             </Expandable>
 
             <Expandable title="Service & Leadership">
-              <div className="space-y-10 py-4">
-                {volunteering && volunteering.map(vol => (
-                  <div key={vol.id} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
-                    <h4 className="text-pink text-2xl font-bold mb-2">{vol.title}</h4>
-                    <p className="text-pink text-base font-semibold mb-4">{vol.organization} • {vol.timeline}</p>
-                    <p className="text-base md:text-lg mb-6 leading-relaxed text-text-gray">
-                      {vol.description}
-                    </p>
-                    {vol.achievements && vol.achievements.length > 0 && (
-                      <div className="space-y-3">
-                        <p className="text-white text-sm font-bold uppercase tracking-wider">Key Impact:</p>
-                        <ul className="list-disc list-inside space-y-2 text-sm md:text-base text-text-gray/80">
-                          {vol.achievements.map((achievement, i) => (
-                            <li key={i}>{achievement}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="py-4">
+                <CardColumns items={volunteering || []} render={(vol) => <VolunteeringCard key={vol.id} item={vol} />} />
               </div>
             </Expandable>
 
-            <Expandable title="Awards & Recognition">
-              <div className="space-y-10 py-4">
-                {awards && awards.map((award, i) => (
-                  <div key={i} className="border-b border-white/5 pb-8 last:border-0 last:pb-0">
-                    <h4 className="text-pink text-2xl font-bold mb-2">{award.title}</h4>
-                    <p className="text-white text-base font-semibold mb-3">{award.date}</p>
-                    <p className="text-base md:text-lg text-text-gray leading-relaxed">
-                      {award.description}
-                    </p>
-                  </div>
-                ))}
+            <Expandable title="Honors & Awards">
+              <div className="py-4">
+                <CardColumns items={awards || []} render={(award) => <AwardCard key={award.id || award.title} item={award} />} />
               </div>
             </Expandable>
           </div>
         </section>
-
-        <MusicSection />
       </main>
     </div>
   );
@@ -202,6 +281,7 @@ const AppContent = () => {
       
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
         <Route path="/projects" element={<AllProjects />} />
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />

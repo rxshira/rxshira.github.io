@@ -91,8 +91,8 @@ const Login = () => {
               {!isConfigured ? 'System Not Configured' : isSubmitting ? 'Verifying...' : 'Login to Dashboard'}
             </button>
 
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               onClick={clearError}
               className="w-full py-3 px-4 bg-white/5 text-white font-bold hover:bg-white/10 transition-colors flex items-center justify-center gap-2 mt-2"
             >

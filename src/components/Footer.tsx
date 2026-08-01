@@ -11,7 +11,7 @@ const Footer = () => {
   const { settings } = data;
 
   return (
-    <footer className="container mx-auto px-6 py-20 text-center border-t border-white/10 mt-20 relative">
+    <footer id="contact" className="container mx-auto px-6 py-20 text-center border-t border-white/10 mt-20 relative">
       <p className="text-text-gray text-sm mb-6">
         © 2026 Shira Rubin • Built with React, TypeScript, and lots of type safety
       </p>
