@@ -427,7 +427,7 @@ const Admin = () => {
                         onChange={e => setEditingItem({...editingItem, featured: e.target.checked})}
                         className="accent-pink"
                       />
-                      <span className="font-bold uppercase text-[10px] text-text-gray">Highlight</span>
+                      <span className="font-bold uppercase text-[10px] text-text-gray">⭐ Star (show on homepage)</span>
                     </label>
                     <button onClick={() => setEditingItem(null)}><X className="w-6 h-6" /></button>
                   </div>

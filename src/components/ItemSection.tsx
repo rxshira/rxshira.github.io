@@ -22,9 +22,12 @@ const ItemSection = ({ id, title, items, seeAllLink, maxVisible }: ItemSectionPr
     setExpandedIds(next);
   };
 
-  // Show only the first `maxVisible` items (if set); the rest live on the "See all" page.
-  const hasMore = maxVisible !== undefined && items.length > maxVisible;
-  const visibleItems = maxVisible !== undefined ? items.slice(0, maxVisible) : items;
+  // Show only starred (featured) items, capped at `maxVisible`. If nothing is
+  // starred, fall back to the first few so the section never looks empty.
+  const starred = items.filter((i) => i.featured);
+  const base = starred.length > 0 ? starred : items;
+  const visibleItems = base.slice(0, maxVisible ?? base.length);
+  const hasMore = items.length > visibleItems.length;
 
   // Distribute into 3 columns so an expanding card pushes the ones below it in
   // its own column, never stretching its row neighbour.
@@ -32,7 +35,7 @@ const ItemSection = ({ id, title, items, seeAllLink, maxVisible }: ItemSectionPr
     const cols: Project[][] = [[], [], []];
     visibleItems.forEach((item, i) => cols[i % 3].push(item));
     return cols;
-  }, [visibleItems]);
+  }, [items, maxVisible]);
 
   if (!items || items.length === 0) return null;
 

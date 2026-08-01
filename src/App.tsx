@@ -213,7 +213,7 @@ const Home = () => {
       <Hero />
 
       <main className="container mx-auto px-6 space-y-12 pb-12">
-        <ItemSection id="work" title="Experience" items={work} />
+        <ItemSection id="work" title="Experience" items={work} seeAllLink="/work" maxVisible={3} />
         <ItemSection id="research" title="Research" items={research} seeAllLink="/research" maxVisible={3} />
         <ItemSection id="projects" title="Projects" items={projects} seeAllLink="/projects" maxVisible={3} />
 

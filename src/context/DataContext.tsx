@@ -252,8 +252,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const moveItem = async (from: ListKey, to: ListKey, id: string) => {
     if (from === to) return;
-    const item = listData[from].find(p => p.id === id);
-    if (!item) return;
+    const found = listData[from].find(p => p.id === id);
+    if (!found) return;
+    // Auto-unstar when moving to a new section (its star belonged to the old one).
+    const item = { ...found, featured: false };
     const newFrom = listData[from].filter(p => p.id !== id);
     // Remove any existing copy in the target first so a re-move can't duplicate it.
     const newTo = [item, ...listData[to].filter(p => p.id !== id)];
