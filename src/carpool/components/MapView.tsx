@@ -6,7 +6,6 @@ interface MapViewProps {
   routePolyline?: string;
   onMarkerClick?: (id: string) => void;
   center?: { lat: number, lng: number } | null;
-  simPath?: { lat: number, lng: number }[] | null;
 }
 
 const mapContainerStyle = {
@@ -52,7 +51,7 @@ const mapOptions = {
   ],
 };
 
-const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick, center: centerOverride, simPath }) => {
+const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick, center: centerOverride }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
@@ -99,7 +98,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
         position={IBM_LOCATION}
         zIndex={100}
         icon={{
-          path: "M -3,-3 L 3,-3 L 3,3 L -3,3 Z",
+          path: "M -2,0 L -2,-4 L 2,-4 L 2,0 L 2,4 L -2,4 Z",
           fillColor: "#1f6abf",
           fillOpacity: 1,
           strokeWeight: 2,
@@ -123,7 +122,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
             key={i}
             position={{ lat: m.lat, lng: m.lng }}
             zIndex={m.isMe ? 1000 : m.isSelected ? 500 : 10}
-            title={m.isMe ? 'You' : m.type === 'driver' ? 'Driver' : 'Rider'}
+            title={m.name}
             onClick={() => onMarkerClick?.(m.id)}
             icon={{
               path: circlePath,
@@ -143,17 +142,6 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
           options={{
             strokeColor: "#FF2D78",
             strokeOpacity: 0.8,
-            strokeWeight: 3,
-          }}
-        />
-      )}
-
-      {simPath && simPath.length > 1 && (
-        <Polyline
-          path={simPath}
-          options={{
-            strokeColor: "#FF2D78",
-            strokeOpacity: 0.9,
             strokeWeight: 3,
           }}
         />

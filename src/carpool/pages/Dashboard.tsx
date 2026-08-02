@@ -10,7 +10,7 @@ import MapView from '../components/MapView';
 import { GoogleDistanceService } from '../lib/googleService';
 
 const Dashboard = () => {
-  const { user, carpoolUser, logout, refreshCarpoolUser, isAdmin } = useAuth();
+  const { user, carpoolUser, logout, refreshCarpoolUser } = useAuth();
   const [allUsers, setAllUsers] = useState<CarpoolUser[]>([]);
   const [carpools, setCarpools] = useState<Carpool[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<RideRequest[]>([]);
@@ -24,17 +24,6 @@ const Dashboard = () => {
   const [tempRoute, setTempRoute] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [focusedUserId, setFocusedUserId] = useState<string | null>(null);
-
-  // --- TEMP DEMO (portfolio) ---
-  // Set to false to disable the sample notifications on the bell panel.
-  const DEMO_NOTIFS = true;
-  const demoIncoming = DEMO_NOTIFS ? [{ id: 'demo-in', name: 'Jane Doe' }] : [];
-  const demoSent = DEMO_NOTIFS ? [{ id: 'demo-out', name: 'Jane Doe' }] : [];
-  const notifCount = incomingRequests.length + sentRequests.length + demoIncoming.length + demoSent.length;
-
-  // Client-side simulated demo route: one driver + two riders -> IBM (no database writes).
-  const IBM_LOCATION = { lat: 37.2144, lng: -121.7825 };
-  const [showSimRoute, setShowSimRoute] = useState(true);
 
   const mapCenter = useMemo(() => {
     if (focusedUserId) {
@@ -169,28 +158,16 @@ const Dashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
-  // Demo route members: first driver + first two riders currently shown.
-  const simMembers = useMemo(() => {
-    const driver = filteredUsers.find(u => u.has_car);
-    const riders = filteredUsers.filter(u => !u.has_car).slice(0, 2);
-    return [driver, ...riders].filter((u): u is CarpoolUser => !!u);
-  }, [filteredUsers]);
-  const simRiderCount = simMembers.filter(u => !u.has_car).length;
-  const simPath = useMemo(() => {
-    if (!showSimRoute || simMembers.length === 0) return null;
-    return [...simMembers.map(u => ({ lat: u.latitude, lng: u.longitude })), IBM_LOCATION];
-  }, [showSimRoute, simMembers]);
-
   const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
   return (
     <div className="flex flex-col h-screen bg-black text-white font-sans overflow-hidden">
       <nav className="flex items-center justify-between px-5 py-3 border-b border-white/10 shrink-0 z-50">
-        <div className="flex items-center gap-3"><div className="w-8 h-8 shrink-0 aspect-square bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] text-white tracking-widest shadow-2xl">IBM</div><span className="text-sm font-medium text-white tracking-tighter uppercase font-mono">Intern / New Grad Portal</span></div>
+        <div className="flex items-center gap-3"><div className="w-8 h-8 aspect-square bg-[#1f6abf] rounded-md flex items-center justify-center font-mono font-bold text-[10px] text-white tracking-widest shadow-2xl">IBM</div><span className="text-sm font-medium text-white tracking-tighter uppercase font-mono">Intern / New Grad Portal</span></div>
         <div className="flex items-center gap-5">
           <div className="relative cursor-pointer" onClick={() => setShowNotifications(!showNotifications)}>
-            <Bell className={`w-4 h-4 ${notifCount > 0 ? 'text-pink animate-bounce' : 'text-white/20'}`} />
-            {notifCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink rounded-full border border-black" />}
+            <Bell className={`w-4 h-4 ${(incomingRequests.length + sentRequests.length) > 0 ? 'text-pink animate-bounce' : 'text-white/20'}`} />
+            {(incomingRequests.length + sentRequests.length) > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink rounded-full border border-black" />}
           </div>
           <button onClick={() => logout()} className="text-[11px] text-white border border-white/10 px-3 py-1 rounded transition-colors uppercase font-bold tracking-widest font-mono text-shadow-glow">Sign out</button>
         </div>
@@ -215,10 +192,10 @@ const Dashboard = () => {
               const hasSentRequest = sentRequests.some(r => r.receiver_id === u.id);
               return (
                 <div key={u.id} id={`roster-item-${u.id}`} onClick={() => setFocusedUserId(u.id)} className={`p-4 flex gap-3 transition-all border-l-2 cursor-pointer ${isFocused ? 'bg-white/5 border-white shadow-2xl ring-1 ring-white/10' : activeMenuId === u.id ? 'bg-pink/10 border-pink' : 'hover:bg-white/[0.02] border-transparent'}`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border shrink-0 ${u.id === user?.uid ? 'border-yellow-400 text-yellow-400' : u.has_car ? 'border-blue-500 text-blue-400' : 'border-pink text-pink'}`}><span className="bg-current text-current rounded-sm select-none">{getInitials(u.full_name)}</span></div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border shrink-0 ${u.id === user?.uid ? 'border-yellow-400 text-yellow-400' : u.has_car ? 'border-blue-500 text-blue-400' : 'border-pink text-pink'}`}>{getInitials(u.full_name)}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between text-white">
-                      <div className="text-[12px] font-medium truncate"><span className="bg-current text-current rounded-sm select-none">{u.full_name}</span></div>
+                      <div className="text-[12px] font-medium truncate">{u.full_name}</div>
                       {u.id !== user?.uid && (
                         <div className="relative">
                           <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === u.id ? null : u.id); }} className="p-1 rounded text-white/20 hover:text-white transition-colors"><MoreVertical className="w-3.5 h-3.5" /></button>
@@ -239,7 +216,7 @@ const Dashboard = () => {
                         </div>
                       )}
                     </div>
-                    <div className="text-[10px] text-white/40 font-mono mt-0.5"><span className="bg-white/40 text-transparent rounded-sm select-none">{u.zip_code}</span> · {u.has_car ? 'Driver' : 'Rider'}</div>
+                    <div className="text-[10px] text-white/40 font-mono mt-0.5">{u.zip_code} · {u.has_car ? 'Driver' : 'Rider'}</div>
                     {hasSentRequest && <div className="mt-1 text-[8px] text-pink font-bold uppercase tracking-widest flex items-center gap-1"><Clock className="w-2 h-2" /> Pending</div>}
                   </div>
                 </div>
@@ -249,18 +226,11 @@ const Dashboard = () => {
         </aside>
 
         <main className="flex-1 relative bg-[#050505]">
-          <MapView markers={allUsers.filter(u => u.preferred_arrival_time === viewArrivalTime).map(m => ({ lat: m.latitude, lng: m.longitude, id: m.id, name: m.full_name, type: m.has_car ? 'driver' : 'rider', isMe: m.id === user?.uid, isMatched: carpools.some(p => p.member_ids.includes(m.id)), isSelected: focusedUserId === m.id }))} center={mapCenter} onMarkerClick={id => { setFocusedUserId(id); document.getElementById(`roster-item-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} simPath={simPath} />
+          <MapView markers={allUsers.filter(u => u.preferred_arrival_time === viewArrivalTime).map(m => ({ lat: m.latitude, lng: m.longitude, id: m.id, name: m.full_name, type: m.has_car ? 'driver' : 'rider', isMe: m.id === user?.uid, isMatched: carpools.some(p => p.member_ids.includes(m.id)), isSelected: focusedUserId === m.id }))} center={mapCenter} onMarkerClick={id => { setFocusedUserId(id); document.getElementById(`roster-item-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} />
           <div className="absolute top-4 right-4 bg-black/85 border border-white/10 p-3 px-4 rounded-lg z-20 space-y-2 shadow-2xl text-white"><h4 className="text-[9px] font-mono text-pink uppercase tracking-widest font-bold">Map Legend</h4><div className="space-y-1.5"><div className="flex items-center gap-2 text-[10px] text-white/40"><div className="w-2 h-2 rounded-full bg-yellow-400" /> <span>You</span></div><div className="flex items-center gap-2 text-[10px] text-white/40"><div className="w-2 h-2 rounded-full bg-blue-500" /> <span>Driver</span></div><div className="flex items-center gap-2 text-[10px] text-white/40"><div className="w-2 h-2 rounded-full bg-pink" /> <span>Rider</span></div></div></div>
-
-          {simMembers.length > 0 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-black/90 border border-pink/30 px-4 py-2 rounded-full flex items-center gap-3 shadow-2xl">
-              <span className="text-[10px] font-mono text-pink uppercase tracking-widest font-bold">Simulated Route · Driver + {simRiderCount} Rider{simRiderCount === 1 ? '' : 's'} → IBM</span>
-              <button onClick={() => setShowSimRoute(v => !v)} className="text-[9px] font-mono text-white/50 hover:text-white uppercase tracking-widest border-l border-white/10 pl-3">{showSimRoute ? 'Hide' : 'Show'}</button>
-            </div>
-          )}
-
+          
           <AnimatePresence>
-            {showNotifications && notifCount > 0 && (
+            {showNotifications && (incomingRequests.length + sentRequests.length) > 0 && (
               <motion.div initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }} className="absolute top-4 right-44 w-72 bg-black/90 border border-pink/20 backdrop-blur-xl z-[60] p-4 rounded-sm shadow-2xl">
                 <div className="flex justify-between items-center mb-4 text-pink text-[10px] font-bold uppercase tracking-widest">
                   <Bell className="w-3.5 h-3.5" /> Activity
@@ -285,21 +255,6 @@ const Dashboard = () => {
                       })}
                     </div>
                   )}
-                  {/* Incoming (temp demo) */}
-                  {demoIncoming.length > 0 && (
-                    <div className="space-y-2">
-                      {incomingRequests.length === 0 && <p className="text-[8px] text-white/30 uppercase font-bold tracking-widest">Incoming Requests</p>}
-                      {demoIncoming.map(d => (
-                        <div key={d.id} className="bg-white/5 p-3 rounded-sm border border-white/5">
-                          <p className="text-[10px] text-white/80 font-mono"><span className="font-bold text-white"><span className="bg-current text-current rounded-sm select-none">{d.name}</span></span> offered a drive.</p>
-                          <div className="flex gap-2 mt-3">
-                            <button className="flex-1 py-1.5 bg-green-500 text-black text-[9px] font-bold uppercase rounded-sm hover:bg-green-400">Accept</button>
-                            <button className="flex-1 py-1.5 border border-white/10 text-white/40 text-[9px] font-bold uppercase rounded-sm hover:text-white">Ignore</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   {/* Sent */}
                   {sentRequests.length > 0 && (
                     <div className="space-y-2">
@@ -316,21 +271,6 @@ const Dashboard = () => {
                           </div>
                         );
                       })}
-                    </div>
-                  )}
-                  {/* Sent (temp demo) */}
-                  {demoSent.length > 0 && (
-                    <div className="space-y-2">
-                      {sentRequests.length === 0 && <p className="text-[8px] text-white/30 uppercase font-bold tracking-widest">Sent by you</p>}
-                      {demoSent.map(d => (
-                        <div key={d.id} className="bg-white/[0.02] p-3 rounded-sm border border-white/5 flex justify-between items-center">
-                          <div>
-                            <p className="text-[10px] text-white/60 font-mono">To: <span className="text-white"><span className="bg-current text-current rounded-sm select-none">{d.name}</span></span></p>
-                            <p className="text-[8px] text-white/30 uppercase font-mono">pickup request</p>
-                          </div>
-                          <button className="p-1.5 hover:bg-pink/10 text-pink rounded transition-colors"><X className="w-3.5 h-3.5" /></button>
-                        </div>
-                      ))}
                     </div>
                   )}
                 </div>

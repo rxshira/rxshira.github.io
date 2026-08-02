@@ -271,7 +271,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addCourse = async (newC: Course) => {
-    const newList = [...courses, newC];
+    // Prepend so a newly added course shows at the top of the admin list —
+    // matching every other section (projects, awards, etc.). Appending buried
+    // it at the bottom of the list, making it look like nothing happened.
+    const newList = [newC, ...courses];
     setCourses(newList);
     await saveToCloud({ courses: newList });
   };
