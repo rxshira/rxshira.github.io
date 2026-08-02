@@ -2,6 +2,7 @@ export interface Course {
   code: string;
   name: string;
   department: string;
+  graduate?: boolean;
 }
 
 export const courses: Course[] = [
@@ -16,7 +17,7 @@ export const courses: Course[] = [
   { code: '15-112', name: 'Fundamentals of Programming and Computer Science', department: 'Computer Science' },
   
   // 16xxx courses (Robotics) - highest to lowest by last 3 digits
-  { code: '16-865', name: 'Space Robotics', department: 'Robotics' },
+  { code: '16-865', name: 'Space Robotics', department: 'Robotics', graduate: true },
   { code: '16-161', name: 'AI and Humanity', department: 'Robotics' },
   
   // 33xxx courses (Physics) - highest to lowest by last 3 digits

@@ -504,15 +504,19 @@ const Admin = () => {
             <div>
               <h2 className="text-2xl font-bold mb-6">Coursework</h2>
               <div className="bg-white/5 border border-white/10 p-6 rounded-xl text-sm">
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 mb-6 items-center">
                   <input id="new-c-code" className="flex-1 bg-black/50 border border-white/10 rounded p-2" placeholder="Code" />
                   <input id="new-c-name" className="flex-[2] bg-black/50 border border-white/10 rounded p-2" placeholder="Name" />
                   <input id="new-c-cat" className="flex-1 bg-black/50 border border-white/10 rounded p-2" placeholder="Category (optional)" />
+                  <label className="flex items-center gap-1.5 text-xs text-text-gray whitespace-nowrap select-none cursor-pointer">
+                    <input id="new-c-grad" type="checkbox" className="accent-pink" /> Grad
+                  </label>
                   <button onClick={() => {
                     const c = (document.getElementById('new-c-code') as HTMLInputElement).value;
                     const n = (document.getElementById('new-c-name') as HTMLInputElement).value;
                     const cat = (document.getElementById('new-c-cat') as HTMLInputElement).value;
-                    if(c && n) { addCourse({code:c, name:n, department:cat.trim()}); (document.getElementById('new-c-code') as HTMLInputElement).value=''; (document.getElementById('new-c-name') as HTMLInputElement).value=''; (document.getElementById('new-c-cat') as HTMLInputElement).value=''; }
+                    const grad = (document.getElementById('new-c-grad') as HTMLInputElement).checked;
+                    if(c && n) { addCourse({code:c, name:n, department:cat.trim(), graduate:grad}); (document.getElementById('new-c-code') as HTMLInputElement).value=''; (document.getElementById('new-c-name') as HTMLInputElement).value=''; (document.getElementById('new-c-cat') as HTMLInputElement).value=''; (document.getElementById('new-c-grad') as HTMLInputElement).checked=false; }
                   }} className="bg-white text-black px-4 py-2 rounded font-bold">Add</button>
                 </div>
                 <div className="space-y-2">
@@ -531,6 +535,14 @@ const Admin = () => {
                         placeholder="Category"
                         onBlur={e => { if (e.target.value !== (c.department || '')) updateCourse({ ...c, department: e.target.value }); }}
                       />
+                      <label className="flex items-center gap-1.5 text-xs text-text-gray whitespace-nowrap select-none cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          className="accent-pink"
+                          checked={!!c.graduate}
+                          onChange={e => updateCourse({ ...c, graduate: e.target.checked })}
+                        /> Grad
+                      </label>
                       <button onClick={() => deleteCourse(c.code)} className="text-red-400 p-1 shrink-0"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   ))}

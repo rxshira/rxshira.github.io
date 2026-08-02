@@ -242,7 +242,7 @@ const Home = () => {
                         <span className="text-text-gray/60 text-xs tabular-nums">{course.code}</span>
                         <span className="text-white text-sm font-medium leading-tight">
                           {course.name}
-                          {course.code === '16-865' && (
+                          {course.graduate && (
                             <span className="text-text-gray/60"> [GRADUATE]</span>
                           )}
                         </span>

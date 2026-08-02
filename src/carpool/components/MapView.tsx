@@ -6,6 +6,7 @@ interface MapViewProps {
   routePolyline?: string;
   onMarkerClick?: (id: string) => void;
   center?: { lat: number, lng: number } | null;
+  simPath?: { lat: number, lng: number }[] | null;
 }
 
 const mapContainerStyle = {
@@ -51,7 +52,7 @@ const mapOptions = {
   ],
 };
 
-const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick, center: centerOverride }) => {
+const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarkerClick, center: centerOverride, simPath }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
@@ -122,7 +123,7 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
             key={i}
             position={{ lat: m.lat, lng: m.lng }}
             zIndex={m.isMe ? 1000 : m.isSelected ? 500 : 10}
-            title={m.name}
+            title={m.isMe ? 'You' : m.type === 'driver' ? 'Driver' : 'Rider'}
             onClick={() => onMarkerClick?.(m.id)}
             icon={{
               path: circlePath,
@@ -142,6 +143,17 @@ const MapView: React.FC<MapViewProps> = ({ markers = [], routePolyline, onMarker
           options={{
             strokeColor: "#FF2D78",
             strokeOpacity: 0.8,
+            strokeWeight: 3,
+          }}
+        />
+      )}
+
+      {simPath && simPath.length > 1 && (
+        <Polyline
+          path={simPath}
+          options={{
+            strokeColor: "#FF2D78",
+            strokeOpacity: 0.9,
             strokeWeight: 3,
           }}
         />
