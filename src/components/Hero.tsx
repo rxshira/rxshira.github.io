@@ -10,7 +10,7 @@ const Hero = () => {
   const name = data?.settings?.name || 'Shira Rubin';
   const h1 = data?.settings?.headline1 || 'Computer Science @ Carnegie Mellon University';
   const h2 = data?.settings?.headline2 || 'Programming Languages · Space · People';
-  const heroImage = data?.settings?.heroImage || '/images/hero.jpg';
+  const heroImage = data?.settings?.heroImage || '';
 
   const navLinks: { id?: string; to?: string; label: string }[] = [
     { to: '/about', label: 'About Me' },

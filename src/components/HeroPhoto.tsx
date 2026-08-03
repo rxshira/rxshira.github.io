@@ -135,7 +135,11 @@ const HeroPhoto = ({ image, alt, width, height, variant = 'planet' }: HeroPhotoP
         ))}
       </div>
       {variant === 'planet' && <div className="hero-orbit-back" />}
-      <div className="hero-img" style={{ backgroundImage: `url(${image})` }} />
+      <div
+        className={`hero-img${image ? '' : ' empty'}`}
+        style={image ? { backgroundImage: `url(${image})` } : undefined}
+      />
+      {!image && <span className="hero-img-placeholder" aria-hidden="true">☆</span>}
       {variant === 'planet' && (
         <>
           <div className="hero-orbit-front" />

@@ -261,6 +261,23 @@ html {
   mask-composite: intersect;
 }
 
+/* No photo uploaded yet: soft placeholder instead of a preset image. */
+.hero-img.empty {
+  background: radial-gradient(circle at 50% 40%, rgba(var(--pink-rgb) / 0.18), rgba(0, 0, 0, 0.5));
+}
+
+.hero-img-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
 /* ── planet variant (homepage hero only): circular sphere-lit crop ── */
 .hero-photo.planet .hero-img {
   inset: 6%;

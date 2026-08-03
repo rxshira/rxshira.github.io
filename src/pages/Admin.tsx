@@ -10,7 +10,7 @@ const Admin = () => {
   const {
     projects, work, research,
     addItem, updateItem, deleteItem, moveItem,
-    courses, addCourse, updateCourse, deleteCourse,
+    courses, addCourse, updateCourse, updateCourseCode, deleteCourse,
     awards, addAward, updateAward, deleteAward,
     volunteering, addVolunteering, updateVolunteering, deleteVolunteering,
     teaching, addTeaching, updateTeaching, deleteTeaching,
@@ -523,7 +523,12 @@ const Admin = () => {
                   {courses.map((c, i) => (
                     <div key={c.code} className="flex items-center gap-2 p-2 hover:bg-white/5 rounded">
                       <ReorderControls type="courses" index={i} total={courses.length} />
-                      <span className="font-bold text-pink w-20 shrink-0">{c.code}</span>
+                      <input
+                        className="font-bold text-pink w-20 shrink-0 bg-black/50 border border-white/10 rounded p-1.5"
+                        defaultValue={c.code}
+                        placeholder="Code"
+                        onBlur={e => { const v = e.target.value.trim(); if (v && v !== c.code) updateCourseCode(c.code, { ...c, code: v }); }}
+                      />
                       <input
                         className="flex-[2] bg-black/50 border border-white/10 rounded p-1.5"
                         defaultValue={c.name}

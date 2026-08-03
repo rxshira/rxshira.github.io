@@ -46,8 +46,8 @@ const About = () => {
   const navigate = useNavigate();
   const settings = data?.settings;
   const name = settings?.name || 'Shira Rubin';
-  const md = settings?.aboutMarkdown || `## About ${name}`;
-  const aboutImage = settings?.aboutImage || settings?.heroImage || '/images/hero.jpg';
+  const md = settings?.aboutMarkdown || '';
+  const aboutImage = settings?.aboutImage || settings?.heroImage || '';
   const links = settings?.aboutLinks || [];
 
   const handleNav = (link: { id?: string; to?: string }) => {
@@ -77,13 +77,15 @@ const About = () => {
               About Me
             </h1>
 
-            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(md) }} />
+            {md.trim() && <div dangerouslySetInnerHTML={{ __html: renderMarkdown(md) }} />}
 
             {settings?.spotifyLink && (
               <div className="mt-10 max-w-md">
-                <p className="text-base md:text-lg text-pink leading-relaxed font-medium mb-4">
-                  {settings.musicCaption || 'I really like music... here is my current playlist.'}
-                </p>
+                {settings.musicCaption?.trim() && (
+                  <p className="text-base md:text-lg text-pink leading-relaxed font-medium mb-4">
+                    {settings.musicCaption}
+                  </p>
+                )}
                 <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl">
                   <iframe
                     src={settings.spotifyLink}

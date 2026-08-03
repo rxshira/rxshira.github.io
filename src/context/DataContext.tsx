@@ -77,21 +77,9 @@ const initialSettings: SiteSettings = {
   spotifyLink: 'https://open.spotify.com/embed/playlist/1QrBzW0CNaNv4LSm3EGhPP?utm_source=generator',
   primaryColor: '#ff006e',
   colorHistory: ['#ff006e', '#7000ff', '#0066ff', '#00ffcc', '#ffcc00'],
-  aboutMarkdown: `## Hi, I'm Shira 👋
-
-I'm a Computer Science student at **Carnegie Mellon University**, drawn to the places where *programming languages*, *space*, and *people* meet.
-
-I like building things that are provably correct, teaching what I learn, and reaching for the stars — sometimes literally.
-
-- 🧠 **Interests:** type theory, formal verification, rocketry
-- 🚀 **Currently:** mechanizing AVL trees & building type-safe pipelines
-- 💌 Say hi anytime — I love meeting new people.`,
-  aboutLinks: [
-    { label: 'GitHub', url: 'https://github.com/rxshira' },
-    { label: 'LinkedIn', url: 'https://linkedin.com/in/rxshira' },
-    { label: 'Resume', url: '#' },
-  ],
-  musicCaption: 'I really like music... here is my current playlist.'
+  aboutMarkdown: '',
+  aboutLinks: [],
+  musicCaption: ''
 };
 
 interface DataContextType {
@@ -112,6 +100,7 @@ interface DataContextType {
   deleteItem: (list: 'projects' | 'work' | 'research', id: string) => Promise<void>;
   moveItem: (from: 'projects' | 'work' | 'research', to: 'projects' | 'work' | 'research', id: string) => Promise<void>;
   updateCourse: (course: Course) => Promise<void>;
+  updateCourseCode: (oldCode: string, course: Course) => Promise<void>;
   addCourse: (course: Course) => Promise<void>;
   deleteCourse: (code: string) => Promise<void>;
   updateAward: (award: Award) => Promise<void>;
@@ -166,20 +155,40 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const unsub = onSnapshot(doc(db, 'site', 'content'), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.projects) setProjects(dedupeById(data.projects));
-        // On the live site, Work/Research come only from the DB — never fall back to
-        // the sample data (that would duplicate items that live in Projects).
-        setWork(dedupeById(data.work || []));
-        setResearch(dedupeById(data.research || []));
-        if (data.courses) setCourses(data.courses);
-        if (data.awards) setAwards(data.awards);
-        if (data.volunteering) setVolunteering(data.volunteering);
-        if (data.teaching) setTeaching(data.teaching);
-        if (data.settings) setSettings(data.settings);
-      }
+      const data: any = snap.exists() ? snap.data() : {};
+
+      // Any section that isn't in the database yet gets written there once, so the
+      // site becomes fully database-driven and nothing lives only in code defaults.
+      const missing: any = {};
+
+      if (data.projects !== undefined) setProjects(dedupeById(data.projects));
+      else { setProjects(initialProjects); missing.projects = initialProjects; }
+
+      if (data.courses !== undefined) setCourses(data.courses);
+      else { setCourses(initialCourses); missing.courses = initialCourses; }
+
+      if (data.awards !== undefined) setAwards(data.awards);
+      else { setAwards(initialAwards); missing.awards = initialAwards; }
+
+      if (data.volunteering !== undefined) setVolunteering(data.volunteering);
+      else { setVolunteering(initialVolunteering); missing.volunteering = initialVolunteering; }
+
+      if (data.teaching !== undefined) setTeaching(data.teaching);
+      else { setTeaching(initialTeaching); missing.teaching = initialTeaching; }
+
+      if (data.settings !== undefined) setSettings(data.settings);
+      else { setSettings(initialSettings); missing.settings = initialSettings; }
+
+      // Work/Research come only from the DB — never fall back to sample data (that
+      // would duplicate items that live in Projects).
+      setWork(dedupeById(data.work || []));
+      setResearch(dedupeById(data.research || []));
+
       setLoading(false);
+
+      if (Object.keys(missing).length > 0) {
+        saveToCloud(missing).catch(() => {});
+      }
     }, (err) => {
       console.error("Firestore sync error:", err);
       setLoading(false);
@@ -266,6 +275,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCourse = async (upd: Course) => {
     const newList = courses.map(c => c.code === upd.code ? upd : c);
+    setCourses(newList);
+    await saveToCloud({ courses: newList });
+  };
+
+  // Update a course matched by its OLD code, so the course number itself can be
+  // edited without losing the row's position.
+  const updateCourseCode = async (oldCode: string, upd: Course) => {
+    const newList = courses.map(c => c.code === oldCode ? upd : c);
     setCourses(newList);
     await saveToCloud({ courses: newList });
   };
@@ -413,7 +430,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       projects, work, research, courses, awards, volunteering, teaching, settings, loading,
       updateProject, addProject, deleteProject,
       addItem, updateItem, deleteItem, moveItem,
-      updateCourse, addCourse, deleteCourse,
+      updateCourse, updateCourseCode, addCourse, deleteCourse,
       updateAward, addAward, deleteAward,
       updateVolunteering, addVolunteering, deleteVolunteering,
       updateTeaching, addTeaching, deleteTeaching,

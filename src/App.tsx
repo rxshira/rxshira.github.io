@@ -17,6 +17,11 @@ import GlowWrapper from './components/GlowWrapper';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Normalise course codes so they all line up: a bare 5-digit code (e.g. "15451")
+// displays as "15-451", matching the hyphenated ones.
+const formatCourseCode = (code: string) =>
+  /^\d{5}$/.test(code) ? `${code.slice(0, 2)}-${code.slice(2)}` : code;
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -239,7 +244,7 @@ const Home = () => {
                         key={course.code}
                         className="grid grid-cols-[auto_1fr_auto] items-baseline gap-3 py-1.5"
                       >
-                        <span className="text-text-gray/60 text-xs tabular-nums">{course.code}</span>
+                        <span className="text-text-gray/60 text-xs tabular-nums">{formatCourseCode(course.code)}</span>
                         <span className="text-white text-sm font-medium leading-tight">
                           {course.name}
                           {course.graduate && (
