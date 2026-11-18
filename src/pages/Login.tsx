@@ -5,14 +5,11 @@ import { Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 import GlowWrapper from '../components/GlowWrapper';
 
 const Login = () => {
-  const { login, user, isAdmin, authError, clearError } = useAuth();
-  const [username, setUsername] = useState('');
+  const { loginWithGoogle, loginWithEmail, logout, user, isAdmin, authError, clearError } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  // Check if credentials are even configured in the build
-  const isConfigured = !!import.meta.env.VITE_ADMIN_PASSWORD;
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -20,13 +17,26 @@ const Login = () => {
     }
   }, [user, isAdmin, navigate]);
 
+  // Signed in, but not with an admin account: saving would be refused by the database.
+  const signedInNotAdmin = !!user && !isAdmin;
+
+  const handleGoogle = async () => {
+    clearError();
+    setIsSubmitting(true);
+    await loginWithGoogle();
+    setIsSubmitting(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isConfigured) return;
+    clearError();
     setIsSubmitting(true);
-    const success = await login(username, password);
+    try {
+      await loginWithEmail(email, password);
+    } catch {
+      // authError already holds the message
+    }
     setIsSubmitting(false);
-    if (success) navigate('/admin');
   };
 
   return (
@@ -44,10 +54,11 @@ const Login = () => {
           <h1 className="text-3xl font-bold text-white mb-2">Admin Access</h1>
           <p className="text-text-gray mb-8 text-sm uppercase tracking-widest font-bold">Internal Use Only</p>
           
-          {(!isConfigured) && (
+          {signedInNotAdmin && (
             <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500 text-xs text-left">
-              <p className="font-bold mb-1">Configuration Required:</p>
-              <p>Please add VITE_ADMIN_USERNAME and VITE_ADMIN_PASSWORD to your GitHub Secrets and wait for the build to finish.</p>
+              <p className="font-bold mb-1">Not an admin account</p>
+              <p>You're signed in as {user?.email || 'an unknown account'}, which can't edit this site.</p>
+              <button type="button" onClick={logout} className="underline mt-2">Sign out</button>
             </div>
           )}
 
@@ -58,19 +69,33 @@ const Login = () => {
             </div>
           )}
 
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={isSubmitting}
+            className="w-full py-3 px-4 bg-white text-black font-bold hover:bg-pink hover:text-white transition-all disabled:opacity-30"
+          >
+            Sign in with Google
+          </button>
+
+          <div className="flex items-center gap-3 my-6 text-text-gray text-[10px] font-bold uppercase">
+            <div className="flex-1 h-px bg-white/10" /> or <div className="flex-1 h-px bg-white/10" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1 text-left">
-              <label className="text-[10px] font-bold text-text-gray uppercase px-1">Username</label>
+              <label className="text-[10px] font-bold text-text-gray uppercase px-1">Email</label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-black/50 border border-white/10 rounded-none p-3 text-white focus:border-pink outline-none transition-colors"
-                placeholder="Admin username"
+                placeholder="you@example.com"
+                autoComplete="email"
                 required
               />
             </div>
-            
+
             <div className="space-y-1 text-left">
               <label className="text-[10px] font-bold text-text-gray uppercase px-1">Password</label>
               <input
@@ -79,16 +104,17 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-black/50 border border-white/10 rounded-none p-3 text-white focus:border-pink outline-none transition-colors"
                 placeholder="••••••••"
+                autoComplete="current-password"
                 required
               />
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting || !isConfigured}
+              disabled={isSubmitting}
               className="w-full py-3 px-4 bg-white text-black font-bold hover:bg-pink hover:text-white transition-all disabled:opacity-30 mt-4"
             >
-              {!isConfigured ? 'System Not Configured' : isSubmitting ? 'Verifying...' : 'Login to Dashboard'}
+              {isSubmitting ? 'Verifying...' : 'Sign in with email'}
             </button>
 
             <Link

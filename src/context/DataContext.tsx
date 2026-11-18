@@ -1,14 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { projects as sampleItems, Project } from '../data/projects';
 import { courses as initialCourses, Course } from '../data/courses';
 import { awards as initialAwards, Award } from '../data/awards';
 import { volunteering as initialVolunteering, Volunteering } from '../data/volunteering';
-import { 
-  getFirestore,
-  doc, 
-  onSnapshot, 
-  setDoc 
-} from 'firebase/firestore';
+import { doc, onSnapshot, runTransaction } from 'firebase/firestore';
 import { db, isConfigValid } from '../lib/firebase';
 
 export type { Project, Course, Award, Volunteering };
@@ -115,7 +110,6 @@ interface DataContextType {
   updateSettings: (s: SiteSettings) => Promise<void>;
   reorderItem: (type: string, startIndex: number, endIndex: number) => Promise<void>;
   reorderFeatured: (startIndex: number, endIndex: number) => Promise<void>;
-  resetData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -136,6 +130,23 @@ const dedupeById = (arr: Project[]): Project[] => {
   });
 };
 
+type ListKey = 'projects' | 'work' | 'research';
+type StoredKey = ListKey | 'courses' | 'awards' | 'volunteering' | 'teaching' | 'settings';
+
+// Stable identity for any stored item, used when reordering against the latest data.
+const keyOf = (x: any): string => String(x?.id ?? x?.code ?? x?.title ?? '');
+
+// Move the item identified by `itemKey` so it lands where `targetKey` currently is.
+const moveByKey = <T,>(list: T[], itemKey: string, targetKey: string): T[] => {
+  const from = list.findIndex(x => keyOf(x) === itemKey);
+  const to = list.findIndex(x => keyOf(x) === targetKey);
+  if (from === -1 || to === -1 || from === to) return list;
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+};
+
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [work, setWork] = useState<Project[]>(initialWork);
@@ -147,6 +158,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [settings, setSettings] = useState<SiteSettings>(initialSettings);
   const [loading, setLoading] = useState(true);
 
+  // True only once the real content has arrived from the database. Saving is blocked
+  // until then, so the built-in sample content can never be written over real data.
+  const loadedRef = useRef(false);
+
   useEffect(() => {
     if (!isConfigValid) {
       console.warn("DataContext: Firebase not configured. Cloud sync disabled.");
@@ -157,38 +172,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsub = onSnapshot(doc(db, 'site', 'content'), (snap) => {
       const data: any = snap.exists() ? snap.data() : {};
 
-      // Any section that isn't in the database yet gets written there once, so the
-      // site becomes fully database-driven and nothing lives only in code defaults.
-      const missing: any = {};
-
-      if (data.projects !== undefined) setProjects(dedupeById(data.projects));
-      else { setProjects(initialProjects); missing.projects = initialProjects; }
-
-      if (data.courses !== undefined) setCourses(data.courses);
-      else { setCourses(initialCourses); missing.courses = initialCourses; }
-
-      if (data.awards !== undefined) setAwards(data.awards);
-      else { setAwards(initialAwards); missing.awards = initialAwards; }
-
-      if (data.volunteering !== undefined) setVolunteering(data.volunteering);
-      else { setVolunteering(initialVolunteering); missing.volunteering = initialVolunteering; }
-
-      if (data.teaching !== undefined) setTeaching(data.teaching);
-      else { setTeaching(initialTeaching); missing.teaching = initialTeaching; }
-
-      if (data.settings !== undefined) setSettings(data.settings);
-      else { setSettings(initialSettings); missing.settings = initialSettings; }
-
-      // Work/Research come only from the DB — never fall back to sample data (that
-      // would duplicate items that live in Projects).
+      // Display-only fallbacks: nothing here is ever written back automatically.
+      setProjects(data.projects !== undefined ? dedupeById(data.projects) : initialProjects);
+      setCourses(data.courses !== undefined ? data.courses : initialCourses);
+      setAwards(data.awards !== undefined ? data.awards : initialAwards);
+      setVolunteering(data.volunteering !== undefined ? data.volunteering : initialVolunteering);
+      setTeaching(data.teaching !== undefined ? data.teaching : initialTeaching);
+      setSettings(data.settings !== undefined ? data.settings : initialSettings);
+      // Work/Research come only from the DB — never fall back to sample data.
       setWork(dedupeById(data.work || []));
       setResearch(dedupeById(data.research || []));
 
+      loadedRef.current = true;
       setLoading(false);
-
-      if (Object.keys(missing).length > 0) {
-        saveToCloud(missing).catch(() => {});
-      }
     }, (err) => {
       console.error("Firestore sync error:", err);
       setLoading(false);
@@ -203,225 +199,137 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [settings.primaryColor]);
 
-  const saveToCloud = async (newData: any) => {
+  // What a field holds when it has never been saved — matches what is displayed.
+  const fallback: Record<StoredKey, any> = {
+    projects: initialProjects, work: [], research: [], courses: initialCourses,
+    awards: initialAwards, volunteering: initialVolunteering, teaching: initialTeaching,
+    settings: initialSettings,
+  };
+
+  /**
+   * Every save goes through here. It re-reads the LATEST content from the database
+   * inside a transaction and applies only the requested change to it, so a stale tab
+   * or another device can never overwrite items it doesn't know about.
+   * The page updates itself from the database listener once the save commits.
+   */
+  const mutate = async (change: (current: (k: StoredKey) => any) => Partial<Record<StoredKey, any>>) => {
     if (!isConfigValid) {
       alert("Database error: Website is currently running in local mode. Changes will not be saved permanently.");
       return;
     }
+    if (!loadedRef.current) {
+      alert("Your content is still loading from the database. Wait a moment and try again.");
+      return;
+    }
+    const ref = doc(db, 'site', 'content');
     try {
-      await setDoc(doc(db, 'site', 'content'), newData, { merge: true });
-    } catch (e) {
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        const data: any = snap.exists() ? snap.data() : {};
+        const current = (k: StoredKey) => (data[k] !== undefined ? data[k] : fallback[k]);
+        tx.set(ref, change(current), { merge: true });
+      });
+    } catch (e: any) {
       console.error("Save failed:", e);
-      alert("Permission denied: Check your Firestore Security Rules.");
+      alert(e?.code === 'permission-denied'
+        ? "Save blocked: you need to be signed in with the site admin account."
+        : `Save failed: ${e?.message || e}`);
     }
   };
 
-  const updateProject = async (upd: Project) => {
-    const newList = projects.map(p => p.id === upd.id ? upd : p);
-    setProjects(newList);
-    await saveToCloud({ projects: newList });
-  };
+  const addItem = (list: ListKey, item: Project) =>
+    mutate(cur => ({ [list]: [item, ...cur(list).filter((p: Project) => p.id !== item.id)] }));
 
-  const addProject = async (newP: Project) => {
-    const newList = [newP, ...projects];
-    setProjects(newList);
-    await saveToCloud({ projects: newList });
-  };
+  const updateItem = (list: ListKey, item: Project) =>
+    mutate(cur => ({ [list]: cur(list).map((p: Project) => p.id === item.id ? item : p) }));
 
-  const deleteProject = async (id: string) => {
-    const newList = projects.filter(p => p.id !== id);
-    setProjects(newList);
-    await saveToCloud({ projects: newList });
-  };
-
-  // Generic helpers for the three "project-like" lists: projects / work / research.
-  type ListKey = 'projects' | 'work' | 'research';
-  const listData: Record<ListKey, Project[]> = { projects, work, research };
-  const listSetters: Record<ListKey, React.Dispatch<React.SetStateAction<Project[]>>> = {
-    projects: setProjects, work: setWork, research: setResearch,
-  };
-
-  const addItem = async (list: ListKey, item: Project) => {
-    const newList = [item, ...listData[list]];
-    listSetters[list](newList);
-    await saveToCloud({ [list]: newList });
-  };
-
-  const updateItem = async (list: ListKey, item: Project) => {
-    const newList = listData[list].map(p => p.id === item.id ? item : p);
-    listSetters[list](newList);
-    await saveToCloud({ [list]: newList });
-  };
-
-  const deleteItem = async (list: ListKey, id: string) => {
-    const newList = listData[list].filter(p => p.id !== id);
-    listSetters[list](newList);
-    await saveToCloud({ [list]: newList });
-  };
+  const deleteItem = (list: ListKey, id: string) =>
+    mutate(cur => ({ [list]: cur(list).filter((p: Project) => p.id !== id) }));
 
   const moveItem = async (from: ListKey, to: ListKey, id: string) => {
     if (from === to) return;
-    const found = listData[from].find(p => p.id === id);
-    if (!found) return;
-    // Auto-unstar when moving to a new section (its star belonged to the old one).
-    const item = { ...found, featured: false };
-    const newFrom = listData[from].filter(p => p.id !== id);
-    // Remove any existing copy in the target first so a re-move can't duplicate it.
-    const newTo = [item, ...listData[to].filter(p => p.id !== id)];
-    listSetters[from](newFrom);
-    listSetters[to](newTo);
-    await saveToCloud({ [from]: newFrom, [to]: newTo });
+    await mutate(cur => {
+      const found = cur(from).find((p: Project) => p.id === id);
+      if (!found) return {};
+      // Auto-unstar when moving to a new section (its star belonged to the old one).
+      const item = { ...found, featured: false };
+      return {
+        [from]: cur(from).filter((p: Project) => p.id !== id),
+        // Remove any existing copy in the target first so a re-move can't duplicate it.
+        [to]: [item, ...cur(to).filter((p: Project) => p.id !== id)],
+      };
+    });
   };
 
-  const updateCourse = async (upd: Course) => {
-    const newList = courses.map(c => c.code === upd.code ? upd : c);
-    setCourses(newList);
-    await saveToCloud({ courses: newList });
-  };
+  const updateProject = (upd: Project) => updateItem('projects', upd);
+  const addProject = (newP: Project) => addItem('projects', newP);
+  const deleteProject = (id: string) => deleteItem('projects', id);
+
+  const updateCourse = (upd: Course) =>
+    mutate(cur => ({ courses: cur('courses').map((c: Course) => c.code === upd.code ? upd : c) }));
 
   // Update a course matched by its OLD code, so the course number itself can be
   // edited without losing the row's position.
-  const updateCourseCode = async (oldCode: string, upd: Course) => {
-    const newList = courses.map(c => c.code === oldCode ? upd : c);
-    setCourses(newList);
-    await saveToCloud({ courses: newList });
-  };
+  const updateCourseCode = (oldCode: string, upd: Course) =>
+    mutate(cur => ({ courses: cur('courses').map((c: Course) => c.code === oldCode ? upd : c) }));
 
-  const addCourse = async (newC: Course) => {
-    // Prepend so a newly added course shows at the top of the admin list —
-    // matching every other section (projects, awards, etc.). Appending buried
-    // it at the bottom of the list, making it look like nothing happened.
-    const newList = [newC, ...courses];
-    setCourses(newList);
-    await saveToCloud({ courses: newList });
-  };
+  // Prepend so a newly added course shows at the top of the admin list.
+  const addCourse = (newC: Course) =>
+    mutate(cur => ({ courses: [newC, ...cur('courses')] }));
 
-  const deleteCourse = async (code: string) => {
-    const newList = courses.filter(c => c.code !== code);
-    setCourses(newList);
-    await saveToCloud({ courses: newList });
-  };
+  const deleteCourse = (code: string) =>
+    mutate(cur => ({ courses: cur('courses').filter((c: Course) => c.code !== code) }));
 
-  const updateAward = async (upd: Award) => {
-    const newList = awards.map(a => a.title === upd.title ? upd : a);
-    setAwards(newList);
-    await saveToCloud({ awards: newList });
-  };
+  const updateAward = (upd: Award) =>
+    mutate(cur => ({ awards: cur('awards').map((a: Award) => a.title === upd.title ? upd : a) }));
 
-  const addAward = async (newA: Award) => {
-    const newList = [newA, ...awards];
-    setAwards(newList);
-    await saveToCloud({ awards: newList });
-  };
+  const addAward = (newA: Award) =>
+    mutate(cur => ({ awards: [newA, ...cur('awards')] }));
 
-  const deleteAward = async (title: string) => {
-    const newList = awards.filter(a => a.title !== title);
-    setAwards(newList);
-    await saveToCloud({ awards: newList });
-  };
+  const deleteAward = (title: string) =>
+    mutate(cur => ({ awards: cur('awards').filter((a: Award) => a.title !== title) }));
 
-  const updateVolunteering = async (upd: Volunteering) => {
-    const newList = volunteering.map(v => v.id === upd.id ? upd : v);
-    setVolunteering(newList);
-    await saveToCloud({ volunteering: newList });
-  };
+  const updateVolunteering = (upd: Volunteering) =>
+    mutate(cur => ({ volunteering: cur('volunteering').map((v: Volunteering) => v.id === upd.id ? upd : v) }));
 
-  const addVolunteering = async (newV: Volunteering) => {
-    const newList = [newV, ...volunteering];
-    setVolunteering(newList);
-    await saveToCloud({ volunteering: newList });
-  };
+  const addVolunteering = (newV: Volunteering) =>
+    mutate(cur => ({ volunteering: [newV, ...cur('volunteering')] }));
 
-  const deleteVolunteering = async (id: string) => {
-    const newList = volunteering.filter(v => v.id !== id);
-    setVolunteering(newList);
-    await saveToCloud({ volunteering: newList });
-  };
+  const deleteVolunteering = (id: string) =>
+    mutate(cur => ({ volunteering: cur('volunteering').filter((v: Volunteering) => v.id !== id) }));
 
-  const updateTeaching = async (upd: Teaching) => {
-    const newList = teaching.map(t => t.id === upd.id ? upd : t);
-    setTeaching(newList);
-    await saveToCloud({ teaching: newList });
-  };
+  const updateTeaching = (upd: Teaching) =>
+    mutate(cur => ({ teaching: cur('teaching').map((t: Teaching) => t.id === upd.id ? upd : t) }));
 
-  const addTeaching = async (newT: Teaching) => {
-    const newList = [newT, ...teaching];
-    setTeaching(newList);
-    await saveToCloud({ teaching: newList });
-  };
+  const addTeaching = (newT: Teaching) =>
+    mutate(cur => ({ teaching: [newT, ...cur('teaching')] }));
 
-  const deleteTeaching = async (id: string) => {
-    const newList = teaching.filter(t => t.id !== id);
-    setTeaching(newList);
-    await saveToCloud({ teaching: newList });
-  };
+  const deleteTeaching = (id: string) =>
+    mutate(cur => ({ teaching: cur('teaching').filter((t: Teaching) => t.id !== id) }));
 
-  const updateSettings = async (upd: SiteSettings) => {
-    setSettings(upd);
-    await saveToCloud({ settings: upd });
-  };
+  const updateSettings = (upd: SiteSettings) => mutate(() => ({ settings: upd }));
 
+  // Reorder by identity, applied to the latest stored list (not by raw index, which
+  // could point at a different item if the list changed elsewhere).
   const reorderItem = async (type: string, startIndex: number, endIndex: number) => {
-    const listMap: any = { projects, work, research, courses, awards, volunteering, teaching };
-    const list = Array.from(listMap[type]);
-    const [removed] = list.splice(startIndex, 1);
-    list.splice(endIndex, 0, removed);
-
-    const setters: any = {
-      projects: setProjects,
-      work: setWork,
-      research: setResearch,
-      courses: setCourses,
-      awards: setAwards,
-      volunteering: setVolunteering,
-      teaching: setTeaching
-    };
-    setters[type](list);
-    await saveToCloud({ [type]: list });
+    const shown: any = { projects, work, research, courses, awards, volunteering, teaching };
+    const list: any[] = shown[type];
+    if (!list || !list[startIndex] || !list[endIndex]) return;
+    const itemKey = keyOf(list[startIndex]);
+    const targetKey = keyOf(list[endIndex]);
+    await mutate(cur => ({ [type]: moveByKey(cur(type as StoredKey), itemKey, targetKey) }));
   };
 
+  // Featured projects are listed first, in starred order, followed by the rest.
   const reorderFeatured = async (startIndex: number, endIndex: number) => {
-    // 1. Get current featured projects in their current order
-    const featured = projects.filter(p => p.featured);
-    const itemToMove = featured[startIndex];
-    
-    // 2. Remove from current featured list
-    const newFeatured = [...featured];
-    newFeatured.splice(startIndex, 1);
-    
-    // 3. Insert at new featured list position
-    newFeatured.splice(endIndex, 0, itemToMove);
-    
-    // 4. Reconstruct the full project list preserving non-featured positions
-    const nonFeatured = projects.filter(p => !p.featured);
-    
-    // Interleave them: we put all featured projects first for simplicity in ordering,
-    // or we can try to maintain original slots. 
-    // Usually, users want featured projects to be the "priority" ones.
-    const newList = [...newFeatured, ...nonFeatured];
-    
-    setProjects(newList);
-    await saveToCloud({ projects: newList });
-  };
-
-  const resetData = async () => {
-    setProjects(initialProjects);
-    setWork(initialWork);
-    setResearch(initialResearch);
-    setCourses(initialCourses);
-    setAwards(initialAwards);
-    setVolunteering(initialVolunteering);
-    setTeaching(initialTeaching);
-    setSettings(initialSettings);
-    await saveToCloud({
-      projects: initialProjects,
-      work: initialWork,
-      research: initialResearch,
-      courses: initialCourses,
-      awards: initialAwards,
-      volunteering: initialVolunteering,
-      teaching: initialTeaching,
-      settings: initialSettings
+    const shownFeatured = projects.filter(p => p.featured);
+    if (!shownFeatured[startIndex] || !shownFeatured[endIndex]) return;
+    const itemKey = keyOf(shownFeatured[startIndex]);
+    const targetKey = keyOf(shownFeatured[endIndex]);
+    await mutate(cur => {
+      const latest: Project[] = cur('projects');
+      const featured = moveByKey(latest.filter(p => p.featured), itemKey, targetKey);
+      return { projects: [...featured, ...latest.filter(p => !p.featured)] };
     });
   };
 
@@ -435,7 +343,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateVolunteering, addVolunteering, deleteVolunteering,
       updateTeaching, addTeaching, deleteTeaching,
       updateSettings,
-      reorderItem, reorderFeatured, resetData
+      reorderItem, reorderFeatured
     }}>
       {children}
     </DataContext.Provider>

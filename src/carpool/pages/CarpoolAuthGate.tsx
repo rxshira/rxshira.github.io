@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 
 const CarpoolAuthGate = () => {
-  const { login, signup, loginWithEmail, authError, clearError } = useAuth();
+  const { signup, loginWithEmail, authError, clearError } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'landing' | 'login' | 'signup'>('landing');
   const [loading, setLoading] = useState(false);
@@ -30,21 +30,8 @@ const CarpoolAuthGate = () => {
         await signup(formData.email, formData.password);
         navigate('/carpool/profile');
       } else {
-        // Try Site Admin login first if it looks like a username
-        const isAdminCreds = !formData.email.includes('@');
-        let loggedInAsAdmin = false;
-        
-        if (isAdminCreds) {
-          loggedInAsAdmin = await login(formData.email, formData.password);
-        }
-
-        if (loggedInAsAdmin) {
-          navigate('/carpool/map');
-        } else {
-          // Standard Firebase login
-          await loginWithEmail(formData.email, formData.password);
-          navigate('/carpool/map');
-        }
+        await loginWithEmail(formData.email, formData.password);
+        navigate('/carpool/map');
       }
     } catch (error: any) {
       alert(`Auth failed: ${error.message}`);

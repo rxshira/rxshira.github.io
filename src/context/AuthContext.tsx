@@ -18,7 +18,6 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   authError: string | null;
-  login: (username: string, password: string) => Promise<boolean>;
   signup: (email: string, pass: string) => Promise<void>;
   loginWithEmail: (email: string, pass: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -77,14 +76,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // 1. Check legacy session (Preserving existing logic)
-    const savedSession = localStorage.getItem('admin_session');
-    if (savedSession === 'active' && !user) {
-      setUser({ username: 'admin', email: import.meta.env.VITE_ADMIN_USERNAME || 'admin' });
-      setIsAdmin(true);
-    }
+    // Clear any leftover session from the old password login, which never signed in to Firebase.
+    localStorage.removeItem('admin_session');
 
-    // 2. Listen to Firebase Auth
+    // Listen to Firebase Auth
     if (isConfigValid) {
       const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser) {
@@ -95,11 +90,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const isEmailAdmin = checkAdminStatus(firebaseUser.email);
           setIsAdmin(isEmailAdmin || (cUser?.is_admin ?? false));
         } else {
-          if (localStorage.getItem('admin_session') !== 'active') {
-            setUser(null);
-            setCarpoolUser(null);
-            setIsAdmin(false);
-          }
+          setUser(null);
+          setCarpoolUser(null);
+          setIsAdmin(false);
         }
         setLoading(false);
       });
@@ -151,32 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (username: string, password: string) => {
-    const targetUser = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-    const targetPass = import.meta.env.VITE_ADMIN_PASSWORD;
-
-    if (!targetPass) {
-      setAuthError("Configuration error: Login disabled.");
-      return false;
-    }
-
-    if (username === targetUser && password === targetPass) {
-      const adminUser = { 
-        uid: 'site_admin', 
-        username, 
-        email: username.includes('@') ? username : `${username}@internal.site` 
-      };
-      setUser(adminUser);
-      setIsAdmin(true);
-      setAuthError(null);
-      localStorage.setItem('admin_session', 'active');
-      return true;
-    }
- else {
-      setAuthError("Invalid username or password.");
-      return false;
-    }
-  };
 
   const logout = async () => {
     if (isConfigValid) {
@@ -205,7 +172,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading, 
       isAdmin, 
       authError, 
-      login, 
       signup,
       loginWithEmail,
       loginWithGoogle, 
