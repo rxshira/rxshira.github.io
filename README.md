@@ -1,5 +1,11 @@
 # Shira Rubin - Personal Website
 
+hello this is my website
+
+nothing interesting going on here 
+
+check out shirarubin.com
+
 ## Tech Stack
 
 - React 18
